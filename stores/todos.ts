@@ -62,11 +62,6 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const deleteTodo = (id: number, isPermanentDelete: boolean) => {
-    console.log({
-      id: id,
-      isPermanentDelete: isPermanentDelete,
-    })
-
     todos.value = todos.value
       .map((todo) =>
         todo.id === id ? { ...todo, deleted: !isPermanentDelete && true } : todo
