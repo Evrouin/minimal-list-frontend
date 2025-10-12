@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/eslint', '@pinia/nuxt'],
   css: ['~/assets/css/main.css'],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
   },
   ssr: false,
 })
