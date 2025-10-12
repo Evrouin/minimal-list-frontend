@@ -19,14 +19,17 @@ A clean, modern todo application built with Nuxt 3, featuring state management, 
 ### Core Modules
 
 #### **Components**
+
 - `TodoHeader.vue` - Application title and branding
 - `TodoAdd.vue` - Form for creating new todos with validation
 - `TodoList.vue` - Display and manage existing todos with inline editing
 
 #### **Store**
+
 - `stores/todos.ts` - Pinia store managing todo state, filtering, and persistence
 
 #### **Types**
+
 - `types/todo.d.ts` - TypeScript interfaces for type safety
 
 ### Tech Stack
@@ -41,6 +44,7 @@ A clean, modern todo application built with Nuxt 3, featuring state management, 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - npm, pnpm, yarn, or bun
 
@@ -66,6 +70,7 @@ npm run dev
 ## 📜 Available Scripts
 
 ### Development
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Build for production
@@ -75,6 +80,7 @@ npm run generate     # Generate static site
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint         # Check code with ESLint
 npm run lint:fix     # Fix ESLint issues automatically
@@ -88,17 +94,20 @@ npm run quality      # Run both linting and formatting
 This project uses industry-standard tools for code quality:
 
 ### ESLint Configuration
+
 - **Nuxt recommended rules** for Vue.js and TypeScript
 - **Automatic fixing** of common issues
 - **Vue-specific linting** for component best practices
 
 ### Prettier Configuration
+
 - **Consistent formatting** across all files
 - **TailwindCSS class sorting** for better readability
 - **Single quotes**, no semicolons, 2-space indentation
 - **80 character line width** for better code review
 
 ### Pre-commit Workflow
+
 ```bash
 # Before committing, run:
 npm run quality
@@ -132,11 +141,13 @@ npm run quality
 ## 🚀 Deployment
 
 ### Static Generation
+
 ```bash
 npm run generate
 ```
 
 ### Node.js Server
+
 ```bash
 npm run build
 npm run start
@@ -145,6 +156,7 @@ npm run start
 ### Docker
 
 #### Using Docker Compose (Recommended)
+
 ```bash
 # Build and run the application
 docker-compose up --build
@@ -157,6 +169,7 @@ docker-compose down
 ```
 
 #### Using Docker directly
+
 ```bash
 # Build the Docker image
 docker build -t nuxt-todo .
