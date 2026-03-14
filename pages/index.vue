@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useTodoStore } from '~/stores/todos'
+import { useAuthStore } from '~/stores/auth'
 
 const todoStore = useTodoStore()
+const authStore = useAuthStore()
 
 const { changeFilter, filterOptions } = todoStore
 </script>
@@ -11,7 +13,16 @@ const { changeFilter, filterOptions } = todoStore
     class="flex h-screen w-screen flex-col items-center justify-center bg-gray-800"
   >
     <div class="w-full max-w-lg px-4">
-      <TodoHeader title="Minimalist Todo List" />
+      <div class="flex items-center justify-between">
+        <TodoHeader title="Minimalist Todo List" />
+        <NuxtLink
+          v-if="authStore.isAuthenticated"
+          to="/auth/profile"
+          class="cursor-pointer p-4 text-white/60 hover:text-white"
+        >
+          <Icon name="uil:user-circle" class="text-xl" />
+        </NuxtLink>
+      </div>
       <TodoAdd />
     </div>
     <div class="my-4 flex justify-center">
