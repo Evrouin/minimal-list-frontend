@@ -6,6 +6,8 @@ const todoStore = useTodoStore()
 const authStore = useAuthStore()
 
 const { changeFilter, filterOptions } = todoStore
+
+onMounted(() => todoStore.loadTodos())
 </script>
 
 <template>

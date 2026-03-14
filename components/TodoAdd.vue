@@ -11,27 +11,16 @@ const isValidTodo = computed(
   () => title.value.trim().length > 0 && body.value.trim().length > 0
 )
 
-const addTodo = () => {
+const addTodo = async () => {
   if (!isValidTodo.value) return
 
-  const todo = {
-    id: Date.now(),
+  await todoStore.addTodo({
     title: title.value.toLowerCase(),
     body: body.value.toLowerCase(),
-    completed: false,
-    deleted: false,
-    editing: false,
-  }
-
-  todoStore.addTodo(todo)
+  })
 
   title.value = ''
   body.value = ''
-
-  setTimeout(() => {
-    title.value = ''
-    body.value = ''
-  }, 100)
 }
 
 const handleTitleInput = (event: Event) => {

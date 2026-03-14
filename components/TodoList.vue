@@ -20,19 +20,18 @@ const editTodo = (todo: Todo) => {
   todo.editing = true
 }
 
-const saveTodo = (todo: Todo) => {
+const saveTodo = async (todo: Todo) => {
   if (!todo.title.trim() || !todo.body.trim()) return
   todo.editing = false
-  todoStore.updateTodo({ ...todo })
+  await todoStore.updateTodo({ ...todo })
 }
 
-const toggleCompletion = (todo: Todo) => {
-  todo.completed = !todo.completed
-  todoStore.updateTodo({ ...todo })
+const toggleCompletion = async (todo: Todo) => {
+  await todoStore.toggleTodoCompletion(todo.id)
 }
 
-const deleteTodo = (todo: Todo) => {
-  todoStore.deleteTodo(todo.id, todo.deleted)
+const deleteTodo = async (todo: Todo) => {
+  await todoStore.deleteTodo(todo.id, todo.deleted)
 }
 </script>
 
