@@ -8,6 +8,10 @@ const todoStore = useTodoStore()
 const isTodoEmptyMessage = ref('No todos available')
 
 const { filteredTodos } = storeToRefs(todoStore)
+const { loading } = storeToRefs(todoStore)
+
+const showDeleteDialog = ref(false)
+const todoToDelete = ref<Todo | null>(null)
 
 const getTodoClasses = (todo: Todo) => [
   'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 mb-5 w-full',
@@ -30,14 +34,23 @@ const toggleCompletion = async (todo: Todo) => {
   await todoStore.toggleTodoCompletion(todo.id)
 }
 
-const deleteTodo = async (todo: Todo) => {
-  await todoStore.deleteTodo(todo.id, todo.deleted)
+const requestDelete = (todo: Todo) => {
+  todoToDelete.value = todo
+  showDeleteDialog.value = true
+}
+
+const confirmDelete = async () => {
+  if (!todoToDelete.value) return
+  await todoStore.deleteTodo(todoToDelete.value.id, todoToDelete.value.deleted)
+  todoToDelete.value = null
 }
 </script>
 
 <template>
+  <TodoSkeleton v-if="loading" :count="3" />
+
   <div
-    v-if="filteredTodos.length === 0"
+    v-else-if="filteredTodos.length === 0"
     class="flex items-center justify-center"
   >
     <div
@@ -76,7 +89,7 @@ const deleteTodo = async (todo: Todo) => {
           <button
             class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
             :title="`Delete ${todo.title}`"
-            @click="deleteTodo(todo)"
+            @click="requestDelete(todo)"
           >
             <Icon name="uil:trash" />
           </button>
@@ -110,6 +123,18 @@ const deleteTodo = async (todo: Todo) => {
       </div>
     </div>
   </div>
+
+  <ConfirmDialog
+    v-model="showDeleteDialog"
+    :title="todoToDelete?.deleted ? 'permanent delete' : 'delete todo'"
+    :message="
+      todoToDelete?.deleted
+        ? 'this cannot be undone. delete forever?'
+        : 'move this todo to deleted?'
+    "
+    :confirm-text="todoToDelete?.deleted ? 'delete forever' : 'delete'"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <style scoped></style>

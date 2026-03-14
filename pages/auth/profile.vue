@@ -64,8 +64,9 @@ const handleChangePassword = async () => {
   }
 }
 
+const showDeleteDialog = ref(false)
+
 const handleDeleteAccount = async () => {
-  if (!confirm('are you sure? this cannot be undone.')) return
   await authStore.deleteAccount()
   navigateTo('/auth/login')
 }
@@ -205,7 +206,7 @@ const handleLogout = () => {
       <div class="flex justify-center">
         <button
           class="cursor-pointer text-sm text-red-400 lowercase hover:text-red-300"
-          @click="handleDeleteAccount"
+          @click="showDeleteDialog = true"
         >
           delete account
         </button>
@@ -221,5 +222,13 @@ const handleLogout = () => {
         </NuxtLink>
       </div>
     </div>
+
+    <ConfirmDialog
+      v-model="showDeleteDialog"
+      title="delete account"
+      message="this is permanent and cannot be undone. all your data will be lost."
+      confirm-text="delete forever"
+      @confirm="handleDeleteAccount"
+    />
   </div>
 </template>
