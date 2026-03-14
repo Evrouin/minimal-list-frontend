@@ -1,31 +1,22 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import type { Todo } from '../types'
-
-const STORAGE_KEY = 'todos'
 
 export const useTodoStore = defineStore('todo', () => {
   const todos = ref<Todo[]>([])
   const filterType = ref<'all' | 'active' | 'completed' | 'deleted'>('all')
   const filterOptions = ['all', 'active', 'completed', 'deleted'] as const
+  const api = useTodoApi()
 
-  if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      todos.value = JSON.parse(stored)
-    }
-
-    watch(
-      todos,
-      (newVal) => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal))
-      },
-      { deep: true }
-    )
+  const loadTodos = async () => {
+    const includeDeleted = filterType.value === 'deleted'
+    const response = await api.fetchTodos(includeDeleted)
+    todos.value = response.data.map((t) => ({ ...t, editing: false }))
   }
 
   const changeFilter = (type: (typeof filterOptions)[number]) => {
     filterType.value = type
+    loadTodos()
   }
 
   const filteredTodos = computed(() => {
@@ -43,30 +34,36 @@ export const useTodoStore = defineStore('todo', () => {
     })
   })
 
-  const addTodo = (todo: Todo) => {
-    todos.value.push(todo)
+  const addTodo = async (todo: Partial<Todo>) => {
+    const response = await api.createTodo(todo)
+    todos.value.unshift({ ...response.data, editing: false })
   }
 
-  const updateTodo = (updatedTodo: Todo) => {
+  const updateTodo = async (updatedTodo: Todo) => {
+    const response = await api.updateTodo(updatedTodo.id, updatedTodo)
     const index = todos.value.findIndex((todo) => todo.id === updatedTodo.id)
     if (index !== -1) {
-      todos.value[index] = { ...todos.value[index], ...updatedTodo }
+      todos.value[index] = { ...response.data, editing: false }
     }
   }
 
-  const toggleTodoCompletion = (id: number) => {
+  const toggleTodoCompletion = async (id: number) => {
     const todo = todos.value.find((todo) => todo.id === id)
     if (todo) {
-      todo.completed = !todo.completed
+      await updateTodo({ ...todo, completed: !todo.completed })
     }
   }
 
-  const deleteTodo = (id: number, isPermanentDelete: boolean) => {
-    todos.value = todos.value
-      .map((todo) =>
-        todo.id === id ? { ...todo, deleted: !isPermanentDelete && true } : todo
-      )
-      .filter((todo) => (isPermanentDelete ? todo.id !== id : true))
+  const deleteTodo = async (id: number, isPermanentDelete: boolean) => {
+    await api.deleteTodo(id)
+    if (isPermanentDelete) {
+      todos.value = todos.value.filter((todo) => todo.id !== id)
+    } else {
+      const index = todos.value.findIndex((t) => t.id === id)
+      if (index !== -1) {
+        todos.value[index] = { ...todos.value[index], deleted: true }
+      }
+    }
   }
 
   return {
@@ -74,6 +71,7 @@ export const useTodoStore = defineStore('todo', () => {
     filteredTodos,
     filterType,
     filterOptions,
+    loadTodos,
     changeFilter,
     addTodo,
     updateTodo,

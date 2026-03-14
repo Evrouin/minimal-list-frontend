@@ -5,4 +5,6 @@ export interface Todo {
   completed: boolean
   deleted: boolean
   editing: boolean
+  created_at?: string
+  updated_at?: string
 }
