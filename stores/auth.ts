@@ -13,6 +13,8 @@ import type {
 const TOKEN_KEY = 'auth_tokens'
 
 export const useAuthStore = defineStore('auth', () => {
+  const api = useAuthApi()
+
   const user = ref<User | null>(null)
   const tokens = ref<AuthTokens | null>(null)
   const loading = ref(false)
@@ -20,7 +22,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!tokens.value?.access)
 
-  // Restore tokens from localStorage
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(TOKEN_KEY)
     if (stored) tokens.value = JSON.parse(stored)
@@ -37,87 +38,42 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(TOKEN_KEY)
   }
 
-  const apiBase = () => {
-    const config = useRuntimeConfig()
-    return config.public.authApiBase as string
-  }
-
-  const authFetch = async <T>(
-    url: string,
-    opts: Record<string, unknown> = {},
-  ): Promise<T> => {
-    const headers: Record<string, string> = {}
-    if (tokens.value?.access) {
-      headers.Authorization = `Bearer ${tokens.value.access}`
-    }
-    return $fetch<T>(`${apiBase()}${url}`, {
-      ...opts,
-      headers: { ...headers, ...(opts.headers as Record<string, string>) },
-    })
-  }
-
-  const register = async (payload: RegisterPayload) => {
+  const withLoading = async <T>(fn: () => Promise<T>): Promise<T> => {
     loading.value = true
     error.value = null
     try {
-      const res = await authFetch<{ message: string }>('/register/', {
-        method: 'POST',
-        body: payload,
-      })
-      return res
+      return await fn()
     } catch (e: unknown) {
-      error.value = (e as Error).message || 'Registration failed'
+      error.value = (e as Error).message
       throw e
     } finally {
       loading.value = false
     }
   }
 
-  const login = async (payload: LoginPayload) => {
-    loading.value = true
-    error.value = null
-    try {
-      const res = await authFetch<AuthTokens>('/login/', {
-        method: 'POST',
-        body: payload,
-      })
+  const register = (payload: RegisterPayload) =>
+    withLoading(() => api.register(payload))
+
+  const login = (payload: LoginPayload) =>
+    withLoading(async () => {
+      const res = await api.login(payload)
       saveTokens(res)
       await fetchProfile()
       return res
-    } catch (e: unknown) {
-      error.value = (e as Error).message || 'Login failed'
-      throw e
-    } finally {
-      loading.value = false
-    }
-  }
+    })
 
-  const googleLogin = async (googleToken: string) => {
-    loading.value = true
-    error.value = null
-    try {
-      const res = await authFetch<{ tokens: AuthTokens; user: User }>(
-        '/login/google/',
-        { method: 'POST', body: { token: googleToken } },
-      )
+  const googleLogin = (googleToken: string) =>
+    withLoading(async () => {
+      const res = await api.googleLogin(googleToken)
       saveTokens(res.tokens)
       user.value = res.user
       return res
-    } catch (e: unknown) {
-      error.value = (e as Error).message || 'Google login failed'
-      throw e
-    } finally {
-      loading.value = false
-    }
-  }
+    })
 
   const refreshToken = async () => {
     if (!tokens.value?.refresh) return clearAuth()
     try {
-      const res = await $fetch<{ access: string }>(
-        `${apiBase()}/token/refresh/`,
-        { method: 'POST', body: { refresh: tokens.value.refresh } },
-      )
+      const res = await api.refreshToken(tokens.value.refresh)
       saveTokens({ ...tokens.value, access: res.access })
     } catch {
       clearAuth()
@@ -126,57 +82,34 @@ export const useAuthStore = defineStore('auth', () => {
 
   const fetchProfile = async () => {
     try {
-      user.value = await authFetch<User>('/profile/')
+      user.value = await api.fetchProfile()
     } catch {
-      // token might be expired, try refresh
       await refreshToken()
       if (tokens.value?.access) {
-        user.value = await authFetch<User>('/profile/')
+        user.value = await api.fetchProfile()
       }
     }
   }
 
   const updateProfile = async (data: Partial<User>) => {
-    user.value = await authFetch<User>('/profile/', {
-      method: 'PATCH',
-      body: data,
-    })
+    user.value = await api.updateProfile(data)
     return user.value
   }
 
-  const changePassword = async (payload: ChangePasswordPayload) => {
-    return authFetch<{ message: string }>('/change-password/', {
-      method: 'PUT',
-      body: payload,
-    })
-  }
+  const changePassword = (payload: ChangePasswordPayload) =>
+    api.changePassword(payload)
 
-  const verifyEmail = async (token: string) => {
-    return authFetch<{ message: string }>(`/verify-email/${token}/`, {
-      method: 'POST',
-    })
-  }
+  const verifyEmail = (token: string) =>
+    api.verifyEmail(token)
 
-  const requestPasswordReset = async (
-    payload: PasswordResetRequestPayload,
-  ) => {
-    return authFetch<{ message: string }>('/password-reset/', {
-      method: 'POST',
-      body: payload,
-    })
-  }
+  const requestPasswordReset = (payload: PasswordResetRequestPayload) =>
+    api.requestPasswordReset(payload)
 
-  const confirmPasswordReset = async (
-    payload: PasswordResetConfirmPayload,
-  ) => {
-    return authFetch<{ message: string }>('/password-reset/confirm/', {
-      method: 'POST',
-      body: payload,
-    })
-  }
+  const confirmPasswordReset = (payload: PasswordResetConfirmPayload) =>
+    api.confirmPasswordReset(payload)
 
   const deleteAccount = async () => {
-    await authFetch('/delete-account/', { method: 'DELETE' })
+    await api.deleteAccount()
     clearAuth()
   }
 
