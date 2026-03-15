@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       authApiBase: process.env.AUTH_API_BASE || 'http://localhost:8000/api/auth',
-      googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+      googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || '',
     },
   },
 })
