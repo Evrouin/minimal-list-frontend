@@ -1,6 +1,8 @@
 # 📝 Minimalist Todo List
 
-A clean, modern todo application built with Nuxt 3 and Django REST Framework, featuring JWT authentication, Google OAuth, rich text editing, and a minimalist dark theme.
+A clean, modern todo application built with Nuxt 4 and Django REST Framework, featuring JWT authentication, Google OAuth, rich text editing, and a minimalist dark theme.
+
+🔗 **Live Demo**: [minimalist-todo-smoky.vercel.app](https://minimalist-todo-smoky.vercel.app/)
 
 ## ✨ Features
 
@@ -20,7 +22,7 @@ A clean, modern todo application built with Nuxt 3 and Django REST Framework, fe
 
 ## 🏗️ Architecture
 
-### Frontend (Nuxt 3)
+### Frontend (Nuxt 4)
 
 ```
 ├── components/
@@ -61,10 +63,9 @@ A clean, modern todo application built with Nuxt 3 and Django REST Framework, fe
 
 ### Tech Stack
 
-- **Frontend**: [Nuxt 3](https://nuxt.com/), [TailwindCSS](https://tailwindcss.com/), [Pinia](https://pinia.vuejs.org/), [Tiptap](https://tiptap.dev/)
+- **Frontend**: [Nuxt 4](https://nuxt.com/), [TailwindCSS](https://tailwindcss.com/), [Pinia](https://pinia.vuejs.org/), [Tiptap](https://tiptap.dev/)
 - **Backend**: [Django](https://www.djangoproject.com/), [Django REST Framework](https://www.django-rest-framework.org/), [SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/)
 - **Auth**: JWT + Google OAuth 2.0
-- **Hosting**: [Render](https://render.com/)
 - **Language**: TypeScript / Python
 
 ## 🚀 Getting Started
