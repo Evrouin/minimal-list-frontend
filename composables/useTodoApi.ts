@@ -6,10 +6,12 @@ export const useTodoApi = () => {
   const base = '/api/todos'
 
   return {
-    fetchTodos: (includeDeleted = false) =>
-      request<ApiResponse<Todo[]>>(
+    fetchTodos: (includeDeleted = false, cursor?: string) => {
+      if (cursor) return request<ApiResponse<Todo[]>>(cursor)
+      return request<ApiResponse<Todo[]>>(
         `${base}/${includeDeleted ? '?include_deleted=true' : ''}`
-      ),
+      )
+    },
 
     createTodo: (todo: Partial<Todo>) =>
       request<ApiResponse<Todo>>(`${base}/`, { method: 'POST', body: todo }),

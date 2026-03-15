@@ -24,6 +24,16 @@ onMounted(() => {
   }
   todoStore.loadTodos()
 })
+
+const scrollContainer = ref<HTMLElement | null>(null)
+
+const onScroll = () => {
+  const el = scrollContainer.value
+  if (!el || !todoStore.hasMore || todoStore.loadingMore) return
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+    todoStore.loadMore()
+  }
+}
 </script>
 
 <template>
@@ -86,8 +96,11 @@ onMounted(() => {
         {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
       </button>
     </div>
-    <div class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4">
+    <div ref="scrollContainer" class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4" @scroll="onScroll">
       <TodoList />
+      <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
+        <span class="text-sm text-white/40">loading...</span>
+      </div>
     </div>
   </div>
 </template>

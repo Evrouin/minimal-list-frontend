@@ -5,9 +5,13 @@ import type { Todo } from '../types'
 export const useTodoStore = defineStore('todo', () => {
   const todos = ref<Todo[]>([])
   const loading = ref(false)
+  const loadingMore = ref(false)
+  const nextCursor = ref<string | null>(null)
   const filterType = ref<'all' | 'active' | 'completed' | 'deleted'>('all')
   const filterOptions = ['all', 'active', 'completed', 'deleted'] as const
   const api = useTodoApi()
+
+  const hasMore = computed(() => !!nextCursor.value)
 
   const loadTodos = async () => {
     loading.value = true
@@ -15,8 +19,21 @@ export const useTodoStore = defineStore('todo', () => {
       const includeDeleted = filterType.value === 'deleted'
       const response = await api.fetchTodos(includeDeleted)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
     } finally {
       loading.value = false
+    }
+  }
+
+  const loadMore = async () => {
+    if (!nextCursor.value || loadingMore.value) return
+    loadingMore.value = true
+    try {
+      const response = await api.fetchTodos(false, nextCursor.value)
+      todos.value.push(...response.data.map((t: Todo) => ({ ...t, editing: false })))
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
+    } finally {
+      loadingMore.value = false
     }
   }
 
@@ -92,10 +109,13 @@ export const useTodoStore = defineStore('todo', () => {
   return {
     todos,
     loading,
+    loadingMore,
+    hasMore,
     filteredTodos,
     filterType,
     filterOptions,
     loadTodos,
+    loadMore,
     changeFilter,
     addTodo,
     updateTodo,
