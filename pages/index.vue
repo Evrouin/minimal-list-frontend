@@ -45,6 +45,13 @@ const onScroll = () => {
         <TodoHeader title="Minimalist Todo List" />
         <div class="flex shrink-0 items-center">
           <NuxtLink
+            v-if="authStore.isAdmin"
+            to="/admin"
+            class="cursor-pointer p-2 text-white/60 hover:text-white"
+          >
+            <Icon name="uil:setting" class="text-xl" />
+          </NuxtLink>
+          <NuxtLink
             v-if="authStore.isAuthenticated"
             to="/auth/profile"
             class="cursor-pointer p-2 text-white/60 hover:text-white"
@@ -96,7 +103,11 @@ const onScroll = () => {
         {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
       </button>
     </div>
-    <div ref="scrollContainer" class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4" @scroll="onScroll">
+    <div
+      ref="scrollContainer"
+      class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4"
+      @scroll="onScroll"
+    >
       <TodoList />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
         <span class="text-sm text-white/40">loading...</span>
