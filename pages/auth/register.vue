@@ -22,7 +22,8 @@ const handleRegister = async () => {
     return
   }
   if (!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(form.password)) {
-    errorMsg.value = 'password must include letters, numbers, and a special character'
+    errorMsg.value =
+      'password must include letters, numbers, and a special character'
     return
   }
   if (form.password !== form.password2) {
@@ -31,8 +32,9 @@ const handleRegister = async () => {
   }
 
   try {
-    const res = await authStore.register(form) as { message?: string }
-    successMsg.value = res.message || 'registration successful. check your email.'
+    const res = (await authStore.register(form)) as { message?: string }
+    successMsg.value =
+      res.message || 'registration successful. check your email.'
   } catch {
     errorMsg.value = 'registration failed. try again.'
   }

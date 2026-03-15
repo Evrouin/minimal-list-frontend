@@ -9,9 +9,7 @@ const isTodoEmptyMessage = ref('No todos available')
 
 const { filteredTodos, loading } = storeToRefs(todoStore)
 
-const skeletonCount = computed(() =>
-  Math.max(filteredTodos.value.length, 1),
-)
+const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 1))
 const isInitialLoad = ref(true)
 
 watch(loading, (val: boolean) => {
@@ -41,7 +39,11 @@ const timeAgo = (date: string | undefined) => {
 // refresh timeAgo every 30s
 const now = ref(Date.now())
 let timer: ReturnType<typeof setInterval>
-onMounted(() => { timer = setInterval(() => { now.value = Date.now() }, 30000) })
+onMounted(() => {
+  timer = setInterval(() => {
+    now.value = Date.now()
+  }, 30000)
+})
 onUnmounted(() => clearInterval(timer))
 
 const getTodoClasses = (todo: Todo) => [
@@ -146,7 +148,11 @@ const confirmDelete = async () => {
 
       <!-- Edit mode: Tiptap editor -->
       <div v-if="todo.editing">
-        <TiptapEditor v-model="todo.body" placeholder="body" @submit="saveTodo(todo)" />
+        <TiptapEditor
+          v-model="todo.body"
+          placeholder="body"
+          @submit="saveTodo(todo)"
+        />
         <div class="mt-1 flex items-center justify-between">
           <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
           <button

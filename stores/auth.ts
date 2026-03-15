@@ -25,7 +25,11 @@ export const useAuthStore = defineStore('auth', () => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(TOKEN_KEY)
     if (stored && stored !== 'undefined') {
-      try { tokens.value = JSON.parse(stored) } catch { localStorage.removeItem(TOKEN_KEY) }
+      try {
+        tokens.value = JSON.parse(stored)
+      } catch {
+        localStorage.removeItem(TOKEN_KEY)
+      }
     }
   }
 
@@ -101,8 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
   const changePassword = (payload: ChangePasswordPayload) =>
     api.changePassword(payload)
 
-  const verifyEmail = (token: string) =>
-    api.verifyEmail(token)
+  const verifyEmail = (token: string) => api.verifyEmail(token)
 
   const requestPasswordReset = (payload: PasswordResetRequestPayload) =>
     api.requestPasswordReset(payload)

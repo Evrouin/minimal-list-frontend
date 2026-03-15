@@ -10,23 +10,24 @@ export const useApiFetch = () => {
 
   const request = async <T>(
     url: string,
-    opts: Record<string, unknown> = {},
+    opts: Record<string, unknown> = {}
   ): Promise<T> => {
-    const tokens = JSON.parse(
-      localStorage.getItem('auth_tokens') || 'null',
-    )
+    const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
     const headers: Record<string, string> = {}
     if (tokens?.access) {
       headers.Authorization = `Bearer ${tokens.access}`
     }
 
     try {
-      return await $fetch<T>(`${baseUrl}${url}`, {
+      return (await $fetch<T>(`${baseUrl}${url}`, {
         ...opts,
         headers: { ...headers, ...(opts.headers as Record<string, string>) },
-      }) as T
+      })) as T
     } catch (err: unknown) {
-      const error = err as { response?: { status?: number; _data?: Record<string, unknown> }; message?: string }
+      const error = err as {
+        response?: { status?: number; _data?: Record<string, unknown> }
+        message?: string
+      }
       const status = error.response?.status || 500
       const data = error.response?._data as Record<string, unknown> | undefined
 
@@ -38,10 +39,11 @@ export const useApiFetch = () => {
         else if (typeof data.message === 'string') message = data.message
         else {
           // field errors like { email: ["already exists"] }
-          const firstField = Object.entries(data).find(
-            ([, v]) => Array.isArray(v),
+          const firstField = Object.entries(data).find(([, v]) =>
+            Array.isArray(v)
           )
-          if (firstField) message = `${firstField[0]}: ${(firstField[1] as string[])[0]}`
+          if (firstField)
+            message = `${firstField[0]}: ${(firstField[1] as string[])[0]}`
         }
       }
 

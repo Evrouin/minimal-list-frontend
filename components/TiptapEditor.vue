@@ -69,7 +69,7 @@ watch(
     if (editor.value && editor.value.getHTML() !== val) {
       editor.value.commands.setContent(val, { emitUpdate: false })
     }
-  },
+  }
 )
 
 onBeforeUnmount(() => editor.value?.destroy())
@@ -78,11 +78,21 @@ const toggle = (type: string) => {
   if (!editor.value) return
   const chain = editor.value.chain().focus()
   switch (type) {
-    case 'bold': chain.toggleBold().run(); break
-    case 'italic': chain.toggleItalic().run(); break
-    case 'strike': chain.toggleStrike().run(); break
-    case 'bulletList': chain.toggleBulletList().run(); break
-    case 'orderedList': chain.toggleOrderedList().run(); break
+    case 'bold':
+      chain.toggleBold().run()
+      break
+    case 'italic':
+      chain.toggleItalic().run()
+      break
+    case 'strike':
+      chain.toggleStrike().run()
+      break
+    case 'bulletList':
+      chain.toggleBulletList().run()
+      break
+    case 'orderedList':
+      chain.toggleOrderedList().run()
+      break
   }
 }
 
@@ -103,7 +113,7 @@ const isActive = (type: string) => editor.value?.isActive(type) ?? false
         :key="btn.type"
         type="button"
         :class="[
-          'rounded px-1.5 py-0.5 text-xs transition-colors cursor-pointer',
+          'cursor-pointer rounded px-1.5 py-0.5 text-xs transition-colors',
           btn.class,
           isActive(btn.type)
             ? 'bg-white/20 text-white'
@@ -126,11 +136,27 @@ const isActive = (type: string) => editor.value?.isActive(type) ?? false
   pointer-events: none;
   height: 0;
 }
-.tiptap-wrapper .tiptap ul { list-style-type: disc; padding-left: 1.2rem; }
-.tiptap-wrapper .tiptap ol { list-style-type: decimal; padding-left: 1.2rem; }
-.tiptap-wrapper .tiptap li { margin: 0.15rem 0; }
-.tiptap-wrapper .tiptap strong { font-weight: 700; }
-.tiptap-wrapper .tiptap em { font-style: italic; }
-.tiptap-wrapper .tiptap s { text-decoration: line-through; }
-.tiptap-wrapper .tiptap p { margin: 0; }
+.tiptap-wrapper .tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.2rem;
+}
+.tiptap-wrapper .tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.2rem;
+}
+.tiptap-wrapper .tiptap li {
+  margin: 0.15rem 0;
+}
+.tiptap-wrapper .tiptap strong {
+  font-weight: 700;
+}
+.tiptap-wrapper .tiptap em {
+  font-style: italic;
+}
+.tiptap-wrapper .tiptap s {
+  text-decoration: line-through;
+}
+.tiptap-wrapper .tiptap p {
+  margin: 0;
+}
 </style>

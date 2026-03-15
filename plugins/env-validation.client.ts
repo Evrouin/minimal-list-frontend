@@ -12,7 +12,7 @@ export default defineNuxtPlugin(() => {
 
   if (missing.length) {
     console.warn(
-      `[env] missing required config: ${missing.join(', ')}. Check your .env file.`,
+      `[env] missing required config: ${missing.join(', ')}. Check your .env file.`
     )
   }
 })

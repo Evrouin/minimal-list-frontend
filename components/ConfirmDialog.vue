@@ -32,9 +32,7 @@ const confirm = () => {
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
         @click.self="close"
       >
-        <div
-          class="mx-4 w-full max-w-sm rounded-lg bg-gray-700 p-5 shadow-md"
-        >
+        <div class="mx-4 w-full max-w-sm rounded-lg bg-gray-700 p-5 shadow-md">
           <h3 class="text-md mb-2 font-bold text-white lowercase">
             {{ props.title || 'confirm' }}
           </h3>

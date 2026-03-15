@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{ error: { statusCode?: number; message?: string } }>()
+const props = defineProps<{
+  error: { statusCode?: number; message?: string }
+}>()
 
 const title = computed(() => {
   switch (props.error.statusCode) {

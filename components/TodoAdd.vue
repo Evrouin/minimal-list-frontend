@@ -8,10 +8,14 @@ const title = ref<string>('')
 const body = ref<string>('')
 
 const hasBody = computed(
-  () => body.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0,
+  () =>
+    body.value
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, '')
+      .trim().length > 0
 )
 const isValidTodo = computed(
-  () => title.value.trim().length > 0 && hasBody.value,
+  () => title.value.trim().length > 0 && hasBody.value
 )
 
 const addTodo = async () => {
@@ -49,14 +53,14 @@ const handleTitleInput = (event: Event) => {
         />
         <TiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         <div class="flex items-center justify-between">
-          <span class="text-xs text-white/60">
-            ⌘/ctrl + enter to add
-          </span>
+          <span class="text-xs text-white/60"> ⌘/ctrl + enter to add </span>
           <button
             type="submit"
             :disabled="!isValidTodo"
             class="cursor-pointer rounded px-2 py-0.5 text-xs transition-colors"
-            :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
+            :class="
+              isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'
+            "
           >
             add
           </button>

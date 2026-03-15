@@ -12,7 +12,8 @@ const handleSubmit = async () => {
   successMsg.value = ''
   try {
     const res = await authStore.requestPasswordReset({ email: email.value })
-    successMsg.value = res.message || 'if the email exists, a reset link has been sent.'
+    successMsg.value =
+      res.message || 'if the email exists, a reset link has been sent.'
   } catch {
     errorMsg.value = 'something went wrong. try again.'
   }
@@ -25,9 +26,7 @@ const handleSubmit = async () => {
   >
     <div class="w-full max-w-lg px-4">
       <div class="mx-auto flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">
-          forgot password
-        </h1>
+        <h1 class="text-2xl font-bold text-white lowercase">forgot password</h1>
       </div>
 
       <form @submit.prevent="handleSubmit">

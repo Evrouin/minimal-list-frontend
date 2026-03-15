@@ -25,7 +25,15 @@ describe('Todo Store', () => {
 
   it('should load todos from API', async () => {
     mockApi.fetchTodos.mockResolvedValue({
-      data: [{ id: 1, title: 'test', body: 'body', completed: false, deleted: false }],
+      data: [
+        {
+          id: 1,
+          title: 'test',
+          body: 'body',
+          completed: false,
+          deleted: false,
+        },
+      ],
     })
     const store = useTodoStore()
     await store.loadTodos()
@@ -44,18 +52,36 @@ describe('Todo Store', () => {
   })
 
   it('should add a todo via API', async () => {
-    const newTodo = { id: 1, title: 'new', body: 'body', completed: false, deleted: false }
+    const newTodo = {
+      id: 1,
+      title: 'new',
+      body: 'body',
+      completed: false,
+      deleted: false,
+    }
     mockApi.createTodo.mockResolvedValue({ data: newTodo })
     const store = useTodoStore()
     await store.addTodo({ title: 'new', body: 'body' })
-    expect(mockApi.createTodo).toHaveBeenCalledWith({ title: 'new', body: 'body' })
+    expect(mockApi.createTodo).toHaveBeenCalledWith({
+      title: 'new',
+      body: 'body',
+    })
     expect(store.todos).toHaveLength(1)
     expect(store.todos[0].title).toBe('new')
   })
 
   it('should optimistically update and call API', async () => {
-    const todo = { id: 1, title: 'original', body: 'body', completed: false, deleted: false, editing: false }
-    mockApi.updateTodo.mockResolvedValue({ data: { ...todo, title: 'updated' } })
+    const todo = {
+      id: 1,
+      title: 'original',
+      body: 'body',
+      completed: false,
+      deleted: false,
+      editing: false,
+    }
+    mockApi.updateTodo.mockResolvedValue({
+      data: { ...todo, title: 'updated' },
+    })
     const store = useTodoStore()
     store.todos = [todo]
     await store.updateTodo({ ...todo, title: 'updated' })
@@ -63,16 +89,32 @@ describe('Todo Store', () => {
   })
 
   it('should rollback on update failure', async () => {
-    const todo = { id: 1, title: 'original', body: 'body', completed: false, deleted: false, editing: false }
+    const todo = {
+      id: 1,
+      title: 'original',
+      body: 'body',
+      completed: false,
+      deleted: false,
+      editing: false,
+    }
     mockApi.updateTodo.mockRejectedValue(new Error('fail'))
     const store = useTodoStore()
     store.todos = [todo]
-    await expect(store.updateTodo({ ...todo, title: 'updated' })).rejects.toThrow()
+    await expect(
+      store.updateTodo({ ...todo, title: 'updated' })
+    ).rejects.toThrow()
     expect(store.todos[0].title).toBe('original')
   })
 
   it('should toggle todo completion', async () => {
-    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: false, editing: false }
+    const todo = {
+      id: 1,
+      title: 'test',
+      body: 'body',
+      completed: false,
+      deleted: false,
+      editing: false,
+    }
     mockApi.updateTodo.mockResolvedValue({ data: { ...todo, completed: true } })
     const store = useTodoStore()
     store.todos = [todo]
@@ -81,7 +123,14 @@ describe('Todo Store', () => {
   })
 
   it('should soft delete (optimistic)', async () => {
-    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: false, editing: false }
+    const todo = {
+      id: 1,
+      title: 'test',
+      body: 'body',
+      completed: false,
+      deleted: false,
+      editing: false,
+    }
     mockApi.deleteTodo.mockResolvedValue({})
     const store = useTodoStore()
     store.todos = [todo]
@@ -90,7 +139,14 @@ describe('Todo Store', () => {
   })
 
   it('should permanently delete (optimistic)', async () => {
-    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: true, editing: false }
+    const todo = {
+      id: 1,
+      title: 'test',
+      body: 'body',
+      completed: false,
+      deleted: true,
+      editing: false,
+    }
     mockApi.deleteTodo.mockResolvedValue({})
     const store = useTodoStore()
     store.todos = [todo]
@@ -99,7 +155,14 @@ describe('Todo Store', () => {
   })
 
   it('should rollback on delete failure', async () => {
-    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: false, editing: false }
+    const todo = {
+      id: 1,
+      title: 'test',
+      body: 'body',
+      completed: false,
+      deleted: false,
+      editing: false,
+    }
     mockApi.deleteTodo.mockRejectedValue(new Error('fail'))
     const store = useTodoStore()
     store.todos = [todo]
@@ -110,9 +173,30 @@ describe('Todo Store', () => {
   it('should filter todos correctly', () => {
     const store = useTodoStore()
     store.todos = [
-      { id: 1, title: 'active', body: '', completed: false, deleted: false, editing: false },
-      { id: 2, title: 'completed', body: '', completed: true, deleted: false, editing: false },
-      { id: 3, title: 'deleted', body: '', completed: false, deleted: true, editing: false },
+      {
+        id: 1,
+        title: 'active',
+        body: '',
+        completed: false,
+        deleted: false,
+        editing: false,
+      },
+      {
+        id: 2,
+        title: 'completed',
+        body: '',
+        completed: true,
+        deleted: false,
+        editing: false,
+      },
+      {
+        id: 3,
+        title: 'deleted',
+        body: '',
+        completed: false,
+        deleted: true,
+        editing: false,
+      },
     ]
 
     store.filterType = 'all'

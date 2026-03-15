@@ -16,8 +16,11 @@ const handleFilter = (filter: (typeof filterOptions)[number]) => {
 
 onMounted(() => {
   const saved = route.query.filter as string
-  if (saved && filterOptions.includes(saved as typeof filterOptions[number])) {
-    todoStore.changeFilter(saved as typeof filterOptions[number])
+  if (
+    saved &&
+    filterOptions.includes(saved as (typeof filterOptions)[number])
+  ) {
+    todoStore.changeFilter(saved as (typeof filterOptions)[number])
   }
   todoStore.loadTodos()
 })
@@ -57,8 +60,14 @@ onMounted(() => {
               <p class="mb-2 font-bold lowercase">actions</p>
               <ul class="space-y-1 text-white/70">
                 <li><span class="text-white">click text</span> — edit todo</li>
-                <li><span class="text-white"><Icon name="uil:circle" /></span> — toggle complete</li>
-                <li><span class="text-white"><Icon name="uil:trash" /></span> — delete</li>
+                <li>
+                  <span class="text-white"><Icon name="uil:circle" /></span> —
+                  toggle complete
+                </li>
+                <li>
+                  <span class="text-white"><Icon name="uil:trash" /></span> —
+                  delete
+                </li>
               </ul>
             </div>
           </div>
