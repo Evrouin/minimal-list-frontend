@@ -17,6 +17,14 @@ const handleRegister = async () => {
   errorMsg.value = ''
   successMsg.value = ''
 
+  if (form.password.length < 8) {
+    errorMsg.value = 'password must be at least 8 characters'
+    return
+  }
+  if (!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(form.password)) {
+    errorMsg.value = 'password must include letters, numbers, and a special character'
+    return
+  }
   if (form.password !== form.password2) {
     errorMsg.value = "passwords don't match"
     return
