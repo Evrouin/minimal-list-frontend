@@ -19,7 +19,9 @@ export const useTodoStore = defineStore('todo', () => {
       const includeDeleted = filterType.value === 'deleted'
       const response = await api.fetchTodos(includeDeleted)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
-      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
+      nextCursor.value = response.next
+        ? new URL(response.next).pathname + new URL(response.next).search
+        : null
     } finally {
       loading.value = false
     }
@@ -30,8 +32,12 @@ export const useTodoStore = defineStore('todo', () => {
     loadingMore.value = true
     try {
       const response = await api.fetchTodos(false, nextCursor.value)
-      todos.value.push(...response.data.map((t: Todo) => ({ ...t, editing: false })))
-      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
+      todos.value.push(
+        ...response.data.map((t: Todo) => ({ ...t, editing: false }))
+      )
+      nextCursor.value = response.next
+        ? new URL(response.next).pathname + new URL(response.next).search
+        : null
     } finally {
       loadingMore.value = false
     }

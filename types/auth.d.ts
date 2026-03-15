@@ -6,6 +6,7 @@ export interface User {
   avatar: string
   bio: string
   is_verified: boolean
+  is_superuser: boolean
   created_at: string
   updated_at: string
 }

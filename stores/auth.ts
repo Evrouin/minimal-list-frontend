@@ -21,6 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!tokens.value?.access)
+  const isAdmin = computed(() => !!user.value?.is_superuser)
 
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(TOKEN_KEY)
@@ -126,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     error,
     isAuthenticated,
+    isAdmin,
     register,
     login,
     googleLogin,

@@ -50,10 +50,13 @@ export const useApiFetch = () => {
       // auto-refresh on 401, retry once
       if (status === 401 && tokens?.refresh && !opts._retried) {
         try {
-          const refreshRes = await $fetch<{ access: string }>(`${baseUrl}/api/auth/token/refresh/`, {
-            method: 'POST',
-            body: { refresh: tokens.refresh },
-          })
+          const refreshRes = await $fetch<{ access: string }>(
+            `${baseUrl}/api/auth/token/refresh/`,
+            {
+              method: 'POST',
+              body: { refresh: tokens.refresh },
+            }
+          )
           const newTokens = { ...tokens, access: refreshRes.access }
           localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
           return await request<T>(url, { ...opts, _retried: true })
