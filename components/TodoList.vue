@@ -30,6 +30,7 @@ const timeAgo = (date: string | undefined) => {
   return `${Math.floor(days / 365)}y`
 }
 
+// refresh timeAgo every 30s
 const now = ref(Date.now())
 let timer: ReturnType<typeof setInterval>
 onMounted(() => { timer = setInterval(() => { now.value = Date.now() }, 30000) })
@@ -47,7 +48,7 @@ const editTodo = (todo: Todo) => {
 }
 
 const saveTodo = async (todo: Todo) => {
-  if (!todo.title.trim() || !todo.body.trim()) return
+  if (!todo.title.trim()) return
   todo.editing = false
   await todoStore.updateTodo({ ...todo })
 }
@@ -104,7 +105,6 @@ const confirmDelete = async () => {
           v-if="todo.editing"
           v-model="todo.title"
           class="text-md flex-grow border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none"
-          @blur="saveTodo(todo)"
           @keydown.enter="saveTodo(todo)"
         />
         <div class="flex items-center space-x-2">
@@ -124,24 +124,31 @@ const confirmDelete = async () => {
           </button>
         </div>
       </div>
-      <span
+
+      <!-- View mode: render HTML body -->
+      <div
         v-if="!todo.editing"
-        class="cursor-pointer text-sm text-wrap break-words text-white lowercase hover:text-gray-300"
+        class="todo-body cursor-pointer text-sm text-wrap break-words text-white lowercase hover:text-gray-300"
         @click="editTodo(todo)"
-      >
-        {{ todo.body }}
-      </span>
-      <textarea
-        v-if="todo.editing"
-        v-model="todo.body"
-        maxlength="100"
-        class="resize-none bg-transparent text-sm text-white lowercase placeholder-white/60 focus:outline-none"
-        @blur="saveTodo(todo)"
-        @keydown.enter="saveTodo(todo)"
+        v-html="todo.body"
       />
-      <div v-if="todo.editing" class="flex items-center justify-between">
-        <span class="text-xs text-white/60">Press Enter to save</span>
-        <span class="text-xs text-white/60">{{ todo.body.length }} / 100</span>
+      <span v-if="!todo.editing && now" class="text-xs text-white/30">
+        {{ timeAgo(todo.created_at) }}
+      </span>
+
+      <!-- Edit mode: Tiptap editor -->
+      <div v-if="todo.editing">
+        <TiptapEditor v-model="todo.body" placeholder="body" @submit="saveTodo(todo)" />
+        <div class="mt-1 flex items-center justify-between">
+          <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
+          <button
+            type="button"
+            class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+            @click="saveTodo(todo)"
+          >
+            save
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -159,4 +166,19 @@ const confirmDelete = async () => {
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+.todo-body :deep(ul) {
+  list-style-type: disc;
+  padding-left: 1.2rem;
+}
+.todo-body :deep(ol) {
+  list-style-type: decimal;
+  padding-left: 1.2rem;
+}
+.todo-body :deep(li) {
+  margin: 0.15rem 0;
+}
+.todo-body :deep(p) {
+  margin: 0;
+}
+</style>

@@ -7,8 +7,11 @@ const todoStore = useTodoStore()
 const title = ref<string>('')
 const body = ref<string>('')
 
+const hasBody = computed(
+  () => body.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0,
+)
 const isValidTodo = computed(
-  () => title.value.trim().length > 0 && body.value.trim().length > 0
+  () => title.value.trim().length > 0 && hasBody.value,
 )
 
 const addTodo = async () => {
@@ -16,7 +19,7 @@ const addTodo = async () => {
 
   await todoStore.addTodo({
     title: title.value.toLowerCase(),
-    body: body.value.toLowerCase(),
+    body: body.value,
   })
 
   title.value = ''
@@ -27,12 +30,6 @@ const handleTitleInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   input.value = input.value.toLowerCase()
   title.value = input.value
-}
-
-const handleBodyInput = (event: Event) => {
-  const input = event.target as HTMLTextAreaElement
-  input.value = input.value.toLowerCase()
-  body.value = input.value
 }
 </script>
 
@@ -50,21 +47,19 @@ const handleBodyInput = (event: Event) => {
           class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
           @input="handleTitleInput"
         />
-        <textarea
-          v-model="body"
-          placeholder="body"
-          maxlength="100"
-          class="resize-none bg-transparent placeholder-white/60 focus:outline-none"
-          @input="handleBodyInput"
-          @keydown.enter="addTodo"
-        />
+        <TiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         <div class="flex items-center justify-between">
-          <span v-if="body.length > 0" class="text-xs text-white/60"
-            >Press Enter</span
+          <span class="text-xs text-white/60">
+            ⌘/ctrl + enter to add
+          </span>
+          <button
+            type="submit"
+            :disabled="!isValidTodo"
+            class="cursor-pointer rounded px-2 py-0.5 text-xs transition-colors"
+            :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
           >
-          <span v-if="body.length > 0" class="text-xs text-white/60"
-            >{{ body.length }} / 100</span
-          >
+            add
+          </button>
         </div>
       </div>
     </div>
