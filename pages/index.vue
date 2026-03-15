@@ -66,11 +66,11 @@ onMounted(() => {
       </div>
       <TodoAdd />
     </div>
-    <div class="my-4 flex justify-center">
+    <div class="my-4 flex w-full max-w-lg justify-center px-4">
       <button
         v-for="(filter, index) in filterOptions"
         :key="index"
-        class="mx-2 cursor-pointer rounded-lg px-4 py-2 text-white lowercase transition-all duration-200"
+        class="mx-1 cursor-pointer rounded-lg px-3 py-2 text-sm text-white lowercase transition-all duration-200"
         :class="todoStore.filterType === filter ? 'bg-gray-700' : 'bg-gray-800'"
         @click="handleFilter(filter)"
       >

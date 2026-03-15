@@ -82,7 +82,7 @@ const handleLogout = () => {
     class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10"
   >
     <div class="w-full max-w-lg px-4">
-      <div class="mx-auto flex min-w-md items-center justify-between p-4">
+      <div class="mx-auto flex items-center justify-between p-4">
         <h1 class="text-2xl font-bold text-white lowercase">profile</h1>
         <button
           class="cursor-pointer text-sm text-white/60 lowercase hover:text-white"
@@ -158,7 +158,7 @@ const handleLogout = () => {
       </div>
 
       <!-- Change Password -->
-      <div class="mx-auto flex min-w-md items-center p-4">
+      <div class="mx-auto flex items-center p-4">
         <h2 class="text-lg font-bold text-white lowercase">change password</h2>
       </div>
 

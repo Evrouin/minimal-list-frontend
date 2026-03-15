@@ -37,7 +37,7 @@ const handleGoogleLogin = async () => {
     class="flex h-screen w-screen flex-col items-center justify-center bg-gray-800"
   >
     <div class="w-full max-w-lg px-4">
-      <div class="mx-auto flex min-w-md items-center justify-between p-4">
+      <div class="mx-auto flex items-center justify-between p-4">
         <h1 class="text-2xl font-bold text-white lowercase">login</h1>
       </div>
 
