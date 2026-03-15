@@ -71,7 +71,7 @@ A clean, modern todo application built with Nuxt 3 and Django REST Framework, fe
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - Python 3.12+
 - npm, pnpm, yarn, or bun
 
