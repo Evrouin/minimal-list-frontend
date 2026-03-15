@@ -38,7 +38,7 @@ const onScroll = () => {
 
 <template>
   <div
-    class="flex h-screen w-screen flex-col items-center justify-center bg-gray-800"
+    class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10"
   >
     <div class="w-full max-w-lg px-4">
       <div class="flex items-center justify-between">

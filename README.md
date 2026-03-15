@@ -1,6 +1,6 @@
 # 📝 Minimalist Todo List
 
-A clean, modern todo application built with Nuxt 4 and Django REST Framework, featuring JWT authentication, Google OAuth, rich text editing, and a minimalist dark theme.
+A clean, modern todo application built with Nuxt 4 and Django REST Framework, featuring JWT authentication, Google OAuth, rich text editing, admin dashboard, and a minimalist dark theme.
 
 🔗 **Live Demo**: [minimalist-todo-smoky.vercel.app](https://minimalist-todo-smoky.vercel.app/)
 
@@ -15,10 +15,13 @@ A clean, modern todo application built with Nuxt 4 and Django REST Framework, fe
 - ✏️ **Inline Editing** — Click to edit titles and descriptions
 - 🗑️ **Soft & Permanent Deletion** — Recover or permanently remove todos
 - 🕐 **Relative Timestamps** — "2h ago", "3d ago" on each todo
+- 📄 **Infinite Scroll** — Cursor-based pagination, loads more on scroll
 - 💀 **Loading Skeletons** — Animated placeholders during initial load
-- 🎨 **Dark Theme** — Consistent minimalist design
+- 🎨 **Dark Theme** — Consistent minimalist design, mobile responsive
 - ⌨️ **Keyboard Shortcuts** — Enter to submit, Cmd/Ctrl+Enter in editor
 - ❓ **Help Tooltip** — Formatting guide and shortcuts reference
+- 🔄 **Auto Token Refresh** — Silently refreshes expired access tokens
+- 🛡️ **Admin Dashboard** — User & todo management, stats, search (superuser only)
 
 ## 🏗️ Architecture
 
@@ -33,18 +36,22 @@ A clean, modern todo application built with Nuxt 4 and Django REST Framework, fe
 │   ├── TodoList.vue         # Todo display & inline editing
 │   └── TodoHeader.vue       # App header
 ├── composables/
-│   ├── useApiFetch.ts       # Centralized API client with JWT & error handling
+│   ├── useApiFetch.ts       # Centralized API client with JWT, error handling & auto-refresh
 │   ├── useAuthApi.ts        # Auth API endpoints
-│   └── useTodoApi.ts        # Todo API endpoints
+│   ├── useTodoApi.ts        # Todo API endpoints
+│   └── useAdminApi.ts       # Admin API endpoints
 ├── stores/
-│   ├── auth.ts              # Auth state (tokens, user, loading)
-│   └── todos.ts             # Todo state with optimistic updates
+│   ├── auth.ts              # Auth state (tokens, user, isAdmin, loading)
+│   └── todos.ts             # Todo state with optimistic updates & pagination
 ├── pages/
 │   ├── index.vue            # Main todo page
-│   └── auth/                # login, register, profile, forgot-password,
-│                            # reset-password/[token], verify-email/[token]
+│   ├── auth/                # login, register, profile, forgot-password,
+│   │                        # reset-password/[token], verify-email/[token]
+│   └── admin/               # dashboard, users (list/create/detail),
+│                            # todos (list/detail)
 ├── middleware/
-│   └── auth.global.ts       # Route protection
+│   ├── auth.global.ts       # Route protection with token validation
+│   └── admin.ts             # Admin route protection
 ├── plugins/
 │   ├── google-login.client.ts
 │   └── env-validation.client.ts
@@ -57,7 +64,8 @@ A clean, modern todo application built with Nuxt 4 and Django REST Framework, fe
 ### Backend (Django REST Framework)
 
 - **Auth**: JWT tokens, Google OAuth, email verification, password reset
-- **Todos**: CRUD with soft delete, scoped to authenticated user
+- **Todos**: CRUD with soft delete, cursor pagination, scoped to authenticated user
+- **Admin**: User & todo management, dashboard stats, search
 - **API**: Wrapped responses `{data, statusCode, timestamp}`
 - **Repo**: [django-todo](https://github.com/Evrouin/django-todo)
 
@@ -81,6 +89,7 @@ A clean, modern todo application built with Nuxt 4 and Django REST Framework, fe
 ```bash
 git clone https://github.com/Evrouin/nuxt3-todo.git
 cd nuxt3-todo
+nvm use
 npm install
 ```
 
@@ -110,6 +119,7 @@ Runs on `http://localhost:3000`. Requires the Django backend running on `http://
 npm run dev          # Start development server
 npm run build        # Build for production
 npm run preview      # Preview production build
+npm run test         # Run tests
 npm run lint         # Check code with ESLint
 npm run lint:fix     # Fix ESLint issues
 npm run format       # Format code with Prettier
@@ -125,6 +135,7 @@ npm run quality      # Run both linting and formatting
 5. **Complete Todo** — Click the circle icon to toggle done
 6. **Delete Todo** — Click trash icon (soft delete), click again to permanently delete
 7. **Filter Todos** — Use filter tabs, persisted in URL
+8. **Admin** — Superusers see a settings icon to access the admin dashboard
 
 ## 📄 License
 
