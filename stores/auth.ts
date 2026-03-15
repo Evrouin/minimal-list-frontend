@@ -24,7 +24,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(TOKEN_KEY)
-    if (stored) tokens.value = JSON.parse(stored)
+    if (stored && stored !== 'undefined') {
+      try { tokens.value = JSON.parse(stored) } catch { localStorage.removeItem(TOKEN_KEY) }
+    }
   }
 
   const saveTokens = (newTokens: AuthTokens) => {
