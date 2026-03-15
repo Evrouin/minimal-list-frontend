@@ -1,16 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useTodoStore } from '~/stores/todos'
-import type { Todo } from '~/types'
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+const mockApi = {
+  fetchTodos: vi.fn(),
+  createTodo: vi.fn(),
+  updateTodo: vi.fn(),
+  deleteTodo: vi.fn(),
 }
-vi.stubGlobal('localStorage', localStorageMock)
+
+vi.stubGlobal('useTodoApi', () => mockApi)
 
 describe('Todo Store', () => {
   beforeEach(() => {
@@ -24,149 +23,111 @@ describe('Todo Store', () => {
     expect(store.filterType).toBe('all')
   })
 
-  it('should add a new todo', () => {
+  it('should load todos from API', async () => {
+    mockApi.fetchTodos.mockResolvedValue({
+      data: [{ id: 1, title: 'test', body: 'body', completed: false, deleted: false }],
+    })
     const store = useTodoStore()
-    const newTodo: Todo = {
-      id: 1,
-      title: 'test todo',
-      body: 'test description',
-      completed: false,
-      deleted: false,
-      editing: false,
-    }
-
-    store.addTodo(newTodo)
+    await store.loadTodos()
     expect(store.todos).toHaveLength(1)
-    expect(store.todos[0]).toEqual(newTodo)
+    expect(store.todos[0].title).toBe('test')
+    expect(store.todos[0].editing).toBe(false)
   })
 
-  it('should toggle todo completion', () => {
+  it('should set loading state during loadTodos', async () => {
+    mockApi.fetchTodos.mockResolvedValue({ data: [] })
     const store = useTodoStore()
-    const todo: Todo = {
-      id: 1,
-      title: 'test',
-      body: 'test',
-      completed: false,
-      deleted: false,
-      editing: false,
-    }
-
-    store.addTodo(todo)
-    store.toggleTodoCompletion(1)
-    expect(store.todos[0].completed).toBe(true)
-
-    store.toggleTodoCompletion(1)
-    expect(store.todos[0].completed).toBe(false)
+    const promise = store.loadTodos()
+    expect(store.loading).toBe(true)
+    await promise
+    expect(store.loading).toBe(false)
   })
 
-  it('should update todo', () => {
+  it('should add a todo via API', async () => {
+    const newTodo = { id: 1, title: 'new', body: 'body', completed: false, deleted: false }
+    mockApi.createTodo.mockResolvedValue({ data: newTodo })
     const store = useTodoStore()
-    const todo: Todo = {
-      id: 1,
-      title: 'original',
-      body: 'original',
-      completed: false,
-      deleted: false,
-      editing: false,
-    }
+    await store.addTodo({ title: 'new', body: 'body' })
+    expect(mockApi.createTodo).toHaveBeenCalledWith({ title: 'new', body: 'body' })
+    expect(store.todos).toHaveLength(1)
+    expect(store.todos[0].title).toBe('new')
+  })
 
-    store.addTodo(todo)
-    store.updateTodo({ ...todo, title: 'updated', body: 'updated' })
-
+  it('should optimistically update and call API', async () => {
+    const todo = { id: 1, title: 'original', body: 'body', completed: false, deleted: false, editing: false }
+    mockApi.updateTodo.mockResolvedValue({ data: { ...todo, title: 'updated' } })
+    const store = useTodoStore()
+    store.todos = [todo]
+    await store.updateTodo({ ...todo, title: 'updated' })
     expect(store.todos[0].title).toBe('updated')
-    expect(store.todos[0].body).toBe('updated')
   })
 
-  it('should soft delete todo', () => {
+  it('should rollback on update failure', async () => {
+    const todo = { id: 1, title: 'original', body: 'body', completed: false, deleted: false, editing: false }
+    mockApi.updateTodo.mockRejectedValue(new Error('fail'))
     const store = useTodoStore()
-    const todo: Todo = {
-      id: 1,
-      title: 'test',
-      body: 'test',
-      completed: false,
-      deleted: false,
-      editing: false,
-    }
+    store.todos = [todo]
+    await expect(store.updateTodo({ ...todo, title: 'updated' })).rejects.toThrow()
+    expect(store.todos[0].title).toBe('original')
+  })
 
-    store.addTodo(todo)
-    store.deleteTodo(1, false)
+  it('should toggle todo completion', async () => {
+    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: false, editing: false }
+    mockApi.updateTodo.mockResolvedValue({ data: { ...todo, completed: true } })
+    const store = useTodoStore()
+    store.todos = [todo]
+    await store.toggleTodoCompletion(1)
+    expect(store.todos[0].completed).toBe(true)
+  })
+
+  it('should soft delete (optimistic)', async () => {
+    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: false, editing: false }
+    mockApi.deleteTodo.mockResolvedValue({})
+    const store = useTodoStore()
+    store.todos = [todo]
+    await store.deleteTodo(1, false)
     expect(store.todos[0].deleted).toBe(true)
   })
 
-  it('should permanently delete todo', () => {
+  it('should permanently delete (optimistic)', async () => {
+    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: true, editing: false }
+    mockApi.deleteTodo.mockResolvedValue({})
     const store = useTodoStore()
-    const todo: Todo = {
-      id: 1,
-      title: 'test',
-      body: 'test',
-      completed: false,
-      deleted: true,
-      editing: false,
-    }
-
-    store.addTodo(todo)
-    store.deleteTodo(1, true)
+    store.todos = [todo]
+    await store.deleteTodo(1, true)
     expect(store.todos).toHaveLength(0)
+  })
+
+  it('should rollback on delete failure', async () => {
+    const todo = { id: 1, title: 'test', body: 'body', completed: false, deleted: false, editing: false }
+    mockApi.deleteTodo.mockRejectedValue(new Error('fail'))
+    const store = useTodoStore()
+    store.todos = [todo]
+    await expect(store.deleteTodo(1, false)).rejects.toThrow()
+    expect(store.todos[0].deleted).toBe(false)
   })
 
   it('should filter todos correctly', () => {
     const store = useTodoStore()
-    const todos: Todo[] = [
-      {
-        id: 1,
-        title: 'active',
-        body: 'test',
-        completed: false,
-        deleted: false,
-        editing: false,
-      },
-      {
-        id: 2,
-        title: 'completed',
-        body: 'test',
-        completed: true,
-        deleted: false,
-        editing: false,
-      },
-      {
-        id: 3,
-        title: 'deleted',
-        body: 'test',
-        completed: false,
-        deleted: true,
-        editing: false,
-      },
+    store.todos = [
+      { id: 1, title: 'active', body: '', completed: false, deleted: false, editing: false },
+      { id: 2, title: 'completed', body: '', completed: true, deleted: false, editing: false },
+      { id: 3, title: 'deleted', body: '', completed: false, deleted: true, editing: false },
     ]
 
-    todos.forEach((todo) => store.addTodo(todo))
+    store.filterType = 'all'
+    expect(store.filteredTodos).toHaveLength(2)
 
-    // Test all filter
-    store.changeFilter('all')
-    expect(store.filteredTodos).toHaveLength(2) // active + completed
-
-    // Test active filter
-    store.changeFilter('active')
+    store.filterType = 'active'
     expect(store.filteredTodos).toHaveLength(1)
     expect(store.filteredTodos[0].title).toBe('active')
 
-    // Test completed filter
-    store.changeFilter('completed')
+    store.filterType = 'completed'
     expect(store.filteredTodos).toHaveLength(1)
     expect(store.filteredTodos[0].title).toBe('completed')
 
-    // Test deleted filter
-    store.changeFilter('deleted')
+    store.filterType = 'deleted'
     expect(store.filteredTodos).toHaveLength(1)
     expect(store.filteredTodos[0].title).toBe('deleted')
-  })
-
-  it('should change filter type', () => {
-    const store = useTodoStore()
-
-    store.changeFilter('completed')
-    expect(store.filterType).toBe('completed')
-
-    store.changeFilter('active')
-    expect(store.filterType).toBe('active')
   })
 })
