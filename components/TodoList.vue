@@ -7,8 +7,16 @@ import { storeToRefs } from 'pinia'
 const todoStore = useTodoStore()
 const isTodoEmptyMessage = ref('No todos available')
 
-const { filteredTodos } = storeToRefs(todoStore)
-const { loading } = storeToRefs(todoStore)
+const { filteredTodos, loading } = storeToRefs(todoStore)
+
+const skeletonCount = computed(() =>
+  Math.max(filteredTodos.value.length, 1),
+)
+const isInitialLoad = ref(true)
+
+watch(loading, (val) => {
+  if (!val) isInitialLoad.value = false
+})
 
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
@@ -70,7 +78,7 @@ const confirmDelete = async () => {
 </script>
 
 <template>
-  <TodoSkeleton v-if="loading" :count="3" />
+  <TodoSkeleton v-if="loading && isInitialLoad" :count="skeletonCount" />
 
   <div
     v-else-if="filteredTodos.length === 0"

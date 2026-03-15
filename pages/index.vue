@@ -4,10 +4,23 @@ import { useAuthStore } from '~/stores/auth'
 
 const todoStore = useTodoStore()
 const authStore = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 
-const { changeFilter, filterOptions } = todoStore
+const { filterOptions } = todoStore
 
-onMounted(() => todoStore.loadTodos())
+const handleFilter = (filter: (typeof filterOptions)[number]) => {
+  todoStore.changeFilter(filter)
+  router.replace({ query: { filter } })
+}
+
+onMounted(() => {
+  const saved = route.query.filter as string
+  if (saved && filterOptions.includes(saved as typeof filterOptions[number])) {
+    todoStore.changeFilter(saved as typeof filterOptions[number])
+  }
+  todoStore.loadTodos()
+})
 </script>
 
 <template>
@@ -34,23 +47,18 @@ onMounted(() => todoStore.loadTodos())
             >
               <p class="mb-2 font-bold lowercase">keyboard shortcuts</p>
               <ul class="mb-2 space-y-1 text-white/70">
-                <li><span class="text-white">enter</span> — save (plain text)</li>
-                <li><span class="text-white">enter</span> — new item (in lists)</li>
-                <li><span class="text-white">⌘/ctrl + enter</span> — always save</li>
+                <li><span class="text-white">⌘/ctrl + enter</span> — save</li>
               </ul>
               <p class="mb-2 font-bold lowercase">formatting</p>
               <ul class="mb-2 space-y-1 text-white/70">
                 <li><span class="text-white">⌘/ctrl + b</span> — bold</li>
                 <li><span class="text-white">⌘/ctrl + i</span> — italic</li>
-                <li><span class="text-white">⌘/ctrl + shift + x</span> — strikethrough</li>
-                <li><span class="text-white">type - or *</span> — bullet list</li>
-                <li><span class="text-white">type 1.</span> — numbered list</li>
               </ul>
               <p class="mb-2 font-bold lowercase">actions</p>
               <ul class="space-y-1 text-white/70">
                 <li><span class="text-white">click text</span> — edit todo</li>
-                <li><span class="text-white">⚪</span> — toggle complete</li>
-                <li><span class="text-white">🗑</span> — delete (soft → permanent)</li>
+                <li><span class="text-white"><Icon name="uil:circle" /></span> — toggle complete</li>
+                <li><span class="text-white"><Icon name="uil:trash" /></span> — delete</li>
               </ul>
             </div>
           </div>
@@ -64,7 +72,7 @@ onMounted(() => todoStore.loadTodos())
         :key="index"
         class="mx-2 cursor-pointer rounded-lg px-4 py-2 text-white lowercase transition-all duration-200"
         :class="todoStore.filterType === filter ? 'bg-gray-700' : 'bg-gray-800'"
-        @click="changeFilter(filter)"
+        @click="handleFilter(filter)"
       >
         {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
       </button>
