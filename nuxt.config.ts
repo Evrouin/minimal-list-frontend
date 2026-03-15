@@ -9,6 +9,13 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
   ssr: false,
+  routeRules: {
+    '/**': {
+      headers: {
+        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      },
+    },
+  },
   runtimeConfig: {
     public: {
       authApiBase: process.env.AUTH_API_BASE || 'http://localhost:8000/api/auth',

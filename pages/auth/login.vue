@@ -24,7 +24,7 @@ const handleGoogleLogin = async () => {
   errorMsg.value = ''
   try {
     const response = await googleTokenLogin()
-    await authStore.googleLogin(response.credential)
+    await authStore.googleLogin(response.access_token)
     navigateTo('/')
   } catch {
     errorMsg.value = 'google login failed'
