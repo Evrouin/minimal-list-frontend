@@ -31,7 +31,7 @@ const handleRegister = async () => {
   }
 
   try {
-    const res = await authStore.register(form)
+    const res = await authStore.register(form) as { message?: string }
     successMsg.value = res.message || 'registration successful. check your email.'
   } catch {
     errorMsg.value = 'registration failed. try again.'

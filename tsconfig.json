@@ -1,20 +1,3 @@
 {
-  "extends": "./.nuxt/tsconfig.json",
-  "compilerOptions": {
-    "types": ["vue"],
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "ignoreDeprecations": "6.0"
-  },
-  "include": [
-    "nuxt.config.ts",
-    "pages/**/*.vue",
-    "components/**/*.vue",
-    "layouts/**/*.vue",
-    "composables/**/*.ts",
-    "store/**/*.ts",
-    "app.vue"
-  ]
+  "extends": "./.nuxt/tsconfig.json"
 }

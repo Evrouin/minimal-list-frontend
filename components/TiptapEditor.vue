@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -14,7 +14,7 @@ const emit = defineEmits<{
   submit: []
 }>()
 
-const editor = ref<Editor | null>(null)
+const editor = shallowRef<Editor | null>(null)
 const ready = ref(false)
 
 onMounted(() => {
@@ -67,7 +67,7 @@ watch(
   () => props.modelValue,
   (val) => {
     if (editor.value && editor.value.getHTML() !== val) {
-      editor.value.commands.setContent(val, false)
+      editor.value.commands.setContent(val, { emitUpdate: false })
     }
   },
 )

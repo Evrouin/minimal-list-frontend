@@ -14,7 +14,7 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const includeDeleted = filterType.value === 'deleted'
       const response = await api.fetchTodos(includeDeleted)
-      todos.value = response.data.map((t) => ({ ...t, editing: false }))
+      todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
     } finally {
       loading.value = false
     }

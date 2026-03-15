@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
@@ -14,7 +14,7 @@ const skeletonCount = computed(() =>
 )
 const isInitialLoad = ref(true)
 
-watch(loading, (val) => {
+watch(loading, (val: boolean) => {
   if (!val) isInitialLoad.value = false
 })
 

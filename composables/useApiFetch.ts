@@ -24,7 +24,7 @@ export const useApiFetch = () => {
       return await $fetch<T>(`${baseUrl}${url}`, {
         ...opts,
         headers: { ...headers, ...(opts.headers as Record<string, string>) },
-      })
+      }) as T
     } catch (err: unknown) {
       const error = err as { response?: { status?: number; _data?: Record<string, unknown> }; message?: string }
       const status = error.response?.status || 500
