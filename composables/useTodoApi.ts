@@ -2,40 +2,22 @@ import type { Todo } from '../types'
 import type { ApiResponse } from '../server/types/api'
 
 export const useTodoApi = () => {
-  const config = useRuntimeConfig()
-  const apiBase = config.public.authApiBase as string
-  const todosBase = apiBase.replace('/auth', '/todos')
-
-  const todoFetch = <T>(url: string, opts: Record<string, unknown> = {}): Promise<T> => {
-    const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
-    const headers: Record<string, string> = {}
-    if (tokens?.access) {
-      headers.Authorization = `Bearer ${tokens.access}`
-    }
-    return $fetch<T>(`${todosBase}${url}`, {
-      ...opts,
-      headers: { ...headers, ...(opts.headers as Record<string, string>) },
-    })
-  }
-
-  const fetchTodos = (includeDeleted = false) =>
-    todoFetch<ApiResponse<Todo[]>>(
-      `/${includeDeleted ? '?include_deleted=true' : ''}`,
-    )
-
-  const createTodo = (todo: Partial<Todo>) =>
-    todoFetch<ApiResponse<Todo>>('/', { method: 'POST', body: todo })
-
-  const updateTodo = (id: number, todo: Partial<Todo>) =>
-    todoFetch<ApiResponse<Todo>>(`/${id}/`, { method: 'PATCH', body: todo })
-
-  const deleteTodo = (id: number) =>
-    todoFetch<ApiResponse<{ success: boolean }>>(`/${id}/`, { method: 'DELETE' })
+  const { request } = useApiFetch()
+  const base = '/api/todos'
 
   return {
-    fetchTodos,
-    createTodo,
-    updateTodo,
-    deleteTodo,
+    fetchTodos: (includeDeleted = false) =>
+      request<ApiResponse<Todo[]>>(
+        `${base}/${includeDeleted ? '?include_deleted=true' : ''}`,
+      ),
+
+    createTodo: (todo: Partial<Todo>) =>
+      request<ApiResponse<Todo>>(`${base}/`, { method: 'POST', body: todo }),
+
+    updateTodo: (id: number, todo: Partial<Todo>) =>
+      request<ApiResponse<Todo>>(`${base}/${id}/`, { method: 'PATCH', body: todo }),
+
+    deleteTodo: (id: number) =>
+      request<ApiResponse<{ success: boolean }>>(`${base}/${id}/`, { method: 'DELETE' }),
   }
 }
