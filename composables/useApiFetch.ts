@@ -47,7 +47,21 @@ export const useApiFetch = () => {
         }
       }
 
-      // auto-redirect on 401 (token expired beyond refresh)
+      // auto-refresh on 401, retry once
+      if (status === 401 && tokens?.refresh && !opts._retried) {
+        try {
+          const refreshRes = await $fetch<{ access: string }>(`${baseUrl}/api/auth/token/refresh/`, {
+            method: 'POST',
+            body: { refresh: tokens.refresh },
+          })
+          const newTokens = { ...tokens, access: refreshRes.access }
+          localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
+          return await request<T>(url, { ...opts, _retried: true })
+        } catch {
+          // refresh failed — clear and redirect
+        }
+      }
+
       if (status === 401) {
         localStorage.removeItem('auth_tokens')
         if (window.location.pathname !== '/auth/login') {
