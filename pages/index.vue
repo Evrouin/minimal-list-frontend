@@ -17,13 +17,44 @@ onMounted(() => todoStore.loadTodos())
     <div class="w-full max-w-lg px-4">
       <div class="flex items-center justify-between">
         <TodoHeader title="Minimalist Todo List" />
-        <NuxtLink
-          v-if="authStore.isAuthenticated"
-          to="/auth/profile"
-          class="cursor-pointer p-4 text-white/60 hover:text-white"
-        >
-          <Icon name="uil:user-circle" class="text-xl" />
-        </NuxtLink>
+        <div class="flex shrink-0 items-center">
+          <NuxtLink
+            v-if="authStore.isAuthenticated"
+            to="/auth/profile"
+            class="cursor-pointer p-2 text-white/60 hover:text-white"
+          >
+            <Icon name="uil:user-circle" class="text-xl" />
+          </NuxtLink>
+          <div class="group relative">
+            <button class="cursor-pointer p-2 text-white/60 hover:text-white">
+              <Icon name="uil:question-circle" class="text-xl" />
+            </button>
+            <div
+              class="pointer-events-none absolute right-0 z-50 w-64 rounded-lg bg-gray-700 p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+            >
+              <p class="mb-2 font-bold lowercase">keyboard shortcuts</p>
+              <ul class="mb-2 space-y-1 text-white/70">
+                <li><span class="text-white">enter</span> — save (plain text)</li>
+                <li><span class="text-white">enter</span> — new item (in lists)</li>
+                <li><span class="text-white">⌘/ctrl + enter</span> — always save</li>
+              </ul>
+              <p class="mb-2 font-bold lowercase">formatting</p>
+              <ul class="mb-2 space-y-1 text-white/70">
+                <li><span class="text-white">⌘/ctrl + b</span> — bold</li>
+                <li><span class="text-white">⌘/ctrl + i</span> — italic</li>
+                <li><span class="text-white">⌘/ctrl + shift + x</span> — strikethrough</li>
+                <li><span class="text-white">type - or *</span> — bullet list</li>
+                <li><span class="text-white">type 1.</span> — numbered list</li>
+              </ul>
+              <p class="mb-2 font-bold lowercase">actions</p>
+              <ul class="space-y-1 text-white/70">
+                <li><span class="text-white">click text</span> — edit todo</li>
+                <li><span class="text-white">⚪</span> — toggle complete</li>
+                <li><span class="text-white">🗑</span> — delete (soft → permanent)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
       <TodoAdd />
     </div>
