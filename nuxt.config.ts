@@ -16,6 +16,8 @@ export default defineNuxtConfig({
         '@tiptap/vue-3',
         '@tiptap/starter-kit',
         '@tiptap/extension-placeholder',
+        '@tiptap/extension-task-list',
+        '@tiptap/extension-task-item',
       ],
     },
   },
