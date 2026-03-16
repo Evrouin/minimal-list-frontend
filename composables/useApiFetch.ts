@@ -4,6 +4,21 @@ export interface ApiError {
   field?: string
 }
 
+const isRetryable = (status: number) => status >= 500 || status === 0
+
+const withRetry = async <T>(fn: () => Promise<T>, retries = 2): Promise<T> => {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      const status = (err as { response?: { status?: number } }).response?.status || 0
+      if (i === retries || !isRetryable(status)) throw err
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** i))
+    }
+  }
+  throw new Error('unreachable')
+}
+
 export const useApiFetch = () => {
   const config = useRuntimeConfig()
   const baseUrl = (config.public.authApiBase as string).replace('/api/auth', '')
@@ -19,10 +34,10 @@ export const useApiFetch = () => {
     }
 
     try {
-      return (await $fetch<T>(`${baseUrl}${url}`, {
+      return (await withRetry(() => $fetch<T>(`${baseUrl}${url}`, {
         ...opts,
         headers: { ...headers, ...(opts.headers as Record<string, string>) },
-      })) as T
+      }))) as T
     } catch (err: unknown) {
       const error = err as {
         response?: { status?: number; _data?: Record<string, unknown> }
