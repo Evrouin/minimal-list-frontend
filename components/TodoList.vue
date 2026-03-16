@@ -11,13 +11,13 @@ const { filteredTodos, pinnedTodos, unpinnedTodos, loading } =
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
     case 'active':
-      return 'no active todos available'
+      return 'no active notes available'
     case 'completed':
-      return 'no completed todos available'
+      return 'no completed notes available'
     case 'deleted':
-      return 'no deleted todos available'
+      return 'no deleted notes available'
     default:
-      return 'no todos available'
+      return 'no notes available'
   }
 })
 
@@ -175,7 +175,7 @@ const confirmBulkDelete = () => {
   const snapshot = todoStore.bulkDelete(ids)
   bulkDeleteIds.value = []
   showToast(
-    `${count} todo${count > 1 ? 's' : ''} deleted`,
+    `${count} note${count > 1 ? 's' : ''} deleted`,
     () => {
       todoStore.bulkDeleteCommit(ids)
     },
@@ -190,7 +190,7 @@ const bulkPinSelected = (pinned: boolean) => {
   exitMultiSelect()
   const snapshot = todoStore.bulkPin(ids, pinned)
   showToast(
-    `${count} todo${count > 1 ? 's' : ''} ${pinned ? 'pinned' : 'unpinned'}`,
+    `${count} note${count > 1 ? 's' : ''} ${pinned ? 'pinned' : 'unpinned'}`,
     () => {
       todoStore.bulkPinCommit(ids, pinned)
     },
@@ -287,7 +287,7 @@ const confirmDelete = () => {
   const snapshot = todoStore.deleteTodo(todo.id, isPermanent)
   todoToDelete.value = null
   showToast(
-    isPermanent ? 'todo permanently deleted' : 'todo deleted',
+    isPermanent ? 'note permanently deleted' : 'note deleted',
     () => {
       todoStore.deleteTodoCommit(todo.id)
     },
@@ -501,11 +501,11 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 
   <ConfirmDialog
     v-model="showDeleteDialog"
-    :title="todoToDelete?.deleted ? 'permanent delete' : 'delete todo'"
+    :title="todoToDelete?.deleted ? 'permanent delete' : 'delete note'"
     :message="
       todoToDelete?.deleted
         ? 'this cannot be undone. delete forever?'
-        : 'move this todo to deleted?'
+        : 'move this note to deleted?'
     "
     :confirm-text="todoToDelete?.deleted ? 'delete forever' : 'delete'"
     @confirm="confirmDelete"
@@ -513,11 +513,11 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 
   <ConfirmDialog
     v-model="showBulkDeleteDialog"
-    :title="allSelectedDeleted ? 'permanent delete' : 'delete todos'"
+    :title="allSelectedDeleted ? 'permanent delete' : 'delete notes'"
     :message="
       allSelectedDeleted
-        ? `permanently delete ${bulkDeleteIds.length} todos? this cannot be undone.`
-        : `move ${bulkDeleteIds.length} todos to deleted?`
+        ? `permanently delete ${bulkDeleteIds.length} notes? this cannot be undone.`
+        : `move ${bulkDeleteIds.length} notes to deleted?`
     "
     :confirm-text="allSelectedDeleted ? 'delete forever' : 'delete'"
     @confirm="confirmBulkDelete"

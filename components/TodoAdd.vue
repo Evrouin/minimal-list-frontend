@@ -33,8 +33,8 @@ const addTodo = async () => {
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
     errorMsg.value = msg.includes('limit')
-      ? 'todo limit reached'
-      : 'failed to add todo'
+      ? 'note limit reached'
+      : 'failed to add note'
   }
 }
 

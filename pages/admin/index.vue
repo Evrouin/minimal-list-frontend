@@ -48,7 +48,7 @@ onMounted(async () => {
         <div
           class="mb-5 rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
         >
-          <p class="mb-2 font-bold lowercase">todos</p>
+          <p class="mb-2 font-bold lowercase">notes</p>
           <div class="space-y-1 text-white/70">
             <p>
               total: <span class="text-white">{{ stats.todos.total }}</span>
@@ -78,7 +78,7 @@ onMounted(async () => {
           to="/admin/todos"
           class="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white lowercase transition-all hover:bg-gray-600"
         >
-          manage todos →
+          manage notes →
         </NuxtLink>
       </div>
     </div>

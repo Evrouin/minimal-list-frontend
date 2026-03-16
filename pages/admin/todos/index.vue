@@ -82,7 +82,7 @@ const confirmDelete = async () => {
   >
     <div class="w-full max-w-3xl px-4">
       <div class="flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">all todos</h1>
+        <h1 class="text-2xl font-bold text-white lowercase">all notes</h1>
         <div class="flex items-center gap-3">
           <input
             v-model="search"
@@ -156,7 +156,7 @@ const confirmDelete = async () => {
           v-if="!loading && todos.length === 0"
           class="bg-gray-600 p-4 text-center text-sm text-white/40"
         >
-          no todos
+          no notes
         </div>
         <div
           v-if="loadingMore"
@@ -169,7 +169,7 @@ const confirmDelete = async () => {
 
     <ConfirmDialog
       v-model="showDeleteDialog"
-      title="delete todo"
+      title="delete note"
       :message="`permanently delete '${todoToDelete?.title}'? this cannot be undone.`"
       confirm-text="delete forever"
       @confirm="confirmDelete"

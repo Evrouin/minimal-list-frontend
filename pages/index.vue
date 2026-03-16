@@ -60,8 +60,8 @@ const createDialogSubmit = async () => {
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
     createErrorMsg.value = msg.includes('limit')
-      ? 'todo limit reached'
-      : 'failed to add todo'
+      ? 'note limit reached'
+      : 'failed to add note'
   }
 }
 
@@ -103,7 +103,7 @@ const { toasts, undo: undoToast } = useUndoToast()
         <div class="flex shrink-0 items-center">
           <button
             class="hidden cursor-pointer p-2 text-white/60 hover:text-white lg:block"
-            title="New todo"
+            title="New note"
             @click="showCreateDialog = true"
           >
             <Icon name="uil:plus" class="text-xl" />
@@ -141,7 +141,7 @@ const { toasts, undo: undoToast } = useUndoToast()
               </ul>
               <p class="mb-2 font-bold lowercase">actions</p>
               <ul class="space-y-1 text-white/70">
-                <li><span class="text-white">click text</span> — edit todo</li>
+                <li><span class="text-white">click text</span> — edit note</li>
                 <li>
                   <span class="text-white"><Icon name="uil:circle" /></span> —
                   toggle complete

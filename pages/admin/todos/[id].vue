@@ -27,7 +27,7 @@ const formatDate = (date?: string) =>
   >
     <div class="w-full max-w-3xl px-4">
       <div class="flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">todo detail</h1>
+        <h1 class="text-2xl font-bold text-white lowercase">note detail</h1>
         <NuxtLink
           to="/admin/todos"
           class="text-sm text-white/60 lowercase hover:text-white"
@@ -89,14 +89,14 @@ const formatDate = (date?: string) =>
           class="cursor-pointer text-sm text-red-400 lowercase hover:text-red-300"
           @click="showDeleteDialog = true"
         >
-          delete todo
+          delete note
         </button>
       </div>
     </div>
 
     <ConfirmDialog
       v-model="showDeleteDialog"
-      title="delete todo"
+      title="delete note"
       :message="`permanently delete '${todo?.title}'? this cannot be undone.`"
       confirm-text="delete forever"
       @confirm="confirmDelete"
