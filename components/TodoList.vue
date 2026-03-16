@@ -320,17 +320,9 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 
   <div
     v-else-if="!loading && filteredTodos.length === 0"
-    class="flex items-center justify-center"
+    class="flex items-center justify-center py-20"
   >
-    <div
-      class="border-0.5 mb-5 flex w-full flex-col gap-2 rounded-lg border-slate-500 bg-gray-900 p-5 shadow-md"
-    >
-      <span
-        class="text-center text-sm text-wrap break-words text-white lowercase"
-      >
-        {{ isTodoEmptyMessage }}
-      </span>
-    </div>
+    <span class="text-sm text-white/30 lowercase">{{ isTodoEmptyMessage }}</span>
   </div>
 
   <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'animate-pulse pointer-events-none' : ''">
