@@ -359,8 +359,8 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        <div v-for="todo in pinnedTodos" :key="todo.id">
+      <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
+        <div v-for="todo in pinnedTodos" :key="todo.id" class="mb-5 break-inside-avoid">
           <TodoCard
             :todo="todo"
             :pinned="true"
@@ -392,8 +392,8 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
       >
         others
       </p>
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        <div v-for="todo in unpinnedTodos" :key="todo.id">
+      <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
+        <div v-for="todo in unpinnedTodos" :key="todo.id" class="mb-5 break-inside-avoid">
           <TodoCard
             :todo="todo"
             :pinned="false"
