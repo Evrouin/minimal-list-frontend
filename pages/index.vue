@@ -108,6 +108,7 @@ const onScroll = () => {
               <Icon name="uil:question-circle" class="text-xl" />
             </button>
             <div
+              v-once
               class="pointer-events-none absolute right-0 z-50 w-64 rounded-lg bg-gray-700 p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
             >
               <p class="mb-2 font-bold lowercase">keyboard shortcuts</p>
