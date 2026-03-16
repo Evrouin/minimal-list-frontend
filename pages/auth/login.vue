@@ -26,7 +26,9 @@ const handleGoogleLogin = async () => {
     const response = await googleTokenLogin()
     await authStore.googleLogin(response.access_token)
     navigateTo('/')
-  } catch {
+  } catch (e: unknown) {
+    const msg = (e as Error)?.message || ''
+    if (msg.includes('popup') || msg.includes('closed')) return
     errorMsg.value = 'google login failed'
   }
 }
