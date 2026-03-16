@@ -26,5 +26,17 @@ export const useTodoApi = () => {
       request<ApiResponse<{ success: boolean }>>(`${base}/${id}/`, {
         method: 'DELETE',
       }),
+
+    bulkDelete: (ids: number[]) =>
+      request<{ success: boolean }>(`${base}/bulk-delete/`, {
+        method: 'POST',
+        body: { ids },
+      }),
+
+    bulkPin: (ids: number[], pinned: boolean) =>
+      request<{ success: boolean }>(`${base}/bulk-pin/`, {
+        method: 'POST',
+        body: { ids, pinned },
+      }),
   }
 }

@@ -96,6 +96,31 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  const bulkDelete = async (ids: number[]) => {
+    const previous = [...todos.value]
+    // Remove permanently deleted, soft-delete active ones
+    todos.value = todos.value
+      .filter((t) => !(ids.includes(t.id) && t.deleted))
+      .map((t) => ids.includes(t.id) ? { ...t, deleted: true } : t)
+    try {
+      await api.bulkDelete(ids)
+    } catch {
+      todos.value = previous
+    }
+  }
+
+  const bulkPin = async (ids: number[], pinned: boolean) => {
+    const previous = [...todos.value]
+    todos.value = todos.value.map((t) =>
+      ids.includes(t.id) ? { ...t, pinned } : t
+    )
+    try {
+      await api.bulkPin(ids, pinned)
+    } catch {
+      todos.value = previous
+    }
+  }
+
   const deleteTodo = async (id: number, isPermanentDelete: boolean) => {
     const index = todos.value.findIndex((t) => t.id === id)
     if (index === -1) return
@@ -139,6 +164,8 @@ export const useTodoStore = defineStore('todo', () => {
     updateTodo,
     toggleTodoCompletion,
     togglePin,
+    bulkDelete,
+    bulkPin,
     deleteTodo,
   }
 })
