@@ -33,9 +33,14 @@ const dialogPinned = ref(false)
 const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
 
 const isLg = ref(false)
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
 const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
-onMounted(() => { updateIsLg(); window.addEventListener('resize', updateIsLg) })
-onUnmounted(() => window.removeEventListener('resize', updateIsLg))
+const debouncedResize = () => {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(updateIsLg, 150)
+}
+onMounted(() => { updateIsLg(); window.addEventListener('resize', debouncedResize) })
+onUnmounted(() => { window.removeEventListener('resize', debouncedResize); if (resizeTimer) clearTimeout(resizeTimer) })
 
 watch(isLg, (lg) => {
   if (lg && filteredTodos.value.some((t) => t.editing)) {
@@ -331,7 +336,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
           </div>
           <LazyTiptapEditor ref="dialogEditorRef" v-model="dialogBody" placeholder="body" @submit="saveDialogTodo" />
           <div class="flex items-center justify-between">
-            <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
+            <span class="hidden text-xs text-white/60 sm:inline">⌘/ctrl + enter to save</span>
             <button class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600" @click="saveDialogTodo">
               save
             </button>
