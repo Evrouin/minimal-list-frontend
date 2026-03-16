@@ -187,8 +187,10 @@ const cardClasses = computed(() => [
   min-width: 0;
   flex: 1;
 }
+.todo-body :deep(ul[data-type='taskList'] li label) {
+  pointer-events: none;
+}
 .todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']) {
-  cursor: pointer;
   appearance: none;
   width: 0.9rem;
   height: 0.9rem;
