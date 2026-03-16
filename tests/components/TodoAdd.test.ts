@@ -18,7 +18,7 @@ const TiptapStub = {
 
 describe('TodoAdd', () => {
   const mountAdd = () =>
-    mount(TodoAdd, { global: { stubs: { TiptapEditor: TiptapStub } } })
+    mount(TodoAdd, { global: { stubs: { LazyTiptapEditor: TiptapStub } } })
 
   beforeEach(() => {
     setActivePinia(createPinia())

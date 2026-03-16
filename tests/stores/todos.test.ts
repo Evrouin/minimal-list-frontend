@@ -7,6 +7,9 @@ const mockApi = {
   createTodo: vi.fn(),
   updateTodo: vi.fn(),
   deleteTodo: vi.fn(),
+  bulkDelete: vi.fn(),
+  bulkPin: vi.fn(),
+  bulkRestore: vi.fn(),
 }
 
 vi.stubGlobal('useTodoApi', () => mockApi)
@@ -122,7 +125,7 @@ describe('Todo Store', () => {
     expect(store.todos[0].completed).toBe(true)
   })
 
-  it('should soft delete (optimistic)', async () => {
+  it('should soft delete (optimistic)', () => {
     const todo = {
       id: 1,
       title: 'test',
@@ -131,14 +134,13 @@ describe('Todo Store', () => {
       deleted: false,
       editing: false,
     }
-    mockApi.deleteTodo.mockResolvedValue({})
     const store = useTodoStore()
     store.todos = [todo]
-    await store.deleteTodo(1, false)
+    store.deleteTodo(1, false)
     expect(store.todos[0].deleted).toBe(true)
   })
 
-  it('should permanently delete (optimistic)', async () => {
+  it('should permanently delete (optimistic)', () => {
     const todo = {
       id: 1,
       title: 'test',
@@ -147,14 +149,13 @@ describe('Todo Store', () => {
       deleted: true,
       editing: false,
     }
-    mockApi.deleteTodo.mockResolvedValue({})
     const store = useTodoStore()
     store.todos = [todo]
-    await store.deleteTodo(1, true)
+    store.deleteTodo(1, true)
     expect(store.todos).toHaveLength(0)
   })
 
-  it('should rollback on delete failure', async () => {
+  it('should rollback on delete', () => {
     const todo = {
       id: 1,
       title: 'test',
@@ -163,10 +164,11 @@ describe('Todo Store', () => {
       deleted: false,
       editing: false,
     }
-    mockApi.deleteTodo.mockRejectedValue(new Error('fail'))
     const store = useTodoStore()
     store.todos = [todo]
-    await expect(store.deleteTodo(1, false)).rejects.toThrow()
+    const snapshot = store.deleteTodo(1, false)
+    expect(store.todos[0].deleted).toBe(true)
+    store.deleteTodoRollback(snapshot)
     expect(store.todos[0].deleted).toBe(false)
   })
 
