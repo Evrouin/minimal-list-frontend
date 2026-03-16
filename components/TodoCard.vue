@@ -29,10 +29,10 @@ const { now, timeAgo } = useTimeAgo()
 const cardClasses = computed(() => [
   props.todo.editing
     ? 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full'
-    : 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full min-h-[120px] max-h-[300px] overflow-hidden lg:min-h-0 lg:max-h-[400px]',
+    : 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full min-h-[120px] max-h-[300px] lg:min-h-0 lg:max-h-[400px]',
   props.todo.completed || props.todo.deleted
-    ? 'bg-gray-700 opacity-50 hover:px-6 hover:bg-gray-900 transition-all duration-200'
-    : 'bg-gray-700 hover:px-6 hover:bg-gray-900 transition-all duration-200',
+    ? 'bg-gray-700 opacity-50 hover:bg-gray-900 transition-colors duration-200'
+    : 'bg-gray-700 hover:bg-gray-900 transition-colors duration-200',
 ])
 </script>
 
@@ -100,7 +100,7 @@ const cardClasses = computed(() => [
     </div>
     <div
       v-if="!todo.editing"
-      class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm"
+      class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase sm:text-sm"
       v-html="todo.body"
     />
     <span v-if="!todo.editing && now" class="text-xs text-white/30">{{

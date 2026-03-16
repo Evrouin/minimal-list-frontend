@@ -94,7 +94,7 @@ const startHover = (id: number) => {
     setTimeout(() => {
       if (!visibleCheckboxIds.value.includes(id))
         visibleCheckboxIds.value.push(id)
-    }, 1200)
+    }, 800)
   )
 }
 
@@ -253,9 +253,11 @@ const cancelEdit = (todo: Todo) => {
 }
 
 const toggleCompletion = async (todo: Todo) => {
+  endHover(todo.id)
   await todoStore.toggleTodoCompletion(todo.id).catch(() => {})
 }
 const togglePin = async (todo: Todo) => {
+  endHover(todo.id)
   await todoStore.togglePin(todo.id).catch(() => {})
 }
 
@@ -322,7 +324,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
     <!-- Multi-select bar -->
     <div
       v-if="multiSelectMode"
-      class="sticky top-0 z-10 mb-4 flex items-center justify-end gap-2 bg-gray-800 py-2"
+      class="sticky top-0 z-20 mb-4 flex items-center justify-end gap-2 bg-gray-800 py-2"
     >
       <button
         v-if="allSelectedUnpinned"
@@ -366,7 +368,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div v-for="todo in pinnedTodos" :key="todo.id" class="mb-5 break-inside-avoid">
+        <div v-for="todo in pinnedTodos" :key="todo.id" class="mb-5 inline-block w-full break-inside-avoid">
           <TodoCard
             :todo="todo"
             :pinned="true"
@@ -399,7 +401,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
         others
       </p>
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div v-for="todo in unpinnedTodos" :key="todo.id" class="mb-5 break-inside-avoid">
+        <div v-for="todo in unpinnedTodos" :key="todo.id" class="mb-5 inline-block w-full break-inside-avoid">
           <TodoCard
             :todo="todo"
             :pinned="false"
