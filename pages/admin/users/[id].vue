@@ -41,6 +41,14 @@ const save = async () => {
 
 const deleting = ref(false)
 
+const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', value: boolean) => {
+  try {
+    user.value = await api.updateUser(Number(route.params.id), { [field]: value })
+  } catch {
+    errorMsg.value = `failed to update ${field.replace('is_', '')}`
+  }
+}
+
 const confirmDelete = async () => {
   deleting.value = true
   try {
@@ -77,6 +85,12 @@ const confirmDelete = async () => {
             </div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
+            <span
+              class="rounded-full px-2.5 py-0.5 text-xs"
+              :class="user.is_active ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'"
+            >
+              {{ user.is_active ? 'active' : 'deactivated' }}
+            </span>
             <span
               class="rounded-full px-2.5 py-0.5 text-xs"
               :class="user.is_verified ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'"
@@ -170,6 +184,25 @@ const confirmDelete = async () => {
               </button>
             </div>
           </template>
+        </div>
+
+        <!-- account settings -->
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">account settings</p>
+          <div class="space-y-3">
+            <label class="flex cursor-pointer items-center justify-between">
+              <span class="text-sm text-white">active</span>
+              <input type="checkbox" :checked="user.is_active" class="accent-green-500" @change="toggleField('is_active', !user.is_active)" />
+            </label>
+            <label class="flex cursor-pointer items-center justify-between">
+              <span class="text-sm text-white">verified</span>
+              <input type="checkbox" :checked="user.is_verified" class="accent-green-500" @change="toggleField('is_verified', !user.is_verified)" />
+            </label>
+            <label class="flex cursor-pointer items-center justify-between">
+              <span class="text-sm text-white">admin</span>
+              <input type="checkbox" :checked="user.is_superuser" class="accent-yellow-500" @change="toggleField('is_superuser', !user.is_superuser)" />
+            </label>
+          </div>
         </div>
 
         <!-- danger zone -->

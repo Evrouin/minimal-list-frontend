@@ -81,7 +81,7 @@ const requestDelete = (u: User, e: Event) => {
 
 const deleting = ref(false)
 
-const sortKey = ref<'email' | 'username' | 'is_verified' | 'is_superuser' | 'created_at'>('created_at')
+const sortKey = ref<'email' | 'username' | 'is_active' | 'is_verified' | 'is_superuser' | 'created_at'>('created_at')
 const sortAsc = ref(false)
 
 const toggleSort = (key: typeof sortKey.value) => {
@@ -164,6 +164,9 @@ const confirmDelete = async () => {
               </button>
             </div>
             <div class="flex items-center gap-3 text-xs">
+              <span :class="u.is_active ? 'text-green-300' : 'text-red-300'">
+                {{ u.is_active ? 'active' : 'deactivated' }}
+              </span>
               <span :class="u.is_verified ? 'text-green-300' : 'text-red-300'">
                 {{ u.is_verified ? 'verified' : 'unverified' }}
               </span>
@@ -184,6 +187,9 @@ const confirmDelete = async () => {
                 </th>
                 <th class="cursor-pointer select-none px-4 py-3 hover:text-white" @click="toggleSort('username')">
                   username <span v-if="sortKey === 'username'" class="text-white">{{ sortAsc ? '↑' : '↓' }}</span>
+                </th>
+                <th class="cursor-pointer select-none px-4 py-3 hover:text-white" @click="toggleSort('is_active')">
+                  active <span v-if="sortKey === 'is_active'" class="text-white">{{ sortAsc ? '↑' : '↓' }}</span>
                 </th>
                 <th class="cursor-pointer select-none px-4 py-3 hover:text-white" @click="toggleSort('is_verified')">
                   verified <span v-if="sortKey === 'is_verified'" class="text-white">{{ sortAsc ? '↑' : '↓' }}</span>
@@ -206,6 +212,9 @@ const confirmDelete = async () => {
               >
                 <td class="px-4 py-3">{{ u.email }}</td>
                 <td class="px-4 py-3 text-white/70">{{ u.username || '—' }}</td>
+                <td class="px-4 py-3">
+                  <span class="rounded-full px-2 py-0.5 text-xs" :class="u.is_active ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'">{{ u.is_active ? 'yes' : 'no' }}</span>
+                </td>
                 <td class="px-4 py-3">
                   <span class="rounded-full px-2 py-0.5 text-xs" :class="u.is_verified ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'">{{ u.is_verified ? 'yes' : 'no' }}</span>
                 </td>
