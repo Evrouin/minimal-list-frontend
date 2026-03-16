@@ -7,7 +7,7 @@ import { storeToRefs } from 'pinia'
 const todoStore = useTodoStore()
 const isTodoEmptyMessage = ref('No todos available')
 
-const { filteredTodos, loading } = storeToRefs(todoStore)
+const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
 
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 1))
 const isInitialLoad = ref(true)
@@ -24,6 +24,7 @@ const dialogTodo = ref<Todo | null>(null)
 const dialogTitle = ref('')
 const dialogBody = ref('')
 const dialogEditorRef = ref<{ focus: () => void } | null>(null)
+const dialogPinned = ref(false)
 
 const isLg = ref(false)
 const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
@@ -69,6 +70,7 @@ const editTodo = (todo: Todo) => {
     dialogTodo.value = todo
     dialogTitle.value = todo.title
     dialogBody.value = todo.body
+    dialogPinned.value = todo.pinned
     nextTick(() => dialogEditorRef.value?.focus())
   } else {
     todo.editing = true
@@ -79,6 +81,7 @@ const saveDialogTodo = async () => {
   if (!dialogTodo.value || !dialogTitle.value.trim()) return
   dialogTodo.value.title = dialogTitle.value
   dialogTodo.value.body = dialogBody.value
+  dialogTodo.value.pinned = dialogPinned.value
   dialogTodo.value.editing = false
   await todoStore.updateTodo({ ...dialogTodo.value })
   dialogTodo.value = null
@@ -94,10 +97,18 @@ const toggleCompletion = async (todo: Todo) => {
   await todoStore.toggleTodoCompletion(todo.id)
 }
 
+const togglePin = async (todo: Todo) => {
+  await todoStore.togglePin(todo.id)
+}
+
 const dialogToggleCompletion = async () => {
   if (!dialogTodo.value) return
   await todoStore.toggleTodoCompletion(dialogTodo.value.id)
   dialogTodo.value = null
+}
+
+const dialogTogglePin = () => {
+  dialogPinned.value = !dialogPinned.value
 }
 
 const requestDelete = (todo: Todo) => {
@@ -137,74 +148,80 @@ const confirmDelete = async () => {
     </div>
   </div>
 
-  <div v-else class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-    <div
-      v-for="todo in filteredTodos"
-      :key="todo.id"
-    >
-      <div :class="getTodoClasses(todo)" class="cursor-pointer" @click="editTodo(todo)">
-      <div class="flex w-full items-center justify-between">
-        <span
-          v-if="!todo.editing"
-          class="text-sm flex-grow sm:text-base font-bold text-white lowercase"
-        >
-          {{ todo.title }}
-        </span>
-        <input
-          v-if="todo.editing"
-          v-model="todo.title"
-          class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none"
-          @keydown.enter="saveTodo(todo)"
-          @click.stop
-        />
-        <div class="flex items-center space-x-2" @click.stop>
-          <button
-            class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
-            :title="`Delete ${todo.title}`"
-            @click="requestDelete(todo)"
-          >
-            <Icon name="uil:trash" />
-          </button>
-          <button
-            class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
-            :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
-            @click="toggleCompletion(todo)"
-          >
-            <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
-          </button>
-        </div>
-      </div>
-
-      <!-- View mode: render HTML body -->
-      <div
-        v-if="!todo.editing"
-        class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm"
-        v-html="todo.body"
-      />
-      <span v-if="!todo.editing && now" class="text-xs text-white/30">
-        {{ timeAgo(todo.created_at) }}
-      </span>
-
-      <!-- Edit mode: Tiptap editor -->
-      <div v-if="todo.editing" @click.stop>
-        <TiptapEditor
-          v-model="todo.body"
-          placeholder="body"
-          @submit="saveTodo(todo)"
-        />
-        <div class="mt-1 flex items-center justify-between">
-          <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
-          <button
-            type="button"
-            class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
-            @click="saveTodo(todo)"
-          >
-            save
-          </button>
+  <div v-else>
+    <!-- Pinned section -->
+    <div v-if="pinnedTodos.length > 0" class="mb-6">
+      <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <div v-for="todo in pinnedTodos" :key="todo.id">
+          <div :class="getTodoClasses(todo)" class="cursor-pointer" @click="editTodo(todo)">
+            <div class="flex w-full items-center justify-between">
+              <span v-if="!todo.editing" class="text-sm flex-grow sm:text-base font-bold text-white lowercase">
+                {{ todo.title }}
+              </span>
+              <input v-if="todo.editing" v-model="todo.title" class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none" @keydown.enter="saveTodo(todo)" @click.stop />
+              <div class="flex items-center space-x-2" @click.stop>
+                <button class="cursor-pointer rounded p-1 text-sm text-blue-400 hover:text-blue-300" title="Unpin" @click="togglePin(todo)">
+                  <Icon name="mdi:pin" />
+                </button>
+                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="`Delete ${todo.title}`" @click="requestDelete(todo)">
+                  <Icon name="uil:trash" />
+                </button>
+                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'" @click="toggleCompletion(todo)">
+                  <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
+                </button>
+              </div>
+            </div>
+            <div v-if="!todo.editing" class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm" v-html="todo.body" />
+            <span v-if="!todo.editing && now" class="text-xs text-white/30">{{ timeAgo(todo.created_at) }}</span>
+            <div v-if="todo.editing" @click.stop>
+              <TiptapEditor v-model="todo.body" placeholder="body" @submit="saveTodo(todo)" />
+              <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
+                <button type="button" class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white" @click="saveTodo(todo)">save</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Others section -->
+    <div v-if="unpinnedTodos.length > 0">
+      <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <div v-for="todo in unpinnedTodos" :key="todo.id">
+          <div :class="getTodoClasses(todo)" class="cursor-pointer" @click="editTodo(todo)">
+            <div class="flex w-full items-center justify-between">
+              <span v-if="!todo.editing" class="text-sm flex-grow sm:text-base font-bold text-white lowercase">
+                {{ todo.title }}
+              </span>
+              <input v-if="todo.editing" v-model="todo.title" class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none" @keydown.enter="saveTodo(todo)" @click.stop />
+              <div class="flex items-center space-x-2" @click.stop>
+                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" title="Pin" @click="togglePin(todo)">
+                  <Icon name="mdi:pin" />
+                </button>
+                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="`Delete ${todo.title}`" @click="requestDelete(todo)">
+                  <Icon name="uil:trash" />
+                </button>
+                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'" @click="toggleCompletion(todo)">
+                  <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
+                </button>
+              </div>
+            </div>
+            <div v-if="!todo.editing" class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm" v-html="todo.body" />
+            <span v-if="!todo.editing && now" class="text-xs text-white/30">{{ timeAgo(todo.created_at) }}</span>
+            <div v-if="todo.editing" @click.stop>
+              <TiptapEditor v-model="todo.body" placeholder="body" @submit="saveTodo(todo)" />
+              <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
+                <button type="button" class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white" @click="saveTodo(todo)">save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Edit dialog (lg+ screens) -->
@@ -230,6 +247,14 @@ const confirmDelete = async () => {
           />
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
+              <button
+                class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
+                :class="dialogPinned ? 'text-blue-400' : 'text-gray-400'"
+                :title="dialogPinned ? 'Unpin' : 'Pin'"
+                @click="dialogTogglePin"
+              >
+                <Icon name="mdi:pin" />
+              </button>
               <button
                 class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
                 :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"

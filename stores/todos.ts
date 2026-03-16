@@ -89,6 +89,13 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  const togglePin = async (id: number) => {
+    const todo = todos.value.find((t) => t.id === id)
+    if (todo) {
+      await updateTodo({ ...todo, pinned: !todo.pinned })
+    }
+  }
+
   const deleteTodo = async (id: number, isPermanentDelete: boolean) => {
     const index = todos.value.findIndex((t) => t.id === id)
     if (index === -1) return
@@ -112,12 +119,17 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  const pinnedTodos = computed(() => filteredTodos.value.filter((t) => t.pinned))
+  const unpinnedTodos = computed(() => filteredTodos.value.filter((t) => !t.pinned))
+
   return {
     todos,
     loading,
     loadingMore,
     hasMore,
     filteredTodos,
+    pinnedTodos,
+    unpinnedTodos,
     filterType,
     filterOptions,
     loadTodos,
@@ -126,6 +138,7 @@ export const useTodoStore = defineStore('todo', () => {
     addTodo,
     updateTodo,
     toggleTodoCompletion,
+    togglePin,
     deleteTodo,
   }
 })
