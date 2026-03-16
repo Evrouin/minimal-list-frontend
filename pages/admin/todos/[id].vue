@@ -32,79 +32,81 @@ const confirmDelete = async () => {
 
 const formatDate = (date?: string) =>
   date ? new Date(date).toLocaleString() : '—'
+
+const statusLabel = (t: AdminTodo) =>
+  t.deleted ? 'deleted' : t.completed ? 'completed' : 'active'
+const statusClass = (t: AdminTodo) =>
+  t.deleted ? 'bg-red-500/20 text-red-300' : t.completed ? 'bg-green-500/20 text-green-300' : 'bg-blue-500/20 text-blue-300'
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10"
-  >
+  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
     <div class="w-full max-w-3xl px-4">
       <div class="flex items-center justify-between p-4">
         <h1 class="text-2xl font-bold text-white lowercase">note detail</h1>
-        <NuxtLink
-          to="/admin/todos"
-          class="text-sm text-white/60 lowercase hover:text-white"
-          >back</NuxtLink
-        >
+        <NuxtLink to="/admin/todos" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </div>
 
-      <div v-if="!todo" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="!todo && !loadError" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="loadError" class="p-4 text-sm text-red-400">{{ loadError }}</div>
 
-      <div
-        v-if="todo"
-        class="rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
-      >
-        <p class="mb-2 text-lg font-bold lowercase">{{ todo.title }}</p>
-        <div
-          class="todo-body mb-3 text-white/80 lowercase"
-          v-html="todo.body"
-        />
-        <div class="space-y-1 text-xs text-white/50">
-          <p>
-            user:
-            <span class="text-white/70"
-              >{{ todo.user_email }} ({{ todo.username }})</span
-            >
-          </p>
-          <p>
-            status:
-            <span
-              :class="
-                todo.deleted
-                  ? 'text-red-300'
-                  : todo.completed
-                    ? 'text-green-300'
-                    : 'text-blue-300'
-              "
-            >
-              {{
-                todo.deleted
-                  ? 'deleted'
-                  : todo.completed
-                    ? 'completed'
-                    : 'active'
-              }}
+      <template v-if="todo">
+        <!-- note content -->
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <div class="mb-3 flex items-start justify-between">
+            <h2 class="text-lg font-bold text-white lowercase">{{ todo.title }}</h2>
+            <span class="ml-3 shrink-0 rounded-full px-2.5 py-0.5 text-xs" :class="statusClass(todo)">
+              {{ statusLabel(todo) }}
             </span>
-          </p>
-          <p>
-            created:
-            <span class="text-white/70">{{ formatDate(todo.created_at) }}</span>
-          </p>
-          <p>
-            updated:
-            <span class="text-white/70">{{ formatDate(todo.updated_at) }}</span>
-          </p>
+          </div>
+          <div
+            v-if="todo.body"
+            class="todo-body text-sm text-white/80 lowercase"
+            v-html="todo.body"
+          />
+          <p v-else class="text-sm text-white/30 italic">no content</p>
         </div>
-      </div>
 
-      <div v-if="todo" class="mt-4 flex justify-center">
-        <button
-          class="cursor-pointer text-sm text-red-400 lowercase hover:text-red-300"
-          @click="showDeleteDialog = true"
-        >
-          delete note
-        </button>
-      </div>
+        <!-- metadata -->
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">details</p>
+          <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <p class="text-xs text-white/40">user</p>
+              <p class="text-white">{{ todo.user_email }}</p>
+              <p class="text-xs text-white/50">{{ todo.username }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-white/40">pinned</p>
+              <p :class="todo.pinned ? 'text-yellow-300' : 'text-white/50'">{{ todo.pinned ? 'yes' : 'no' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-white/40">created</p>
+              <p class="text-white">{{ formatDate(todo.created_at) }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-white/40">updated</p>
+              <p class="text-white">{{ formatDate(todo.updated_at) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- danger zone -->
+        <div class="rounded-lg border border-red-500/20 bg-gray-700 p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-red-300">delete note</p>
+              <p class="text-xs text-white/40">this action cannot be undone</p>
+            </div>
+            <button
+              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-sm text-red-300 lowercase hover:bg-red-500/30"
+              @click="showDeleteDialog = true"
+            >
+              delete
+            </button>
+          </div>
+        </div>
+      </template>
     </div>
 
     <ConfirmDialog
@@ -112,24 +114,15 @@ const formatDate = (date?: string) =>
       title="delete note"
       :message="`permanently delete '${todo?.title}'? this cannot be undone.`"
       confirm-text="delete forever"
+      :loading="deleting"
       @confirm="confirmDelete"
     />
   </div>
 </template>
 
 <style scoped>
-.todo-body :deep(ul) {
-  list-style-type: disc;
-  padding-left: 1.2rem;
-}
-.todo-body :deep(ol) {
-  list-style-type: decimal;
-  padding-left: 1.2rem;
-}
-.todo-body :deep(li) {
-  margin: 0.15rem 0;
-}
-.todo-body :deep(p) {
-  margin: 0;
-}
+.todo-body :deep(ul) { list-style-type: disc; padding-left: 1.2rem; }
+.todo-body :deep(ol) { list-style-type: decimal; padding-left: 1.2rem; }
+.todo-body :deep(li) { margin: 0.15rem 0; }
+.todo-body :deep(p) { margin: 0; }
 </style>

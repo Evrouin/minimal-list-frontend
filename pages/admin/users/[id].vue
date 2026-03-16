@@ -49,114 +49,139 @@ const confirmDelete = async () => {
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10"
-  >
+  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
     <div class="w-full max-w-3xl px-4">
       <div class="flex items-center justify-between p-4">
         <h1 class="text-2xl font-bold text-white lowercase">user detail</h1>
-        <NuxtLink
-          to="/admin/users"
-          class="text-sm text-white/60 lowercase hover:text-white"
-          >back</NuxtLink
-        >
+        <NuxtLink to="/admin/users" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </div>
 
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
 
-      <div
-        v-if="user"
-        class="rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
-      >
-        <template v-if="!isEditing">
-          <p class="mb-1">
-            <span class="text-white/50">email:</span> {{ user.email }}
-          </p>
-          <p
-            class="mb-1 cursor-pointer hover:text-gray-300"
-            @click="isEditing = true"
-          >
-            <span class="text-white/50">username:</span>
-            {{ user.username || 'none' }}
-          </p>
-          <p
-            class="mb-1 cursor-pointer hover:text-gray-300"
-            @click="isEditing = true"
-          >
-            <span class="text-white/50">phone:</span> {{ user.phone || 'none' }}
-          </p>
-          <p
-            class="mb-1 cursor-pointer hover:text-gray-300"
-            @click="isEditing = true"
-          >
-            <span class="text-white/50">bio:</span> {{ user.bio || 'none' }}
-          </p>
-          <p class="mb-1">
-            <span class="text-white/50">verified:</span>
+      <template v-if="user">
+        <!-- header card -->
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <div class="flex items-center gap-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
+              {{ (user.username || user.email)[0].toUpperCase() }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-lg font-medium text-white">{{ user.email }}</p>
+              <p class="text-sm text-white/50">{{ user.username || 'no username' }}</p>
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
             <span
-              :class="user.is_verified ? 'text-green-300' : 'text-red-300'"
-              >{{ user.is_verified }}</span
+              class="rounded-full px-2.5 py-0.5 text-xs"
+              :class="user.is_verified ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'"
             >
-          </p>
-          <p class="mb-1">
-            <span class="text-white/50">superuser:</span>
+              {{ user.is_verified ? 'verified' : 'unverified' }}
+            </span>
             <span
-              :class="user.is_superuser ? 'text-green-300' : 'text-white/70'"
-              >{{ user.is_superuser }}</span
+              v-if="user.is_superuser"
+              class="rounded-full bg-yellow-500/20 px-2.5 py-0.5 text-xs text-yellow-300"
             >
-          </p>
-          <p class="text-xs text-white/40">click fields to edit</p>
-        </template>
+              admin
+            </span>
+          </div>
+        </div>
 
-        <template v-if="isEditing">
-          <input
-            v-model="editForm.username"
-            placeholder="username"
-            class="mb-2 w-full border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
-          />
-          <input
-            v-model="editForm.phone"
-            placeholder="phone"
-            class="mb-2 w-full border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
-          />
-          <textarea
-            v-model="editForm.bio"
-            placeholder="bio"
-            class="mb-2 w-full resize-none border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
-          />
+        <!-- info / edit card -->
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <template v-if="!isEditing">
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-bold uppercase tracking-wider text-white/40">profile</p>
+                <button
+                  class="cursor-pointer text-xs text-blue-300 lowercase hover:text-blue-200"
+                  @click="isEditing = true"
+                >
+                  edit
+                </button>
+              </div>
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <p class="text-xs text-white/40">username</p>
+                  <p class="text-white">{{ user.username || '—' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-white/40">phone</p>
+                  <p class="text-white">{{ user.phone || '—' }}</p>
+                </div>
+                <div class="sm:col-span-2">
+                  <p class="text-xs text-white/40">bio</p>
+                  <p class="text-white">{{ user.bio || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          </template>
 
-          <span v-if="errorMsg" class="text-xs text-red-300">{{
-            errorMsg
-          }}</span>
-          <span v-if="successMsg" class="text-xs text-green-300">{{
-            successMsg
-          }}</span>
+          <template v-if="isEditing">
+            <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">edit profile</p>
+            <div class="space-y-3">
+              <div>
+                <label class="mb-1 block text-xs text-white/40">username</label>
+                <input
+                  v-model="editForm.username"
+                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+                  placeholder="username"
+                />
+              </div>
+              <div>
+                <label class="mb-1 block text-xs text-white/40">phone</label>
+                <input
+                  v-model="editForm.phone"
+                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+                  placeholder="phone"
+                />
+              </div>
+              <div>
+                <label class="mb-1 block text-xs text-white/40">bio</label>
+                <textarea
+                  v-model="editForm.bio"
+                  class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+                  placeholder="bio"
+                  rows="3"
+                />
+              </div>
+            </div>
 
-          <div class="mt-2 flex gap-2">
+            <span v-if="errorMsg" class="mt-2 block text-xs text-red-300">{{ errorMsg }}</span>
+            <span v-if="successMsg" class="mt-2 block text-xs text-green-300">{{ successMsg }}</span>
+
+            <div class="mt-4 flex gap-2">
+              <button
+                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-sm text-white lowercase hover:bg-gray-500"
+                @click="save"
+              >
+                save
+              </button>
+              <button
+                class="cursor-pointer rounded-lg px-4 py-2 text-sm text-white/60 lowercase hover:text-white"
+                @click="isEditing = false"
+              >
+                cancel
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <!-- danger zone -->
+        <div class="rounded-lg border border-red-500/20 bg-gray-700 p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-red-300">delete user</p>
+              <p class="text-xs text-white/40">this action cannot be undone</p>
+            </div>
             <button
-              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-2 text-white lowercase hover:bg-gray-600"
-              @click="save"
+              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-sm text-red-300 lowercase hover:bg-red-500/30"
+              @click="showDeleteDialog = true"
             >
-              save
-            </button>
-            <button
-              class="cursor-pointer rounded-lg px-4 py-2 text-white/60 lowercase hover:text-white"
-              @click="isEditing = false"
-            >
-              cancel
+              delete
             </button>
           </div>
-        </template>
-      </div>
-
-      <div v-if="user" class="mt-4 flex justify-center">
-        <button
-          class="cursor-pointer text-sm text-red-400 lowercase hover:text-red-300"
-          @click="showDeleteDialog = true"
-        >
-          delete user
-        </button>
-      </div>
+        </div>
+      </template>
     </div>
 
     <ConfirmDialog
@@ -164,6 +189,7 @@ const confirmDelete = async () => {
       title="delete user"
       :message="`permanently delete ${user?.email}? this cannot be undone.`"
       confirm-text="delete forever"
+      :loading="deleting"
       @confirm="confirmDelete"
     />
   </div>
