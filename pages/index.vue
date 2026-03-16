@@ -40,7 +40,7 @@ const onScroll = () => {
   <div
     class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10"
   >
-    <div class="w-full max-w-lg px-4">
+    <div class="w-full max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl px-4">
       <div class="flex items-center justify-between">
         <TodoHeader title="Minimalist Todo List" />
         <div class="flex shrink-0 items-center">
@@ -90,9 +90,12 @@ const onScroll = () => {
           </div>
         </div>
       </div>
-      <TodoAdd />
+      <!-- Inline form on mobile -->
+      <div class="lg:hidden">
+        <TodoAdd />
+      </div>
     </div>
-    <div class="my-4 flex w-full max-w-lg justify-center px-4">
+    <div class="my-4 flex w-full max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl justify-center px-4">
       <button
         v-for="(filter, index) in filterOptions"
         :key="index"
@@ -105,7 +108,7 @@ const onScroll = () => {
     </div>
     <div
       ref="scrollContainer"
-      class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4"
+      class="scrollbar-hidden w-full max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl overflow-y-auto px-4"
       @scroll="onScroll"
     >
       <TodoList />
