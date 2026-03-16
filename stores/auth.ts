@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useTodoStore } from './todos'
 import type {
   User,
   AuthTokens,
@@ -43,6 +44,12 @@ export const useAuthStore = defineStore('auth', () => {
     tokens.value = null
     user.value = null
     localStorage.removeItem(TOKEN_KEY)
+    const todoStore = useTodoStore()
+    todoStore.todos = []
+    todoStore.filterType = 'all'
+    todoStore.initialLoad = true
+    const { flushAll } = useUndoToast()
+    flushAll()
   }
 
   const withLoading = async <T>(fn: () => Promise<T>): Promise<T> => {

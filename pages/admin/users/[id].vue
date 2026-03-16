@@ -9,6 +9,7 @@ const user = ref<User | null>(null)
 const isEditing = ref(false)
 const successMsg = ref('')
 const errorMsg = ref('')
+const avatarError = ref(false)
 const showDeleteDialog = ref(false)
 
 const editForm = reactive({ username: '', phone: '', bio: '' })
@@ -66,7 +67,8 @@ const confirmDelete = async () => {
         <!-- header card -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <div class="flex items-center gap-4">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
+            <img v-if="(user.avatar || user.avatar_url) && !avatarError" :src="user.avatar || user.avatar_url" class="h-12 w-12 rounded-full object-cover" @error="avatarError = true" />
+            <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
               {{ (user.username || user.email)[0].toUpperCase() }}
             </div>
             <div class="min-w-0 flex-1">
