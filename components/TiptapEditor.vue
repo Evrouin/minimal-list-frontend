@@ -160,6 +160,9 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
 }
 .tiptap-wrapper .tiptap li {
   margin: 0.15rem 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 .tiptap-wrapper .tiptap strong {
   font-weight: 700;
@@ -181,6 +184,13 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.tiptap-wrapper .tiptap ul[data-type='taskList'] li > div {
+  min-width: 0;
+  flex: 1;
 }
 .tiptap-wrapper .tiptap ul[data-type='taskList'] li label {
   margin-top: 0.15rem;

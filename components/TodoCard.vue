@@ -164,6 +164,9 @@ const cardClasses = computed(() => [
 }
 .todo-body :deep(li) {
   margin: 0.15rem 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 .todo-body :deep(p) {
   margin: 0;
@@ -176,6 +179,13 @@ const cardClasses = computed(() => [
   display: flex;
   align-items: flex-start;
   gap: 0.4rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.todo-body :deep(ul[data-type='taskList'] li > div) {
+  min-width: 0;
+  flex: 1;
 }
 .todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']) {
   cursor: pointer;
