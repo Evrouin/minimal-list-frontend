@@ -96,7 +96,7 @@ const onScroll = () => {
       <button
         v-for="(filter, index) in filterOptions"
         :key="index"
-        class="mx-1 cursor-pointer rounded-lg px-3 py-2 text-sm text-white lowercase transition-all duration-200"
+        class="mx-1 cursor-pointer rounded-lg px-3 py-2 text-xs text-white lowercase transition-all duration-200 sm:text-sm"
         :class="todoStore.filterType === filter ? 'bg-gray-700' : 'bg-gray-800'"
         @click="handleFilter(filter)"
       >

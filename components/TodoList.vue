@@ -106,7 +106,7 @@ const confirmDelete = async () => {
       <div class="flex w-full items-center justify-between">
         <span
           v-if="!todo.editing"
-          class="text-md flex-grow cursor-pointer font-bold text-white lowercase hover:text-gray-300"
+          class="text-sm flex-grow sm:text-base cursor-pointer font-bold text-white lowercase hover:text-gray-300"
           @click="editTodo(todo)"
         >
           {{ todo.title }}
@@ -114,7 +114,7 @@ const confirmDelete = async () => {
         <input
           v-if="todo.editing"
           v-model="todo.title"
-          class="text-md flex-grow border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none"
+          class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none"
           @keydown.enter="saveTodo(todo)"
         />
         <div class="flex items-center space-x-2">
@@ -138,7 +138,7 @@ const confirmDelete = async () => {
       <!-- View mode: render HTML body -->
       <div
         v-if="!todo.editing"
-        class="todo-body cursor-pointer text-sm text-wrap break-words text-white lowercase hover:text-gray-300"
+        class="todo-body cursor-pointer text-xs text-wrap break-words text-white lowercase hover:text-gray-300 sm:text-sm"
         @click="editTodo(todo)"
         v-html="todo.body"
       />
