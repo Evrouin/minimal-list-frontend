@@ -59,7 +59,9 @@ const createDialogSubmit = async () => {
     showCreateDialog.value = false
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
-    createErrorMsg.value = msg.includes('limit') ? 'todo limit reached' : 'failed to add todo'
+    createErrorMsg.value = msg.includes('limit')
+      ? 'todo limit reached'
+      : 'failed to add todo'
   }
 }
 
@@ -81,12 +83,17 @@ const onScroll = () => {
 const scrollToTop = () => {
   scrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+const { toasts, undo: undoToast } = useUndoToast()
 </script>
 
 <template>
   <div class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10">
     <Transition name="slide">
-      <div v-if="!online" class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase">
+      <div
+        v-if="!online"
+        class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase"
+      >
         you're offline — changes won't sync
       </div>
     </Transition>
@@ -181,11 +188,32 @@ const scrollToTop = () => {
       </div>
     </div>
 
+    <!-- Toasts -->
+    <div
+      class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 flex-col gap-2"
+    >
+      <TransitionGroup name="toast">
+        <div
+          v-for="toast in toasts"
+          :key="toast.id"
+          class="flex items-center gap-3 rounded-lg bg-gray-900 px-4 py-2.5 text-sm text-white shadow-lg"
+        >
+          <span class="lowercase">{{ toast.message }}</span>
+          <button
+            class="cursor-pointer text-xs text-blue-400 lowercase hover:text-blue-300"
+            @click="undoToast(toast.id)"
+          >
+            undo
+          </button>
+        </div>
+      </TransitionGroup>
+    </div>
+
     <!-- Scroll to top -->
     <Transition name="fade">
       <button
         v-if="showScrollTop"
-        class="fixed bottom-6 right-6 z-40 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
+        class="fixed right-6 bottom-6 z-40 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
         title="Back to top"
         @click="scrollToTop"
       >
@@ -222,7 +250,10 @@ const scrollToTop = () => {
               />
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs" :class="createErrorMsg ? 'text-red-400' : 'text-white/60'">
+              <span
+                class="text-xs"
+                :class="createErrorMsg ? 'text-red-400' : 'text-white/60'"
+              >
                 {{ createErrorMsg || '⌘/ctrl + enter to add' }}
               </span>
               <div class="flex gap-2">
@@ -276,11 +307,25 @@ const scrollToTop = () => {
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 .slide-enter-from,
 .slide-leave-to {
   transform: translateY(-100%);
+  opacity: 0;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  transform: translateY(1rem);
   opacity: 0;
 }
 </style>

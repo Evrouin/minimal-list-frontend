@@ -1,6 +1,8 @@
 export function useOnline() {
   const online = ref(true)
-  const update = () => { online.value = navigator.onLine }
+  const update = () => {
+    online.value = navigator.onLine
+  }
 
   onMounted(() => {
     update()

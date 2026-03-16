@@ -60,6 +60,7 @@ const cardClasses = computed(() => [
       >
         {{ todo.title }}
       </span>
+      <!-- eslint-disable vue/no-mutating-props -->
       <input
         v-if="todo.editing"
         v-model="todo.title"
@@ -67,10 +68,13 @@ const cardClasses = computed(() => [
         @keydown.enter="emit('save')"
         @click.stop
       />
+      <!-- eslint-enable vue/no-mutating-props -->
       <div class="flex items-center space-x-2" @click.stop>
         <button
           class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
-          :class="pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'"
+          :class="
+            pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'
+          "
           :title="pinned ? 'Unpin' : 'Pin'"
           @click="emit('toggle-pin')"
         >
@@ -101,14 +105,22 @@ const cardClasses = computed(() => [
       timeAgo(todo.created_at)
     }}</span>
     <div v-if="todo.editing" @click.stop>
+      <!-- eslint-disable vue/no-mutating-props -->
       <LazyTiptapEditor
-        :ref="(el: any) => { if (el) emit('set-editor-ref', el) }"
+        :ref="
+          (el: any) => {
+            if (el) emit('set-editor-ref', el)
+          }
+        "
         v-model="todo.body"
         placeholder="body"
         @submit="emit('save')"
       />
+      <!-- eslint-enable vue/no-mutating-props -->
       <div class="mt-1 flex items-center justify-end sm:justify-between">
-        <span class="hidden text-xs text-white/60 sm:inline">⌘/ctrl + enter to save</span>
+        <span class="hidden text-xs text-white/60 sm:inline"
+          >⌘/ctrl + enter to save</span
+        >
         <div class="flex gap-1">
           <button
             type="button"
@@ -131,19 +143,43 @@ const cardClasses = computed(() => [
 </template>
 
 <style scoped>
-.todo-body :deep(ul) { list-style-type: disc; padding-left: 1.2rem; }
-.todo-body :deep(ol) { list-style-type: decimal; padding-left: 1.2rem; }
-.todo-body :deep(li) { margin: 0.15rem 0; }
-.todo-body :deep(p) { margin: 0; }
-.todo-body :deep(ul[data-type='taskList']) { list-style: none; padding-left: 0; }
-.todo-body :deep(ul[data-type='taskList'] li) { display: flex; align-items: flex-start; gap: 0.4rem; }
-.todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']) {
-  cursor: pointer; appearance: none; width: 0.9rem; height: 0.9rem;
-  border: 1.5px solid rgba(255, 255, 255, 0.4); border-radius: 3px;
-  background: transparent; margin-top: 0.15rem;
+.todo-body :deep(ul) {
+  list-style-type: disc;
+  padding-left: 1.2rem;
 }
-.todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']:checked) {
-  background: #60a5fa; border-color: #60a5fa;
+.todo-body :deep(ol) {
+  list-style-type: decimal;
+  padding-left: 1.2rem;
+}
+.todo-body :deep(li) {
+  margin: 0.15rem 0;
+}
+.todo-body :deep(p) {
+  margin: 0;
+}
+.todo-body :deep(ul[data-type='taskList']) {
+  list-style: none;
+  padding-left: 0;
+}
+.todo-body :deep(ul[data-type='taskList'] li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+.todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']) {
+  cursor: pointer;
+  appearance: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  background: transparent;
+  margin-top: 0.15rem;
+}
+.todo-body
+  :deep(ul[data-type='taskList'] li label input[type='checkbox']:checked) {
+  background: #60a5fa;
+  border-color: #60a5fa;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
   background-size: 100%;
 }

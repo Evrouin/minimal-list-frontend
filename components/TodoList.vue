@@ -5,21 +5,27 @@ import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
 
 const todoStore = useTodoStore()
-const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
-const { now, timeAgo } = useTimeAgo()
+const { filteredTodos, pinnedTodos, unpinnedTodos, loading } =
+  storeToRefs(todoStore)
 
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
-    case 'active': return 'no active todos available'
-    case 'completed': return 'no completed todos available'
-    case 'deleted': return 'no deleted todos available'
-    default: return 'no todos available'
+    case 'active':
+      return 'no active todos available'
+    case 'completed':
+      return 'no completed todos available'
+    case 'deleted':
+      return 'no deleted todos available'
+    default:
+      return 'no todos available'
   }
 })
 
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 1))
 const isInitialLoad = ref(true)
-watch(loading, (val: boolean) => { if (!val) isInitialLoad.value = false })
+watch(loading, (val: boolean) => {
+  if (!val) isInitialLoad.value = false
+})
 
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
@@ -34,13 +40,22 @@ const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
-const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
+const updateIsLg = () => {
+  isLg.value = window.innerWidth >= 1024
+}
 const debouncedResize = () => {
   if (resizeTimer) clearTimeout(resizeTimer)
   resizeTimer = setTimeout(updateIsLg, 150)
 }
-onMounted(() => { updateIsLg(); window.addEventListener('resize', debouncedResize) })
-onUnmounted(() => { window.removeEventListener('resize', debouncedResize); if (resizeTimer) clearTimeout(resizeTimer) })
+onMounted(() => {
+  updateIsLg()
+  window.addEventListener('resize', debouncedResize)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', debouncedResize)
+  if (resizeTimer) clearTimeout(resizeTimer)
+  flushAll()
+})
 
 watch(isLg, (lg) => {
   if (lg && filteredTodos.value.some((t) => t.editing)) {
@@ -72,14 +87,21 @@ const hasCheckbox = (id: number) => visibleCheckboxIds.value.includes(id)
 
 const startHover = (id: number) => {
   if (multiSelectMode.value) return
-  hoverTimers.set(id, setTimeout(() => {
-    if (!visibleCheckboxIds.value.includes(id)) visibleCheckboxIds.value.push(id)
-  }, 1200))
+  hoverTimers.set(
+    id,
+    setTimeout(() => {
+      if (!visibleCheckboxIds.value.includes(id))
+        visibleCheckboxIds.value.push(id)
+    }, 1200)
+  )
 }
 
 const endHover = (id: number) => {
   const t = hoverTimers.get(id)
-  if (t) { clearTimeout(t); hoverTimers.delete(id) }
+  if (t) {
+    clearTimeout(t)
+    hoverTimers.delete(id)
+  }
   if (!multiSelectMode.value) {
     visibleCheckboxIds.value = visibleCheckboxIds.value.filter((i) => i !== id)
   }
@@ -95,7 +117,10 @@ const startLongPress = (id: number) => {
   }, 500)
 }
 const endLongPress = () => {
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
 }
 
 const toggleSelect = (id: number) => {
@@ -113,17 +138,25 @@ const exitMultiSelect = () => {
 }
 
 const allSelectedPinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
+  const sel = filteredTodos.value.filter((t) =>
+    selectedIds.value.includes(t.id)
+  )
   return sel.length > 0 && sel.every((t) => t.pinned)
 })
 const allSelectedUnpinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
+  const sel = filteredTodos.value.filter((t) =>
+    selectedIds.value.includes(t.id)
+  )
   return sel.length > 0 && sel.every((t) => !t.pinned)
 })
 const allSelectedDeleted = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
+  const sel = filteredTodos.value.filter((t) =>
+    selectedIds.value.includes(t.id)
+  )
   return sel.length > 0 && sel.every((t) => t.deleted)
 })
+
+const { show: showToast, flushAll } = useUndoToast()
 
 const showBulkDeleteDialog = ref(false)
 const bulkDeleteIds = ref<number[]>([])
@@ -132,16 +165,36 @@ const requestBulkDelete = () => {
   bulkDeleteIds.value = [...selectedIds.value]
   showBulkDeleteDialog.value = true
 }
-const confirmBulkDelete = async () => {
+const confirmBulkDelete = () => {
   const ids = bulkDeleteIds.value
+  const count = ids.length
   exitMultiSelect()
-  await todoStore.bulkDelete(ids)
+  const snapshot = todoStore.bulkDelete(ids)
   bulkDeleteIds.value = []
+  showToast(
+    `${count} todo${count > 1 ? 's' : ''} deleted`,
+    () => {
+      todoStore.bulkDeleteCommit(ids)
+    },
+    () => {
+      todoStore.bulkDeleteRollback(snapshot)
+    }
+  )
 }
-const bulkPinSelected = async (pinned: boolean) => {
+const bulkPinSelected = (pinned: boolean) => {
   const ids = [...selectedIds.value]
+  const count = ids.length
   exitMultiSelect()
-  await todoStore.bulkPin(ids, pinned)
+  const snapshot = todoStore.bulkPin(ids, pinned)
+  showToast(
+    `${count} todo${count > 1 ? 's' : ''} ${pinned ? 'pinned' : 'unpinned'}`,
+    () => {
+      todoStore.bulkPinCommit(ids, pinned)
+    },
+    () => {
+      todoStore.bulkPinRollback(snapshot)
+    }
+  )
 }
 
 // Edit
@@ -185,32 +238,55 @@ const saveTodo = async (todo: Todo) => {
 
 const cancelEdit = (todo: Todo) => {
   const orig = editOriginals.value.get(todo.id)
-  if (orig) { todo.title = orig.title; todo.body = orig.body }
+  if (orig) {
+    todo.title = orig.title
+    todo.body = orig.body
+  }
   todo.editing = false
   editOriginals.value.delete(todo.id)
 }
 
-const toggleCompletion = async (todo: Todo) => { await todoStore.toggleTodoCompletion(todo.id).catch(() => {}) }
-const togglePin = async (todo: Todo) => { await todoStore.togglePin(todo.id).catch(() => {}) }
+const toggleCompletion = async (todo: Todo) => {
+  await todoStore.toggleTodoCompletion(todo.id).catch(() => {})
+}
+const togglePin = async (todo: Todo) => {
+  await todoStore.togglePin(todo.id).catch(() => {})
+}
 
 const dialogToggleCompletion = async () => {
   if (!dialogTodo.value) return
   await todoStore.toggleTodoCompletion(dialogTodo.value.id)
   dialogTodo.value = null
 }
-const dialogTogglePin = () => { dialogPinned.value = !dialogPinned.value }
+const dialogTogglePin = () => {
+  dialogPinned.value = !dialogPinned.value
+}
 
-const requestDelete = (todo: Todo) => { todoToDelete.value = todo; showDeleteDialog.value = true }
+const requestDelete = (todo: Todo) => {
+  todoToDelete.value = todo
+  showDeleteDialog.value = true
+}
 const dialogRequestDelete = () => {
   if (!dialogTodo.value) return
   todoToDelete.value = dialogTodo.value
   dialogTodo.value = null
   showDeleteDialog.value = true
 }
-const confirmDelete = async () => {
+const confirmDelete = () => {
   if (!todoToDelete.value) return
-  await todoStore.deleteTodo(todoToDelete.value.id, todoToDelete.value.deleted)
+  const todo = todoToDelete.value
+  const isPermanent = todo.deleted
+  const snapshot = todoStore.deleteTodo(todo.id, isPermanent)
   todoToDelete.value = null
+  showToast(
+    isPermanent ? 'todo permanently deleted' : 'todo deleted',
+    () => {
+      todoStore.deleteTodoCommit(todo.id)
+    },
+    () => {
+      todoStore.deleteTodoRollback(snapshot)
+    }
+  )
 }
 
 const setEditorRef = (id: number, el: { focus: () => void }) => {
@@ -221,9 +297,16 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 <template>
   <TodoSkeleton v-if="loading && isInitialLoad" :count="skeletonCount" />
 
-  <div v-else-if="filteredTodos.length === 0" class="flex items-center justify-center">
-    <div class="border-0.5 mb-5 flex w-full flex-col gap-2 rounded-lg border-slate-500 bg-gray-900 p-5 shadow-md">
-      <span class="text-center text-sm text-wrap break-words text-white lowercase">
+  <div
+    v-else-if="filteredTodos.length === 0"
+    class="flex items-center justify-center"
+  >
+    <div
+      class="border-0.5 mb-5 flex w-full flex-col gap-2 rounded-lg border-slate-500 bg-gray-900 p-5 shadow-md"
+    >
+      <span
+        class="text-center text-sm text-wrap break-words text-white lowercase"
+      >
         {{ isTodoEmptyMessage }}
       </span>
     </div>
@@ -231,19 +314,43 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 
   <div v-else>
     <!-- Multi-select bar -->
-    <div v-if="multiSelectMode" class="mb-4 flex items-center justify-end gap-2">
-      <button v-if="allSelectedUnpinned" class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400" title="Pin selected" @click="bulkPinSelected(true)">
+    <div
+      v-if="multiSelectMode"
+      class="sticky top-0 z-10 mb-4 flex items-center justify-end gap-2 bg-gray-800 py-2"
+    >
+      <button
+        v-if="allSelectedUnpinned"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
+        title="Pin selected"
+        @click="bulkPinSelected(true)"
+      >
         <Icon name="mdi:pin" class="h-4 w-4" />
       </button>
-      <button v-if="allSelectedPinned" class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400" title="Unpin selected" @click="bulkPinSelected(false)">
+      <button
+        v-if="allSelectedPinned"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
+        title="Unpin selected"
+        @click="bulkPinSelected(false)"
+      >
         <Icon name="mdi:pin" class="h-4 w-4" />
       </button>
-      <button class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400" title="Delete selected" @click="requestBulkDelete">
+      <button
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"
+        title="Delete selected"
+        @click="requestBulkDelete"
+      >
         <Icon name="uil:trash" class="h-4 w-4" />
       </button>
-      <div class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5">
-        <span class="text-sm leading-none text-white/70">{{ selectedIds.length }} selected</span>
-        <button class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white" @click="exitMultiSelect">
+      <div
+        class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5"
+      >
+        <span class="text-sm leading-none text-white/70"
+          >{{ selectedIds.length }} selected</span
+        >
+        <button
+          class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white"
+          @click="exitMultiSelect"
+        >
           <Icon name="uil:times" class="h-4 w-4" />
         </button>
       </div>
@@ -279,7 +386,12 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
-      <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
+      <p
+        v-if="pinnedTodos.length > 0"
+        class="mb-3 text-xs text-white/40 lowercase"
+      >
+        others
+      </p>
       <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
         <div v-for="todo in unpinnedTodos" :key="todo.id">
           <TodoCard
@@ -315,7 +427,9 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
         tabindex="0"
         @keydown.esc="saveDialogTodo"
       >
-        <div class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl">
+        <div
+          class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
+        >
           <div class="flex w-full items-center justify-between">
             <input
               v-model="dialogTitle"
@@ -323,21 +437,52 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
               @keydown.enter.prevent
             />
             <div class="flex shrink-0 items-center space-x-2">
-              <button class="cursor-pointer rounded p-1 text-sm hover:text-gray-200" :class="dialogPinned ? 'text-blue-400' : 'text-gray-400'" :title="dialogPinned ? 'Unpin' : 'Pin'" @click="dialogTogglePin">
+              <button
+                class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
+                :class="dialogPinned ? 'text-blue-400' : 'text-gray-400'"
+                :title="dialogPinned ? 'Unpin' : 'Pin'"
+                @click="dialogTogglePin"
+              >
                 <Icon name="mdi:pin" />
               </button>
-              <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" title="Delete" @click="dialogRequestDelete">
+              <button
+                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                title="Delete"
+                @click="dialogRequestDelete"
+              >
                 <Icon name="uil:trash" />
               </button>
-              <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'" @click="dialogToggleCompletion">
-                <Icon :name="dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+              <button
+                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                :title="
+                  dialogTodo.completed
+                    ? 'Mark as incomplete'
+                    : 'Mark as complete'
+                "
+                @click="dialogToggleCompletion"
+              >
+                <Icon
+                  :name="
+                    dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'
+                  "
+                />
               </button>
             </div>
           </div>
-          <LazyTiptapEditor ref="dialogEditorRef" v-model="dialogBody" placeholder="body" @submit="saveDialogTodo" />
+          <LazyTiptapEditor
+            ref="dialogEditorRef"
+            v-model="dialogBody"
+            placeholder="body"
+            @submit="saveDialogTodo"
+          />
           <div class="flex items-center justify-between">
-            <span class="hidden text-xs text-white/60 sm:inline">⌘/ctrl + enter to save</span>
-            <button class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600" @click="saveDialogTodo">
+            <span class="hidden text-xs text-white/60 sm:inline"
+              >⌘/ctrl + enter to save</span
+            >
+            <button
+              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600"
+              @click="saveDialogTodo"
+            >
               save
             </button>
           </div>
@@ -349,7 +494,11 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
   <ConfirmDialog
     v-model="showDeleteDialog"
     :title="todoToDelete?.deleted ? 'permanent delete' : 'delete todo'"
-    :message="todoToDelete?.deleted ? 'this cannot be undone. delete forever?' : 'move this todo to deleted?'"
+    :message="
+      todoToDelete?.deleted
+        ? 'this cannot be undone. delete forever?'
+        : 'move this todo to deleted?'
+    "
     :confirm-text="todoToDelete?.deleted ? 'delete forever' : 'delete'"
     @confirm="confirmDelete"
   />
@@ -357,7 +506,11 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
   <ConfirmDialog
     v-model="showBulkDeleteDialog"
     :title="allSelectedDeleted ? 'permanent delete' : 'delete todos'"
-    :message="allSelectedDeleted ? `permanently delete ${bulkDeleteIds.length} todos? this cannot be undone.` : `move ${bulkDeleteIds.length} todos to deleted?`"
+    :message="
+      allSelectedDeleted
+        ? `permanently delete ${bulkDeleteIds.length} todos? this cannot be undone.`
+        : `move ${bulkDeleteIds.length} todos to deleted?`
+    "
     :confirm-text="allSelectedDeleted ? 'delete forever' : 'delete'"
     @confirm="confirmBulkDelete"
   />

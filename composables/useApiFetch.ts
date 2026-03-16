@@ -11,7 +11,8 @@ const withRetry = async <T>(fn: () => Promise<T>, retries = 2): Promise<T> => {
     try {
       return await fn()
     } catch (err) {
-      const status = (err as { response?: { status?: number } }).response?.status || 0
+      const status =
+        (err as { response?: { status?: number } }).response?.status || 0
       if (i === retries || !isRetryable(status)) throw err
       await new Promise((r) => setTimeout(r, 1000 * 2 ** i))
     }
@@ -34,10 +35,12 @@ export const useApiFetch = () => {
     }
 
     try {
-      return (await withRetry(() => $fetch<T>(`${baseUrl}${url}`, {
-        ...opts,
-        headers: { ...headers, ...(opts.headers as Record<string, string>) },
-      }))) as T
+      return (await withRetry(() =>
+        $fetch<T>(`${baseUrl}${url}`, {
+          ...opts,
+          headers: { ...headers, ...(opts.headers as Record<string, string>) },
+        })
+      )) as T
     } catch (err: unknown) {
       const error = err as {
         response?: { status?: number; _data?: Record<string, unknown> }

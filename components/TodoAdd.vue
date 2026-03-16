@@ -32,7 +32,9 @@ const addTodo = async () => {
     body.value = ''
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
-    errorMsg.value = msg.includes('limit') ? 'todo limit reached' : 'failed to add todo'
+    errorMsg.value = msg.includes('limit')
+      ? 'todo limit reached'
+      : 'failed to add todo'
   }
 }
 
@@ -59,8 +61,12 @@ const handleTitleInput = (event: Event) => {
         />
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         <div class="flex items-center justify-end sm:justify-between">
-          <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
-          <span v-else class="hidden text-xs text-white/60 sm:inline">⌘/ctrl + enter to add</span>
+          <span v-if="errorMsg" class="text-xs text-red-400">{{
+            errorMsg
+          }}</span>
+          <span v-else class="hidden text-xs text-white/60 sm:inline"
+            >⌘/ctrl + enter to add</span
+          >
           <button
             type="submit"
             :disabled="!isValidTodo"

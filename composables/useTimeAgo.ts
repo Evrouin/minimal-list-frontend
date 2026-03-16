@@ -3,7 +3,9 @@ export const useTimeAgo = () => {
   let timer: ReturnType<typeof setInterval>
 
   onMounted(() => {
-    timer = setInterval(() => { now.value = Date.now() }, 30000)
+    timer = setInterval(() => {
+      now.value = Date.now()
+    }, 30000)
   })
   onUnmounted(() => clearInterval(timer))
 
