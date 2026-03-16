@@ -85,8 +85,10 @@ const hoverTimers = new Map<number, ReturnType<typeof setTimeout>>()
 const isSelected = (id: number) => selectedIds.value.includes(id)
 const hasCheckbox = (id: number) => visibleCheckboxIds.value.includes(id)
 
+const isTodoEditing = (id: number) => filteredTodos.value.find((t) => t.id === id)?.editing
+
 const startHover = (id: number) => {
-  if (multiSelectMode.value) return
+  if (multiSelectMode.value || isTodoEditing(id)) return
   hoverTimers.set(
     id,
     setTimeout(() => {
@@ -109,6 +111,7 @@ const endHover = (id: number) => {
 
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 const startLongPress = (id: number) => {
+  if (isTodoEditing(id)) return
   longPressTimer = setTimeout(() => {
     if (!multiSelectMode.value && !visibleCheckboxIds.value.includes(id)) {
       visibleCheckboxIds.value.push(id)
@@ -201,11 +204,14 @@ const bulkPinSelected = (pinned: boolean) => {
 const editOriginals = ref(new Map<number, { title: string; body: string }>())
 
 const handleCardClick = (todo: Todo) => {
+  if (todo.editing) return
   if (multiSelectMode.value) toggleSelect(todo.id)
   else editTodo(todo)
 }
 
 const editTodo = (todo: Todo) => {
+  endLongPress()
+  endHover(todo.id)
   if (isLg.value) {
     dialogTodo.value = todo
     dialogTitle.value = todo.title

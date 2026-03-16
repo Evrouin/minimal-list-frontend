@@ -41,9 +41,9 @@ const cardClasses = computed(() => [
     :class="[...cardClasses, selected && 'ring-2 ring-blue-400']"
     class="relative cursor-pointer"
     @click="emit('click')"
-    @mouseenter="emit('start-hover')"
-    @mouseleave="emit('end-hover')"
-    @touchstart.passive="emit('start-long-press')"
+    @mouseenter="!todo.editing && emit('start-hover')"
+    @mouseleave="!todo.editing && emit('end-hover')"
+    @touchstart.passive="!todo.editing && emit('start-long-press')"
     @touchend="emit('end-long-press')"
     @touchmove="emit('end-long-press')"
   >
