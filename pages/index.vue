@@ -29,6 +29,7 @@ onMounted(() => {
 })
 
 const scrollContainer = ref<HTMLElement | null>(null)
+const todoListRef = ref<{ cancelAllEdits: () => void } | null>(null)
 const showCreateDialog = ref(false)
 const createTitle = ref('')
 const createBody = ref('')
@@ -161,7 +162,7 @@ const { toasts, undo: undoToast } = useUndoToast()
         </div>
       </PageHeader>
       <!-- Inline form on mobile -->
-      <div class="lg:hidden">
+      <div class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
         <TodoAdd />
       </div>
     </div>
@@ -183,7 +184,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
       @scroll="onScroll"
     >
-      <TodoList />
+      <TodoList ref="todoListRef" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
         <span class="text-sm text-white/40">loading...</span>
       </div>

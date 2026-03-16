@@ -214,9 +214,27 @@ const handleCardClick = (todo: Todo) => {
   else editTodo(todo)
 }
 
+const cancelAllEdits = () => {
+  const current = filteredTodos.value.find((t) => t.editing)
+  if (current) {
+    const orig = editOriginals.value.get(current.id)
+    if (orig) { current.title = orig.title; current.body = orig.body }
+    current.editing = false
+    editOriginals.value.delete(current.id)
+  }
+}
+
 const editTodo = (todo: Todo) => {
   endLongPress()
   endHover(todo.id)
+  // cancel any other inline edit
+  const current = filteredTodos.value.find((t) => t.editing && t.id !== todo.id)
+  if (current) {
+    const orig = editOriginals.value.get(current.id)
+    if (orig) { current.title = orig.title; current.body = orig.body }
+    current.editing = false
+    editOriginals.value.delete(current.id)
+  }
   if (isLg.value) {
     dialogTodo.value = todo
     dialogTitle.value = todo.title
@@ -313,6 +331,7 @@ const restoreTodo = (todo: Todo) => {
 const setEditorRef = (id: number, el: { focus: () => void }) => {
   inlineEditorRefs.value.set(id, el)
 }
+defineExpose({ cancelAllEdits })
 </script>
 
 <template>
