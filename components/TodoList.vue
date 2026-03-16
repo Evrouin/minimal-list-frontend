@@ -5,7 +5,14 @@ import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
 
 const todoStore = useTodoStore()
-const isTodoEmptyMessage = ref('No todos available')
+const isTodoEmptyMessage = computed(() => {
+  switch (todoStore.filterType) {
+    case 'active': return 'no active todos available'
+    case 'completed': return 'no completed todos available'
+    case 'deleted': return 'no deleted todos available'
+    default: return 'no todos available'
+  }
+})
 
 const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
 
@@ -149,9 +156,9 @@ onUnmounted(() => clearInterval(timer))
 
 const getTodoClasses = (todo: Todo) => [
   'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full h-full',
-  todo.completed
-    ? 'bg-gray-700 opacity-50'
-    : 'bg-gray-800 hover:px-6 hover:bg-gray-900 transition-all duration-200',
+  todo.completed || todo.deleted
+    ? 'bg-gray-700 opacity-50 hover:px-6 hover:bg-gray-900 transition-all duration-200'
+    : 'bg-gray-700 hover:px-6 hover:bg-gray-900 transition-all duration-200',
 ]
 
 const handleCardClick = (todo: Todo) => {
