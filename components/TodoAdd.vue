@@ -18,16 +18,22 @@ const isValidTodo = computed(
   () => title.value.trim().length > 0 && hasBody.value
 )
 
+const errorMsg = ref('')
+
 const addTodo = async () => {
   if (!isValidTodo.value) return
-
-  await todoStore.addTodo({
-    title: title.value.toLowerCase(),
-    body: body.value,
-  })
-
-  title.value = ''
-  body.value = ''
+  errorMsg.value = ''
+  try {
+    await todoStore.addTodo({
+      title: title.value.toLowerCase(),
+      body: body.value,
+    })
+    title.value = ''
+    body.value = ''
+  } catch (e: unknown) {
+    const msg = (e as Error)?.message || ''
+    errorMsg.value = msg.includes('limit') ? 'todo limit reached' : 'failed to add todo'
+  }
 }
 
 const handleTitleInput = (event: Event) => {
@@ -52,8 +58,9 @@ const handleTitleInput = (event: Event) => {
           @input="handleTitleInput"
         />
         <TiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-white/60"> ⌘/ctrl + enter to add </span>
+        <div class="flex items-center justify-end sm:justify-between">
+          <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
+          <span v-else class="hidden text-xs text-white/60 sm:inline">⌘/ctrl + enter to add</span>
           <button
             type="submit"
             :disabled="!isValidTodo"

@@ -37,6 +37,7 @@ const dialogTitle = ref('')
 const dialogBody = ref('')
 const dialogEditorRef = ref<{ focus: () => void } | null>(null)
 const dialogPinned = ref(false)
+const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
 
 const isLg = ref(false)
 const updateIsLg = () => {
@@ -47,6 +48,26 @@ onMounted(() => {
   window.addEventListener('resize', updateIsLg)
 })
 onUnmounted(() => window.removeEventListener('resize', updateIsLg))
+
+// Switch between dialog/inline when screen size changes
+watch(isLg, (lg) => {
+  if (lg && filteredTodos.value.some((t) => t.editing)) {
+    const todo = filteredTodos.value.find((t) => t.editing)!
+    todo.editing = false
+    dialogTodo.value = todo
+    dialogTitle.value = todo.title
+    dialogBody.value = todo.body
+    dialogPinned.value = todo.pinned
+    nextTick(() => dialogEditorRef.value?.focus())
+  } else if (!lg && dialogTodo.value) {
+    const todo = dialogTodo.value
+    todo.title = dialogTitle.value
+    todo.body = dialogBody.value
+    dialogTodo.value = null
+    todo.editing = true
+    nextTick(() => inlineEditorRefs.value.get(todo.id)?.focus())
+  }
+})
 
 // Multi-select
 const multiSelectMode = ref(false)
@@ -186,6 +207,8 @@ const getTodoClasses = (todo: Todo) => [
     : 'bg-gray-700 hover:px-6 hover:bg-gray-900 transition-all duration-200',
 ]
 
+const editOriginals = ref(new Map<number, { title: string; body: string }>())
+
 const handleCardClick = (todo: Todo) => {
   if (multiSelectMode.value) {
     toggleSelect(todo.id)
@@ -202,7 +225,9 @@ const editTodo = (todo: Todo) => {
     dialogPinned.value = todo.pinned
     nextTick(() => dialogEditorRef.value?.focus())
   } else {
+    editOriginals.value.set(todo.id, { title: todo.title, body: todo.body })
     todo.editing = true
+    nextTick(() => inlineEditorRefs.value.get(todo.id)?.focus())
   }
 }
 
@@ -219,7 +244,18 @@ const saveDialogTodo = async () => {
 const saveTodo = async (todo: Todo) => {
   if (!todo.title.trim()) return
   todo.editing = false
+  editOriginals.value.delete(todo.id)
   await todoStore.updateTodo({ ...todo })
+}
+
+const cancelEdit = (todo: Todo) => {
+  const orig = editOriginals.value.get(todo.id)
+  if (orig) {
+    todo.title = orig.title
+    todo.body = orig.body
+  }
+  todo.editing = false
+  editOriginals.value.delete(todo.id)
 }
 
 const toggleCompletion = async (todo: Todo) => {
@@ -404,21 +440,31 @@ const confirmDelete = async () => {
             }}</span>
             <div v-if="todo.editing" @click.stop>
               <TiptapEditor
+                :ref="(el: any) => { if (el) inlineEditorRefs.set(todo.id, el) }"
                 v-model="todo.body"
                 placeholder="body"
                 @submit="saveTodo(todo)"
               />
-              <div class="mt-1 flex items-center justify-between">
-                <span class="text-xs text-white/60"
+              <div class="mt-1 flex items-center justify-end sm:justify-between">
+                <span class="hidden text-xs text-white/60 sm:inline"
                   >⌘/ctrl + enter to save</span
                 >
-                <button
-                  type="button"
-                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
-                  @click="saveTodo(todo)"
-                >
-                  save
-                </button>
+                <div class="flex gap-1">
+                  <button
+                    type="button"
+                    class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"
+                    @click="cancelEdit(todo)"
+                  >
+                    cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+                    @click="saveTodo(todo)"
+                  >
+                    save
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -515,21 +561,31 @@ const confirmDelete = async () => {
             }}</span>
             <div v-if="todo.editing" @click.stop>
               <TiptapEditor
+                :ref="(el: any) => { if (el) inlineEditorRefs.set(todo.id, el) }"
                 v-model="todo.body"
                 placeholder="body"
                 @submit="saveTodo(todo)"
               />
-              <div class="mt-1 flex items-center justify-between">
-                <span class="text-xs text-white/60"
+              <div class="mt-1 flex items-center justify-end sm:justify-between">
+                <span class="hidden text-xs text-white/60 sm:inline"
                   >⌘/ctrl + enter to save</span
                 >
-                <button
-                  type="button"
-                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
-                  @click="saveTodo(todo)"
-                >
-                  save
-                </button>
+                <div class="flex gap-1">
+                  <button
+                    type="button"
+                    class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"
+                    @click="cancelEdit(todo)"
+                  >
+                    cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+                    @click="saveTodo(todo)"
+                  >
+                    save
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -550,19 +606,13 @@ const confirmDelete = async () => {
         <div
           class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
         >
-          <input
-            v-model="dialogTitle"
-            class="w-full border-b border-white/20 bg-transparent text-lg font-bold text-white lowercase focus:outline-none"
-            @keydown.enter.prevent
-          />
-          <TiptapEditor
-            ref="dialogEditorRef"
-            v-model="dialogBody"
-            placeholder="body"
-            @submit="saveDialogTodo"
-          />
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
+          <div class="flex w-full items-center justify-between">
+            <input
+              v-model="dialogTitle"
+              class="flex-grow border-b border-white/20 bg-transparent text-lg font-bold text-white lowercase focus:outline-none"
+              @keydown.enter.prevent
+            />
+            <div class="flex shrink-0 items-center space-x-2">
               <button
                 class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
                 :class="dialogPinned ? 'text-blue-400' : 'text-gray-400'"
@@ -573,30 +623,28 @@ const confirmDelete = async () => {
               </button>
               <button
                 class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
-                :title="
-                  dialogTodo.completed
-                    ? 'Mark as incomplete'
-                    : 'Mark as complete'
-                "
-                @click="dialogToggleCompletion"
-              >
-                <Icon
-                  :name="
-                    dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'
-                  "
-                />
-              </button>
-              <button
-                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
                 title="Delete"
                 @click="dialogRequestDelete"
               >
                 <Icon name="uil:trash" />
               </button>
-              <span v-if="now" class="text-xs text-white/30">{{
-                timeAgo(dialogTodo.created_at)
-              }}</span>
+              <button
+                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+                @click="dialogToggleCompletion"
+              >
+                <Icon :name="dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+              </button>
             </div>
+          </div>
+          <TiptapEditor
+            ref="dialogEditorRef"
+            v-model="dialogBody"
+            placeholder="body"
+            @submit="saveDialogTodo"
+          />
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
             <button
               class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600"
               @click="saveDialogTodo"

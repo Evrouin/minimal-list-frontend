@@ -43,15 +43,23 @@ const hasCreateBody = computed(
       .trim().length > 0
 )
 
+const createErrorMsg = ref('')
+
 const createDialogSubmit = async () => {
   if (!createTitle.value.trim() || !hasCreateBody.value) return
-  await todoStore.addTodo({
-    title: createTitle.value.toLowerCase(),
-    body: createBody.value,
-  })
-  createTitle.value = ''
-  createBody.value = ''
-  showCreateDialog.value = false
+  createErrorMsg.value = ''
+  try {
+    await todoStore.addTodo({
+      title: createTitle.value.toLowerCase(),
+      body: createBody.value,
+    })
+    createTitle.value = ''
+    createBody.value = ''
+    showCreateDialog.value = false
+  } catch (e: unknown) {
+    const msg = (e as Error)?.message || ''
+    createErrorMsg.value = msg.includes('limit') ? 'todo limit reached' : 'failed to add todo'
+  }
 }
 
 const cancelCreate = () => {
@@ -189,7 +197,9 @@ const onScroll = () => {
               />
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-white/60">⌘/ctrl + enter to add</span>
+              <span class="text-xs" :class="createErrorMsg ? 'text-red-400' : 'text-white/60'">
+                {{ createErrorMsg || '⌘/ctrl + enter to add' }}
+              </span>
               <div class="flex gap-2">
                 <button
                   type="button"
