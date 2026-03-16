@@ -1,6 +1,7 @@
 <script setup>
 useHead({
-  title: 'minimalist todo list',
+  title: 'minimal list',
+  link: [{ rel: 'icon', type: 'image/png', href: '/favicon.png' }],
 })
 </script>
 

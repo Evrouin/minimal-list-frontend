@@ -1,27 +1,37 @@
-# 📝 Minimalist Todo List
+# 📝 minimal list
 
-A clean, modern todo application built with Nuxt 4 and Django REST Framework, featuring JWT authentication, Google OAuth, rich text editing, admin dashboard, and a minimalist dark theme.
+A clean, modern note-taking application built with Nuxt 4 and Django REST Framework, featuring JWT authentication, Google OAuth, rich text editing, and a minimalist dark theme inspired by Google Keep.
 
 🔗 **Live Demo**: [minimalist-todo-smoky.vercel.app](https://minimalist-todo-smoky.vercel.app/)
 
 ## ✨ Features
 
-- 🔐 **Authentication** — JWT login/register, Google OAuth, email verification, password reset
-- 📝 **Rich Text Editing** — Bold, italic, strikethrough, bullet/ordered lists via Tiptap
-- 📦 **State Management** with [Pinia](https://pinia.vuejs.org/)
-- ⚡ **Optimistic Updates** — Instant UI feedback with rollback on error
+### Core
+- 📝 **Rich Text Editing** — Bold, italic, strikethrough, bullet/ordered lists, task lists with checkboxes via Tiptap
+- 📌 **Pinned Notes** — Pin important notes to the top
+- ✏️ **Inline & Dialog Editing** — Inline editing on mobile, Google Keep-style dialog on desktop
+- 🗑️ **Soft & Permanent Deletion** — Recover or permanently remove notes with undo support
+- ✅ **Task Completion** — Mark notes as done/undone
 - 🎯 **Smart Filtering** — All, Active, Completed, Deleted (persisted in URL)
-- ✅ **Toggle Completion** — Mark tasks as done/undone
-- ✏️ **Inline Editing** — Click to edit titles and descriptions
-- 🗑️ **Soft & Permanent Deletion** — Recover or permanently remove todos
-- 🕐 **Relative Timestamps** — "2h ago", "3d ago" on each todo
-- 📄 **Infinite Scroll** — Cursor-based pagination, loads more on scroll
-- 💀 **Loading Skeletons** — Animated placeholders during initial load
-- 🎨 **Dark Theme** — Consistent minimalist design, mobile responsive
-- ⌨️ **Keyboard Shortcuts** — Enter to submit, Cmd/Ctrl+Enter in editor
-- ❓ **Help Tooltip** — Formatting guide and shortcuts reference
+
+### Multi-Select & Bulk Actions
+- ☑️ **Multi-Select** — Hover checkbox (desktop) or long press (mobile) to select multiple notes
+- 🗂️ **Bulk Actions** — Pin, unpin, or delete multiple notes at once
+- ↩️ **Undo with Toast** — 5-second grace period with undo for delete and pin actions
+
+### UX & Performance
+- ⚡ **Optimistic Updates** — Instant UI feedback with automatic rollback on error
+- 📶 **Offline Detection** — Banner notification when disconnected
+- 📄 **Infinite Scroll** — Cursor-based pagination with scroll-to-top button
+- 🧱 **Masonry Layout** — Google Keep-style card grid on desktop
+- 📱 **Responsive Design** — Adaptive layout with mobile-optimized interactions
+- ⌨️ **Keyboard Shortcuts** — Cmd/Ctrl+Enter to save, formatting shortcuts
+- 🎨 **Dark Theme** — Consistent minimalist design across all screens
+
+### Auth & Admin
+- 🔐 **Authentication** — JWT login/register, Google OAuth, email verification, password reset
 - 🔄 **Auto Token Refresh** — Silently refreshes expired access tokens
-- 🛡️ **Admin Dashboard** — User & todo management, stats, search (superuser only)
+- 🛡️ **Admin Dashboard** — User & note management, stats, search (superuser only)
 
 ## 🏗️ Architecture
 
@@ -29,22 +39,26 @@ A clean, modern todo application built with Nuxt 4 and Django REST Framework, fe
 
 ```
 ├── components/
-│   ├── TiptapEditor.vue     # Rich text editor
-│   ├── ConfirmDialog.vue    # Reusable confirm modal
+│   ├── TiptapEditor.vue     # Rich text editor (lazy-loaded)
+│   ├── TodoCard.vue         # Reusable note card component
+│   ├── TodoList.vue         # Note list with masonry layout & multi-select
+│   ├── TodoAdd.vue          # Note creation form
+│   ├── TodoHeader.vue       # App header
 │   ├── TodoSkeleton.vue     # Loading skeleton
-│   ├── TodoAdd.vue          # Todo creation with Tiptap
-│   ├── TodoList.vue         # Todo display & inline editing
-│   └── TodoHeader.vue       # App header
+│   └── ConfirmDialog.vue    # Reusable confirm modal
 ├── composables/
-│   ├── useApiFetch.ts       # Centralized API client with JWT, error handling & auto-refresh
+│   ├── useApiFetch.ts       # API client with JWT, retry & auto-refresh
 │   ├── useAuthApi.ts        # Auth API endpoints
 │   ├── useTodoApi.ts        # Todo API endpoints
-│   └── useAdminApi.ts       # Admin API endpoints
+│   ├── useAdminApi.ts       # Admin API endpoints
+│   ├── useTimeAgo.ts        # Relative timestamp formatting
+│   ├── useUndoToast.ts      # Toast notifications with undo support
+│   └── useOnline.ts         # Online/offline detection
 ├── stores/
-│   ├── auth.ts              # Auth state (tokens, user, isAdmin, loading)
-│   └── todos.ts             # Todo state with optimistic updates & pagination
+│   ├── auth.ts              # Auth state (tokens, user, isAdmin)
+│   └── todos.ts             # Note state with optimistic updates & pagination
 ├── pages/
-│   ├── index.vue            # Main todo page
+│   ├── index.vue            # Main notes page
 │   ├── auth/                # login, register, profile, forgot-password,
 │   │                        # reset-password/[token], verify-email/[token]
 │   └── admin/               # dashboard, users (list/create/detail),
@@ -64,8 +78,8 @@ A clean, modern todo application built with Nuxt 4 and Django REST Framework, fe
 ### Backend (Django REST Framework)
 
 - **Auth**: JWT tokens, Google OAuth, email verification, password reset
-- **Todos**: CRUD with soft delete, cursor pagination, scoped to authenticated user
-- **Admin**: User & todo management, dashboard stats, search
+- **Notes**: CRUD with soft delete, pinning, cursor pagination, bulk actions
+- **Admin**: User & note management, dashboard stats, search
 - **API**: Wrapped responses `{data, statusCode, timestamp}`
 - **Repo**: [django-todo](https://github.com/Evrouin/django-todo)
 
@@ -129,13 +143,15 @@ npm run quality      # Run both linting and formatting
 ## 🎯 Usage
 
 1. **Register/Login** — Create an account or sign in with Google
-2. **Add Todo** — Type title and body, click add or press Cmd/Ctrl+Enter
-3. **Edit Todo** — Click on any todo text to edit inline
-4. **Rich Text** — Use toolbar for bold, italic, strikethrough, lists
-5. **Complete Todo** — Click the circle icon to toggle done
-6. **Delete Todo** — Click trash icon (soft delete), click again to permanently delete
-7. **Filter Todos** — Use filter tabs, persisted in URL
-8. **Admin** — Superusers see a settings icon to access the admin dashboard
+2. **Create Note** — Type title and body, click add or press Cmd/Ctrl+Enter
+3. **Edit Note** — Click any note to edit (inline on mobile, dialog on desktop)
+4. **Rich Text** — Use toolbar for bold, italic, strikethrough, lists, task lists
+5. **Pin Note** — Click the pin icon to keep important notes at the top
+6. **Complete Note** — Click the circle icon to toggle done
+7. **Delete Note** — Click trash icon (soft delete), undo within 5 seconds, or permanently delete
+8. **Multi-Select** — Hover (desktop) or long press (mobile) to select, then bulk pin or delete
+9. **Filter Notes** — Use filter tabs to view all, active, completed, or deleted notes
+10. **Admin** — Superusers see a settings icon to access the admin dashboard
 
 ## 📄 License
 
