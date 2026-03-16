@@ -169,6 +169,7 @@ const requestBulkDelete = () => {
   showBulkDeleteDialog.value = true
 }
 const confirmBulkDelete = () => {
+  showBulkDeleteDialog.value = false
   const ids = bulkDeleteIds.value
   const count = ids.length
   exitMultiSelect()
@@ -282,6 +283,7 @@ const dialogRequestDelete = () => {
 }
 const confirmDelete = () => {
   if (!todoToDelete.value) return
+  showDeleteDialog.value = false
   const todo = todoToDelete.value
   const isPermanent = todo.deleted
   const snapshot = todoStore.deleteTodo(todo.id, isPermanent)
