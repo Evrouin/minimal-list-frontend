@@ -28,6 +28,9 @@ onMounted(() => {
         codeBlock: false,
         horizontalRule: false,
         blockquote: false,
+        code: false,
+        dropcursor: false,
+        gapcursor: false,
       }),
       Placeholder.configure({
         placeholder: props.placeholder || 'type something...',

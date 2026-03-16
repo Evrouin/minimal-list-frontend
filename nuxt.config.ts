@@ -7,6 +7,14 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/eslint', '@pinia/nuxt'],
+  icon: {
+    clientBundle: {
+      scan: true,
+    },
+    serverBundle: {
+      collections: ['uil', 'mdi', 'logos'],
+    },
+  },
   css: ['~/assets/css/main.css'],
   vite: {
     plugins: [tailwindcss()],
