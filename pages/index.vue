@@ -112,6 +112,10 @@ const onScroll = () => {
                   <span class="text-white"><Icon name="uil:trash" /></span> —
                   delete
                 </li>
+                <li>
+                  <span class="text-white"><Icon name="mdi:pin" /></span> —
+                  pin/unpin
+                </li>
               </ul>
             </div>
           </div>
