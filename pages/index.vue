@@ -35,18 +35,30 @@ watch(showCreateDialog, (val) => {
   if (val) nextTick(() => createEditorRef.value?.focus())
 })
 
-const hasCreateBody = computed(() =>
-  createBody.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0
+const hasCreateBody = computed(
+  () =>
+    createBody.value
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, '')
+      .trim().length > 0
 )
 
 const createDialogSubmit = async () => {
   if (!createTitle.value.trim() || !hasCreateBody.value) return
-  await todoStore.addTodo({ title: createTitle.value.toLowerCase(), body: createBody.value })
+  await todoStore.addTodo({
+    title: createTitle.value.toLowerCase(),
+    body: createBody.value,
+  })
   createTitle.value = ''
   createBody.value = ''
   showCreateDialog.value = false
 }
 
+const cancelCreate = () => {
+  showCreateDialog.value = false
+  createTitle.value = ''
+  createBody.value = ''
+}
 const onScroll = () => {
   const el = scrollContainer.value
   if (!el || !todoStore.hasMore || todoStore.loadingMore) return
@@ -57,15 +69,13 @@ const onScroll = () => {
 </script>
 
 <template>
-  <div
-    class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10"
-  >
-    <div class="w-full max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl px-4">
+  <div class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10">
+    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
       <div class="flex items-center justify-between">
         <TodoHeader title="Minimalist Todo List" />
         <div class="flex shrink-0 items-center">
           <button
-            class="hidden lg:block cursor-pointer p-2 text-white/60 hover:text-white"
+            class="hidden cursor-pointer p-2 text-white/60 hover:text-white lg:block"
             title="New todo"
             @click="showCreateDialog = true"
           >
@@ -126,7 +136,9 @@ const onScroll = () => {
         <TodoAdd />
       </div>
     </div>
-    <div class="my-4 flex w-full max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl justify-center px-4">
+    <div
+      class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
+    >
       <button
         v-for="(filter, index) in filterOptions"
         :key="index"
@@ -139,7 +151,7 @@ const onScroll = () => {
     </div>
     <div
       ref="scrollContainer"
-      class="scrollbar-hidden w-full max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-5xl overflow-y-auto px-4"
+      class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
       @scroll="onScroll"
     >
       <TodoList />
@@ -154,8 +166,8 @@ const onScroll = () => {
         <div
           v-if="showCreateDialog"
           class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          @keydown.esc="showCreateDialog = false; createTitle = ''; createBody = ''"
           tabindex="0"
+          @keydown.esc="cancelCreate"
         >
           <form
             class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg bg-gray-800 p-8 shadow-xl"
@@ -182,14 +194,18 @@ const onScroll = () => {
                 <button
                   type="button"
                   class="cursor-pointer rounded-lg px-4 py-1.5 text-sm text-white/60 lowercase hover:text-white"
-                  @click="showCreateDialog = false; createTitle = ''; createBody = ''"
+                  @click="cancelCreate"
                 >
                   cancel
                 </button>
                 <button
                   type="submit"
                   class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm lowercase hover:bg-gray-600"
-                  :class="createTitle.trim() && hasCreateBody ? 'text-white' : 'text-white/20'"
+                  :class="
+                    createTitle.trim() && hasCreateBody
+                      ? 'text-white'
+                      : 'text-white/20'
+                  "
                   :disabled="!createTitle.trim() || !hasCreateBody"
                 >
                   add

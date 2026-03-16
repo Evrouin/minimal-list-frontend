@@ -7,14 +7,19 @@ import { storeToRefs } from 'pinia'
 const todoStore = useTodoStore()
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
-    case 'active': return 'no active todos available'
-    case 'completed': return 'no completed todos available'
-    case 'deleted': return 'no deleted todos available'
-    default: return 'no todos available'
+    case 'active':
+      return 'no active todos available'
+    case 'completed':
+      return 'no completed todos available'
+    case 'deleted':
+      return 'no deleted todos available'
+    default:
+      return 'no todos available'
   }
 })
 
-const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
+const { filteredTodos, pinnedTodos, unpinnedTodos, loading } =
+  storeToRefs(todoStore)
 
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 1))
 const isInitialLoad = ref(true)
@@ -34,8 +39,13 @@ const dialogEditorRef = ref<{ focus: () => void } | null>(null)
 const dialogPinned = ref(false)
 
 const isLg = ref(false)
-const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
-onMounted(() => { updateIsLg(); window.addEventListener('resize', updateIsLg) })
+const updateIsLg = () => {
+  isLg.value = window.innerWidth >= 1024
+}
+onMounted(() => {
+  updateIsLg()
+  window.addEventListener('resize', updateIsLg)
+})
 onUnmounted(() => window.removeEventListener('resize', updateIsLg))
 
 // Multi-select
@@ -46,15 +56,21 @@ const showCheckbox = ref<Set<number>>(new Set())
 
 const startHover = (id: number) => {
   if (multiSelectMode.value) return
-  hoverTimers.set(id, setTimeout(() => {
-    showCheckbox.value.add(id)
-    showCheckbox.value = new Set(showCheckbox.value)
-  }, 1200))
+  hoverTimers.set(
+    id,
+    setTimeout(() => {
+      showCheckbox.value.add(id)
+      showCheckbox.value = new Set(showCheckbox.value)
+    }, 1200)
+  )
 }
 
 const endHover = (id: number) => {
   const t = hoverTimers.get(id)
-  if (t) { clearTimeout(t); hoverTimers.delete(id) }
+  if (t) {
+    clearTimeout(t)
+    hoverTimers.delete(id)
+  }
   if (!multiSelectMode.value) {
     showCheckbox.value.delete(id)
     showCheckbox.value = new Set(showCheckbox.value)
@@ -72,7 +88,10 @@ const startLongPress = (id: number) => {
   }, 500)
 }
 const endLongPress = () => {
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
 }
 
 const toggleSelect = (id: number) => {
@@ -87,11 +106,15 @@ const toggleSelect = (id: number) => {
 }
 
 const allSelectedPinned = computed(() => {
-  const selected = filteredTodos.value.filter((t) => selectedIds.value.has(t.id))
+  const selected = filteredTodos.value.filter((t) =>
+    selectedIds.value.has(t.id)
+  )
   return selected.length > 0 && selected.every((t) => t.pinned)
 })
 const allSelectedUnpinned = computed(() => {
-  const selected = filteredTodos.value.filter((t) => selectedIds.value.has(t.id))
+  const selected = filteredTodos.value.filter((t) =>
+    selectedIds.value.has(t.id)
+  )
   return selected.length > 0 && selected.every((t) => !t.pinned)
 })
 
@@ -99,7 +122,9 @@ const showBulkDeleteDialog = ref(false)
 const bulkDeleteIds = ref<number[]>([])
 
 const allSelectedDeleted = computed(() => {
-  const selected = filteredTodos.value.filter((t) => selectedIds.value.has(t.id))
+  const selected = filteredTodos.value.filter((t) =>
+    selectedIds.value.has(t.id)
+  )
   return selected.length > 0 && selected.every((t) => t.deleted)
 })
 
@@ -254,19 +279,43 @@ const confirmDelete = async () => {
 
   <div v-else>
     <!-- Multi-select bar -->
-    <div v-if="multiSelectMode" class="mb-4 flex items-center justify-end gap-2">
-      <button v-if="allSelectedUnpinned" class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400" title="Pin selected" @click="bulkPinSelected(true)">
+    <div
+      v-if="multiSelectMode"
+      class="mb-4 flex items-center justify-end gap-2"
+    >
+      <button
+        v-if="allSelectedUnpinned"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
+        title="Pin selected"
+        @click="bulkPinSelected(true)"
+      >
         <Icon name="mdi:pin" class="h-4 w-4" />
       </button>
-      <button v-if="allSelectedPinned" class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400" title="Unpin selected" @click="bulkPinSelected(false)">
+      <button
+        v-if="allSelectedPinned"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
+        title="Unpin selected"
+        @click="bulkPinSelected(false)"
+      >
         <Icon name="mdi:pin" class="h-4 w-4" />
       </button>
-      <button class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400" title="Delete selected" @click="requestBulkDelete">
+      <button
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"
+        title="Delete selected"
+        @click="requestBulkDelete"
+      >
         <Icon name="uil:trash" class="h-4 w-4" />
       </button>
-      <div class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5">
-        <span class="text-sm leading-none text-white/70">{{ selectedIds.size }} selected</span>
-        <button class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white" @click="exitMultiSelect">
+      <div
+        class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5"
+      >
+        <span class="text-sm leading-none text-white/70"
+          >{{ selectedIds.size }} selected</span
+        >
+        <button
+          class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white"
+          @click="exitMultiSelect"
+        >
           <Icon name="uil:times" class="h-4 w-4" />
         </button>
       </div>
@@ -276,34 +325,100 @@ const confirmDelete = async () => {
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
       <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
         <div v-for="todo in pinnedTodos" :key="todo.id">
-          <div :class="[...getTodoClasses(todo), selectedIds.has(todo.id) && 'ring-2 ring-blue-400']" class="relative cursor-pointer" @click="handleCardClick(todo)" @mouseenter="startHover(todo.id)" @mouseleave="endHover(todo.id)" @touchstart.passive="startLongPress(todo.id)" @touchend="endLongPress()" @touchmove="endLongPress()">
-            <button v-if="multiSelectMode || showCheckbox.has(todo.id)" class="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/60 bg-gray-800 text-xs" :class="selectedIds.has(todo.id) ? 'bg-blue-500 border-blue-500' : ''" @click.stop="toggleSelect(todo.id)">
-              <Icon v-if="selectedIds.has(todo.id)" name="uil:check" class="text-white" />
+          <div
+            :class="[
+              ...getTodoClasses(todo),
+              selectedIds.has(todo.id) && 'ring-2 ring-blue-400',
+            ]"
+            class="relative cursor-pointer"
+            @click="handleCardClick(todo)"
+            @mouseenter="startHover(todo.id)"
+            @mouseleave="endHover(todo.id)"
+            @touchstart.passive="startLongPress(todo.id)"
+            @touchend="endLongPress()"
+            @touchmove="endLongPress()"
+          >
+            <button
+              v-if="multiSelectMode || showCheckbox.has(todo.id)"
+              class="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/60 bg-gray-800 text-xs"
+              :class="
+                selectedIds.has(todo.id) ? 'border-blue-500 bg-blue-500' : ''
+              "
+              @click.stop="toggleSelect(todo.id)"
+            >
+              <Icon
+                v-if="selectedIds.has(todo.id)"
+                name="uil:check"
+                class="text-white"
+              />
             </button>
             <div class="flex w-full items-center justify-between">
-              <span v-if="!todo.editing" class="text-sm flex-grow sm:text-base font-bold text-white lowercase">
+              <span
+                v-if="!todo.editing"
+                class="flex-grow text-sm font-bold text-white lowercase sm:text-base"
+              >
                 {{ todo.title }}
               </span>
-              <input v-if="todo.editing" v-model="todo.title" class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none" @keydown.enter="saveTodo(todo)" @click.stop />
+              <input
+                v-if="todo.editing"
+                v-model="todo.title"
+                class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none sm:text-base"
+                @keydown.enter="saveTodo(todo)"
+                @click.stop
+              />
               <div class="flex items-center space-x-2" @click.stop>
-                <button class="cursor-pointer rounded p-1 text-sm text-blue-400 hover:text-blue-300" title="Unpin" @click="togglePin(todo)">
+                <button
+                  class="cursor-pointer rounded p-1 text-sm text-blue-400 hover:text-blue-300"
+                  title="Unpin"
+                  @click="togglePin(todo)"
+                >
                   <Icon name="mdi:pin" />
                 </button>
-                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="`Delete ${todo.title}`" @click="requestDelete(todo)">
+                <button
+                  class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                  :title="`Delete ${todo.title}`"
+                  @click="requestDelete(todo)"
+                >
                   <Icon name="uil:trash" />
                 </button>
-                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'" @click="toggleCompletion(todo)">
-                  <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
+                <button
+                  class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                  :title="
+                    todo.completed ? 'Mark as incomplete' : 'Mark as complete'
+                  "
+                  @click="toggleCompletion(todo)"
+                >
+                  <Icon
+                    :name="todo.completed ? 'uil:check-circle' : 'uil:circle'"
+                  />
                 </button>
               </div>
             </div>
-            <div v-if="!todo.editing" class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm" v-html="todo.body" />
-            <span v-if="!todo.editing && now" class="text-xs text-white/30">{{ timeAgo(todo.created_at) }}</span>
+            <div
+              v-if="!todo.editing"
+              class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm"
+              v-html="todo.body"
+            />
+            <span v-if="!todo.editing && now" class="text-xs text-white/30">{{
+              timeAgo(todo.created_at)
+            }}</span>
             <div v-if="todo.editing" @click.stop>
-              <TiptapEditor v-model="todo.body" placeholder="body" @submit="saveTodo(todo)" />
+              <TiptapEditor
+                v-model="todo.body"
+                placeholder="body"
+                @submit="saveTodo(todo)"
+              />
               <div class="mt-1 flex items-center justify-between">
-                <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
-                <button type="button" class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white" @click="saveTodo(todo)">save</button>
+                <span class="text-xs text-white/60"
+                  >⌘/ctrl + enter to save</span
+                >
+                <button
+                  type="button"
+                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+                  @click="saveTodo(todo)"
+                >
+                  save
+                </button>
               </div>
             </div>
           </div>
@@ -313,37 +428,108 @@ const confirmDelete = async () => {
 
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
-      <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
+      <p
+        v-if="pinnedTodos.length > 0"
+        class="mb-3 text-xs text-white/40 lowercase"
+      >
+        others
+      </p>
       <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
         <div v-for="todo in unpinnedTodos" :key="todo.id">
-          <div :class="[...getTodoClasses(todo), selectedIds.has(todo.id) && 'ring-2 ring-blue-400']" class="relative cursor-pointer" @click="handleCardClick(todo)" @mouseenter="startHover(todo.id)" @mouseleave="endHover(todo.id)" @touchstart.passive="startLongPress(todo.id)" @touchend="endLongPress()" @touchmove="endLongPress()">
-            <button v-if="multiSelectMode || showCheckbox.has(todo.id)" class="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/60 bg-gray-800 text-xs" :class="selectedIds.has(todo.id) ? 'bg-blue-500 border-blue-500' : ''" @click.stop="toggleSelect(todo.id)">
-              <Icon v-if="selectedIds.has(todo.id)" name="uil:check" class="text-white" />
+          <div
+            :class="[
+              ...getTodoClasses(todo),
+              selectedIds.has(todo.id) && 'ring-2 ring-blue-400',
+            ]"
+            class="relative cursor-pointer"
+            @click="handleCardClick(todo)"
+            @mouseenter="startHover(todo.id)"
+            @mouseleave="endHover(todo.id)"
+            @touchstart.passive="startLongPress(todo.id)"
+            @touchend="endLongPress()"
+            @touchmove="endLongPress()"
+          >
+            <button
+              v-if="multiSelectMode || showCheckbox.has(todo.id)"
+              class="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white/60 bg-gray-800 text-xs"
+              :class="
+                selectedIds.has(todo.id) ? 'border-blue-500 bg-blue-500' : ''
+              "
+              @click.stop="toggleSelect(todo.id)"
+            >
+              <Icon
+                v-if="selectedIds.has(todo.id)"
+                name="uil:check"
+                class="text-white"
+              />
             </button>
             <div class="flex w-full items-center justify-between">
-              <span v-if="!todo.editing" class="text-sm flex-grow sm:text-base font-bold text-white lowercase">
+              <span
+                v-if="!todo.editing"
+                class="flex-grow text-sm font-bold text-white lowercase sm:text-base"
+              >
                 {{ todo.title }}
               </span>
-              <input v-if="todo.editing" v-model="todo.title" class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none" @keydown.enter="saveTodo(todo)" @click.stop />
+              <input
+                v-if="todo.editing"
+                v-model="todo.title"
+                class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none sm:text-base"
+                @keydown.enter="saveTodo(todo)"
+                @click.stop
+              />
               <div class="flex items-center space-x-2" @click.stop>
-                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" title="Pin" @click="togglePin(todo)">
+                <button
+                  class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                  title="Pin"
+                  @click="togglePin(todo)"
+                >
                   <Icon name="mdi:pin" />
                 </button>
-                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="`Delete ${todo.title}`" @click="requestDelete(todo)">
+                <button
+                  class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                  :title="`Delete ${todo.title}`"
+                  @click="requestDelete(todo)"
+                >
                   <Icon name="uil:trash" />
                 </button>
-                <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'" @click="toggleCompletion(todo)">
-                  <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
+                <button
+                  class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                  :title="
+                    todo.completed ? 'Mark as incomplete' : 'Mark as complete'
+                  "
+                  @click="toggleCompletion(todo)"
+                >
+                  <Icon
+                    :name="todo.completed ? 'uil:check-circle' : 'uil:circle'"
+                  />
                 </button>
               </div>
             </div>
-            <div v-if="!todo.editing" class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm" v-html="todo.body" />
-            <span v-if="!todo.editing && now" class="text-xs text-white/30">{{ timeAgo(todo.created_at) }}</span>
+            <div
+              v-if="!todo.editing"
+              class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm"
+              v-html="todo.body"
+            />
+            <span v-if="!todo.editing && now" class="text-xs text-white/30">{{
+              timeAgo(todo.created_at)
+            }}</span>
             <div v-if="todo.editing" @click.stop>
-              <TiptapEditor v-model="todo.body" placeholder="body" @submit="saveTodo(todo)" />
+              <TiptapEditor
+                v-model="todo.body"
+                placeholder="body"
+                @submit="saveTodo(todo)"
+              />
               <div class="mt-1 flex items-center justify-between">
-                <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
-                <button type="button" class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white" @click="saveTodo(todo)">save</button>
+                <span class="text-xs text-white/60"
+                  >⌘/ctrl + enter to save</span
+                >
+                <button
+                  type="button"
+                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+                  @click="saveTodo(todo)"
+                >
+                  save
+                </button>
               </div>
             </div>
           </div>
@@ -358,10 +544,12 @@ const confirmDelete = async () => {
       <div
         v-if="dialogTodo"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-        @keydown.esc="saveDialogTodo"
         tabindex="0"
+        @keydown.esc="saveDialogTodo"
       >
-        <div class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl">
+        <div
+          class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
+        >
           <input
             v-model="dialogTitle"
             class="w-full border-b border-white/20 bg-transparent text-lg font-bold text-white lowercase focus:outline-none"
@@ -385,10 +573,18 @@ const confirmDelete = async () => {
               </button>
               <button
                 class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
-                :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+                :title="
+                  dialogTodo.completed
+                    ? 'Mark as incomplete'
+                    : 'Mark as complete'
+                "
                 @click="dialogToggleCompletion"
               >
-                <Icon :name="dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+                <Icon
+                  :name="
+                    dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'
+                  "
+                />
               </button>
               <button
                 class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
@@ -397,7 +593,9 @@ const confirmDelete = async () => {
               >
                 <Icon name="uil:trash" />
               </button>
-              <span v-if="now" class="text-xs text-white/30">{{ timeAgo(dialogTodo.created_at) }}</span>
+              <span v-if="now" class="text-xs text-white/30">{{
+                timeAgo(dialogTodo.created_at)
+              }}</span>
             </div>
             <button
               class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600"
@@ -450,6 +648,31 @@ const confirmDelete = async () => {
 }
 .todo-body :deep(p) {
   margin: 0;
+}
+.todo-body :deep(ul[data-type='taskList']) {
+  list-style: none;
+  padding-left: 0;
+}
+.todo-body :deep(ul[data-type='taskList'] li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+.todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']) {
+  cursor: pointer;
+  appearance: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  background: transparent;
+  margin-top: 0.15rem;
+}
+.todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']:checked) {
+  background: #60a5fa;
+  border-color: #60a5fa;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-size: 100%;
 }
 .fade-enter-active,
 .fade-leave-active {

@@ -101,7 +101,7 @@ export const useTodoStore = defineStore('todo', () => {
     // Remove permanently deleted, soft-delete active ones
     todos.value = todos.value
       .filter((t) => !(ids.includes(t.id) && t.deleted))
-      .map((t) => ids.includes(t.id) ? { ...t, deleted: true } : t)
+      .map((t) => (ids.includes(t.id) ? { ...t, deleted: true } : t))
     try {
       await api.bulkDelete(ids)
     } catch {
@@ -144,8 +144,12 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const pinnedTodos = computed(() => filteredTodos.value.filter((t) => t.pinned))
-  const unpinnedTodos = computed(() => filteredTodos.value.filter((t) => !t.pinned))
+  const pinnedTodos = computed(() =>
+    filteredTodos.value.filter((t) => t.pinned)
+  )
+  const unpinnedTodos = computed(() =>
+    filteredTodos.value.filter((t) => !t.pinned)
+  )
 
   return {
     todos,

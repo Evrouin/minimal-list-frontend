@@ -3,6 +3,8 @@ import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
 
 const props = defineProps<{
   modelValue: string
@@ -30,6 +32,8 @@ onMounted(() => {
       Placeholder.configure({
         placeholder: props.placeholder || 'type something...',
       }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
     ],
     editorProps: {
       attributes: {
@@ -46,7 +50,8 @@ onMounted(() => {
           !event.shiftKey &&
           editor.value &&
           !editor.value.isActive('bulletList') &&
-          !editor.value.isActive('orderedList')
+          !editor.value.isActive('orderedList') &&
+          !editor.value.isActive('taskList')
         ) {
           event.preventDefault()
           emit('submit')
@@ -93,6 +98,9 @@ const toggle = (type: string) => {
     case 'orderedList':
       chain.toggleOrderedList().run()
       break
+    case 'taskList':
+      chain.toggleTaskList().run()
+      break
   }
 }
 
@@ -111,6 +119,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
           { type: 'strike', label: 'S', class: 'line-through' },
           { type: 'bulletList', label: '•', class: '' },
           { type: 'orderedList', label: '1.', class: '' },
+          { type: 'taskList', label: '☑', class: '' },
         ]"
         :key="btn.type"
         type="button"
@@ -160,5 +169,42 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
 }
 .tiptap-wrapper .tiptap p {
   margin: 0;
+}
+.tiptap-wrapper .tiptap ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.tiptap-wrapper .tiptap ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+.tiptap-wrapper .tiptap ul[data-type='taskList'] li label {
+  margin-top: 0.15rem;
+}
+.tiptap-wrapper
+  .tiptap
+  ul[data-type='taskList']
+  li
+  label
+  input[type='checkbox'] {
+  cursor: pointer;
+  appearance: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  background: transparent;
+}
+.tiptap-wrapper
+  .tiptap
+  ul[data-type='taskList']
+  li
+  label
+  input[type='checkbox']:checked {
+  background: #60a5fa;
+  border-color: #60a5fa;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-size: 100%;
 }
 </style>
