@@ -26,6 +26,26 @@ onMounted(() => {
 })
 
 const scrollContainer = ref<HTMLElement | null>(null)
+const showCreateDialog = ref(false)
+const createTitle = ref('')
+const createBody = ref('')
+const createEditorRef = ref<{ focus: () => void } | null>(null)
+
+watch(showCreateDialog, (val) => {
+  if (val) nextTick(() => createEditorRef.value?.focus())
+})
+
+const hasCreateBody = computed(() =>
+  createBody.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0
+)
+
+const createDialogSubmit = async () => {
+  if (!createTitle.value.trim() || !hasCreateBody.value) return
+  await todoStore.addTodo({ title: createTitle.value.toLowerCase(), body: createBody.value })
+  createTitle.value = ''
+  createBody.value = ''
+  showCreateDialog.value = false
+}
 
 const onScroll = () => {
   const el = scrollContainer.value
@@ -44,6 +64,13 @@ const onScroll = () => {
       <div class="flex items-center justify-between">
         <TodoHeader title="Minimalist Todo List" />
         <div class="flex shrink-0 items-center">
+          <button
+            class="hidden lg:block cursor-pointer p-2 text-white/60 hover:text-white"
+            title="New todo"
+            @click="showCreateDialog = true"
+          >
+            <Icon name="uil:plus" class="text-xl" />
+          </button>
           <NuxtLink
             v-if="authStore.isAdmin"
             to="/admin"
@@ -116,6 +143,59 @@ const onScroll = () => {
         <span class="text-sm text-white/40">loading...</span>
       </div>
     </div>
+
+    <!-- Create dialog (lg+ screens) -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showCreateDialog"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          @keydown.esc="showCreateDialog = false; createTitle = ''; createBody = ''"
+          tabindex="0"
+        >
+          <form
+            class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg bg-gray-800 p-8 shadow-xl"
+            @submit.prevent="createDialogSubmit"
+          >
+            <input
+              v-model="createTitle"
+              type="text"
+              placeholder="title"
+              maxlength="100"
+              class="w-full border-b border-white/20 bg-transparent pb-2 text-lg font-bold text-white lowercase placeholder-white/60 focus:outline-none"
+            />
+            <div class="min-h-[150px]">
+              <TiptapEditor
+                ref="createEditorRef"
+                v-model="createBody"
+                placeholder="body"
+                @submit="createDialogSubmit"
+              />
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-white/60">⌘/ctrl + enter to add</span>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-lg px-4 py-1.5 text-sm text-white/60 lowercase hover:text-white"
+                  @click="showCreateDialog = false; createTitle = ''; createBody = ''"
+                >
+                  cancel
+                </button>
+                <button
+                  type="submit"
+                  class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm lowercase hover:bg-gray-600"
+                  :class="createTitle.trim() && hasCreateBody ? 'text-white' : 'text-white/20'"
+                  :disabled="!createTitle.trim() || !hasCreateBody"
+                >
+                  add
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -128,5 +208,14 @@ const onScroll = () => {
   -ms-overflow-style: none;
   scrollbar-width: none;
   scroll-behavior: smooth;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

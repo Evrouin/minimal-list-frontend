@@ -97,6 +97,8 @@ const toggle = (type: string) => {
 }
 
 const isActive = (type: string) => editor.value?.isActive(type) ?? false
+
+defineExpose({ focus: () => editor.value?.commands.focus() })
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
@@ -18,6 +18,17 @@ watch(loading, (val: boolean) => {
 
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
+
+// Dialog edit state (lg+ screens)
+const dialogTodo = ref<Todo | null>(null)
+const dialogTitle = ref('')
+const dialogBody = ref('')
+const dialogEditorRef = ref<{ focus: () => void } | null>(null)
+
+const isLg = ref(false)
+const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
+onMounted(() => { updateIsLg(); window.addEventListener('resize', updateIsLg) })
+onUnmounted(() => window.removeEventListener('resize', updateIsLg))
 
 const timeAgo = (date: string | undefined) => {
   if (!date) return ''
@@ -47,14 +58,30 @@ onMounted(() => {
 onUnmounted(() => clearInterval(timer))
 
 const getTodoClasses = (todo: Todo) => [
-  'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 mb-5 w-full',
+  'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full h-full',
   todo.completed
     ? 'bg-gray-700 opacity-50'
     : 'bg-gray-800 hover:px-6 hover:bg-gray-900 transition-all duration-200',
 ]
 
 const editTodo = (todo: Todo) => {
-  todo.editing = true
+  if (isLg.value) {
+    dialogTodo.value = todo
+    dialogTitle.value = todo.title
+    dialogBody.value = todo.body
+    nextTick(() => dialogEditorRef.value?.focus())
+  } else {
+    todo.editing = true
+  }
+}
+
+const saveDialogTodo = async () => {
+  if (!dialogTodo.value || !dialogTitle.value.trim()) return
+  dialogTodo.value.title = dialogTitle.value
+  dialogTodo.value.body = dialogBody.value
+  dialogTodo.value.editing = false
+  await todoStore.updateTodo({ ...dialogTodo.value })
+  dialogTodo.value = null
 }
 
 const saveTodo = async (todo: Todo) => {
@@ -67,8 +94,21 @@ const toggleCompletion = async (todo: Todo) => {
   await todoStore.toggleTodoCompletion(todo.id)
 }
 
+const dialogToggleCompletion = async () => {
+  if (!dialogTodo.value) return
+  await todoStore.toggleTodoCompletion(dialogTodo.value.id)
+  dialogTodo.value = null
+}
+
 const requestDelete = (todo: Todo) => {
   todoToDelete.value = todo
+  showDeleteDialog.value = true
+}
+
+const dialogRequestDelete = () => {
+  if (!dialogTodo.value) return
+  todoToDelete.value = dialogTodo.value
+  dialogTodo.value = null
   showDeleteDialog.value = true
 }
 
@@ -97,17 +137,16 @@ const confirmDelete = async () => {
     </div>
   </div>
 
-  <div
-    v-for="todo in filteredTodos"
-    :key="todo.id"
-    class="flex w-full items-center justify-center"
-  >
-    <div :class="getTodoClasses(todo)">
+  <div v-else class="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+    <div
+      v-for="todo in filteredTodos"
+      :key="todo.id"
+    >
+      <div :class="getTodoClasses(todo)" class="cursor-pointer" @click="editTodo(todo)">
       <div class="flex w-full items-center justify-between">
         <span
           v-if="!todo.editing"
-          class="text-sm flex-grow sm:text-base cursor-pointer font-bold text-white lowercase hover:text-gray-300"
-          @click="editTodo(todo)"
+          class="text-sm flex-grow sm:text-base font-bold text-white lowercase"
         >
           {{ todo.title }}
         </span>
@@ -116,8 +155,9 @@ const confirmDelete = async () => {
           v-model="todo.title"
           class="text-sm flex-grow sm:text-base border-b border-white/20 bg-transparent font-bold text-white lowercase focus:outline-none"
           @keydown.enter="saveTodo(todo)"
+          @click.stop
         />
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2" @click.stop>
           <button
             class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
             :title="`Delete ${todo.title}`"
@@ -138,8 +178,7 @@ const confirmDelete = async () => {
       <!-- View mode: render HTML body -->
       <div
         v-if="!todo.editing"
-        class="todo-body cursor-pointer text-xs text-wrap break-words text-white lowercase hover:text-gray-300 sm:text-sm"
-        @click="editTodo(todo)"
+        class="todo-body text-xs text-wrap break-words text-white lowercase sm:text-sm"
         v-html="todo.body"
       />
       <span v-if="!todo.editing && now" class="text-xs text-white/30">
@@ -147,7 +186,7 @@ const confirmDelete = async () => {
       </span>
 
       <!-- Edit mode: Tiptap editor -->
-      <div v-if="todo.editing">
+      <div v-if="todo.editing" @click.stop>
         <TiptapEditor
           v-model="todo.body"
           placeholder="body"
@@ -166,6 +205,58 @@ const confirmDelete = async () => {
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- Edit dialog (lg+ screens) -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="dialogTodo"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        @keydown.esc="saveDialogTodo"
+        tabindex="0"
+      >
+        <div class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl">
+          <input
+            v-model="dialogTitle"
+            class="w-full border-b border-white/20 bg-transparent text-lg font-bold text-white lowercase focus:outline-none"
+            @keydown.enter.prevent
+          />
+          <TiptapEditor
+            ref="dialogEditorRef"
+            v-model="dialogBody"
+            placeholder="body"
+            @submit="saveDialogTodo"
+          />
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button
+                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+                @click="dialogToggleCompletion"
+              >
+                <Icon :name="dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+              </button>
+              <button
+                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+                title="Delete"
+                @click="dialogRequestDelete"
+              >
+                <Icon name="uil:trash" />
+              </button>
+              <span v-if="now" class="text-xs text-white/30">{{ timeAgo(dialogTodo.created_at) }}</span>
+            </div>
+            <button
+              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600"
+              @click="saveDialogTodo"
+            >
+              save
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 
   <ConfirmDialog
     v-model="showDeleteDialog"
@@ -194,5 +285,13 @@ const confirmDelete = async () => {
 }
 .todo-body :deep(p) {
   margin: 0;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
