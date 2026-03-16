@@ -15,75 +15,72 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10"
-  >
+  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
     <div class="w-full max-w-3xl px-4">
       <div class="flex items-center justify-between p-4">
         <h1 class="text-2xl font-bold text-white lowercase">admin dashboard</h1>
-        <NuxtLink
-          to="/"
-          class="text-sm text-white/60 lowercase hover:text-white"
-          >back</NuxtLink
-        >
+        <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </div>
 
-      <div v-if="!stats" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="!stats && !error" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>
 
       <template v-if="stats">
-        <div
-          class="mb-3 rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
-        >
-          <p class="mb-2 font-bold lowercase">users</p>
-          <div class="space-y-1 text-white/70">
-            <p>
-              total: <span class="text-white">{{ stats.users.total }}</span>
-            </p>
-            <p>
-              verified:
-              <span class="text-white">{{ stats.users.verified }}</span>
-            </p>
-            <p>
-              joined today:
-              <span class="text-white">{{ stats.users.joined_today }}</span>
-            </p>
+        <!-- stat cards -->
+        <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-lg bg-gray-700 p-4 text-center">
+            <p class="text-2xl font-bold text-white">{{ stats.users.total }}</p>
+            <p class="text-xs text-white/50">total users</p>
+          </div>
+          <div class="rounded-lg bg-gray-700 p-4 text-center">
+            <p class="text-2xl font-bold text-green-300">{{ stats.users.verified }}</p>
+            <p class="text-xs text-white/50">verified</p>
+          </div>
+          <div class="rounded-lg bg-gray-700 p-4 text-center">
+            <p class="text-2xl font-bold text-blue-300">{{ stats.users.joined_today }}</p>
+            <p class="text-xs text-white/50">joined today</p>
+          </div>
+          <div class="rounded-lg bg-gray-700 p-4 text-center">
+            <p class="text-2xl font-bold text-white">{{ stats.todos.total }}</p>
+            <p class="text-xs text-white/50">total notes</p>
           </div>
         </div>
 
-        <div
-          class="mb-5 rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
-        >
-          <p class="mb-2 font-bold lowercase">notes</p>
-          <div class="space-y-1 text-white/70">
-            <p>
-              total: <span class="text-white">{{ stats.todos.total }}</span>
-            </p>
-            <p>
-              active: <span class="text-white">{{ stats.todos.active }}</span>
-            </p>
-            <p>
-              completed:
-              <span class="text-white">{{ stats.todos.completed }}</span>
-            </p>
-            <p>
-              deleted: <span class="text-white">{{ stats.todos.deleted }}</span>
-            </p>
+        <!-- notes breakdown -->
+        <div class="mb-6 rounded-lg bg-gray-700 p-4">
+          <p class="mb-3 text-xs font-bold text-white/50 uppercase tracking-wider">notes breakdown</p>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <p class="text-lg font-bold text-blue-300">{{ stats.todos.active }}</p>
+              <p class="text-xs text-white/50">active</p>
+            </div>
+            <div>
+              <p class="text-lg font-bold text-green-300">{{ stats.todos.completed }}</p>
+              <p class="text-xs text-white/50">completed</p>
+            </div>
+            <div>
+              <p class="text-lg font-bold text-red-300">{{ stats.todos.deleted }}</p>
+              <p class="text-xs text-white/50">deleted</p>
+            </div>
           </div>
         </div>
       </template>
 
-      <div class="flex flex-col gap-2 px-4">
+      <!-- nav links -->
+      <div class="flex flex-col gap-2">
         <NuxtLink
           to="/admin/users"
-          class="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white lowercase transition-all hover:bg-gray-600"
+          class="flex items-center justify-between rounded-lg bg-gray-700 px-4 py-3 text-sm text-white lowercase transition-colors hover:bg-gray-600"
         >
-          manage users →
+          <span>manage users</span>
+          <Icon name="uil:arrow-right" class="text-white/40" />
         </NuxtLink>
         <NuxtLink
           to="/admin/todos"
-          class="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white lowercase transition-all hover:bg-gray-600"
+          class="flex items-center justify-between rounded-lg bg-gray-700 px-4 py-3 text-sm text-white lowercase transition-colors hover:bg-gray-600"
         >
-          manage notes →
+          <span>manage notes</span>
+          <Icon name="uil:arrow-right" class="text-white/40" />
         </NuxtLink>
       </div>
     </div>
