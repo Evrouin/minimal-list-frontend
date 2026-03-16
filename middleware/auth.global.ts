@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore()
-  const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password']
+  const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/maintenance']
   const isPublic =
     publicPaths.includes(to.path) ||
     to.path.startsWith('/auth/verify-email') ||
@@ -10,7 +10,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (authStore.isAuthenticated && !authStore.user) {
     try {
       await authStore.fetchProfile()
-    } catch {
+    } catch (e) {
+      if ((e as { statusCode?: number }).statusCode === 503) return navigateTo('/maintenance')
       authStore.logout()
     }
   }

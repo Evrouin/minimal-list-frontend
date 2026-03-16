@@ -4,7 +4,7 @@ export interface ApiError {
   field?: string
 }
 
-const isRetryable = (status: number) => status >= 500 || status === 0
+const isRetryable = (status: number) => (status >= 500 && status !== 503) || status === 0
 
 const withRetry = async <T>(fn: () => Promise<T>, retries = 2): Promise<T> => {
   for (let i = 0; i <= retries; i++) {
@@ -81,6 +81,11 @@ export const useApiFetch = () => {
         } catch {
           // refresh failed — clear and redirect
         }
+      }
+
+      if (status === 503) {
+        window.location.href = '/maintenance'
+        return new Promise<never>(() => {})
       }
 
       if (status === 401) {
