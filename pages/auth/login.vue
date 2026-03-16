@@ -15,8 +15,11 @@ const handleLogin = async () => {
   try {
     await authStore.login(form)
     navigateTo('/')
-  } catch {
-    errorMsg.value = 'invalid email or password'
+  } catch (e: unknown) {
+    const msg = (e as { message?: string })?.message || ''
+    errorMsg.value = msg.includes('verify') ? 'unverified email'
+      : msg.includes('deactivated') ? 'account deactivated'
+      : 'invalid email or password'
   }
 }
 
@@ -29,7 +32,7 @@ const handleGoogleLogin = async () => {
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
     if (msg.includes('popup') || msg.includes('closed')) return
-    errorMsg.value = 'google login failed'
+    errorMsg.value = msg.includes('deactivated') ? 'account deactivated' : 'google login failed'
   }
 }
 </script>
