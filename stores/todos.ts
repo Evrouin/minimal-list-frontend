@@ -5,6 +5,7 @@ import type { Todo } from '../types'
 export const useTodoStore = defineStore('todo', () => {
   const todos = ref<Todo[]>([])
   const loading = ref(false)
+  const initialLoad = ref(true)
   const loadingMore = ref(false)
   const nextCursor = ref<string | null>(null)
   const filterType = ref<'all' | 'active' | 'completed' | 'deleted'>('all')
@@ -24,6 +25,7 @@ export const useTodoStore = defineStore('todo', () => {
         : null
     } finally {
       loading.value = false
+      initialLoad.value = false
     }
   }
 
@@ -181,6 +183,7 @@ export const useTodoStore = defineStore('todo', () => {
   return {
     todos,
     loading,
+    initialLoad,
     loadingMore,
     hasMore,
     filteredTodos,

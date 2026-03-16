@@ -21,7 +21,7 @@ const isTodoEmptyMessage = computed(() => {
   }
 })
 
-const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 1))
+const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 6))
 
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
@@ -316,7 +316,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 </script>
 
 <template>
-  <TodoSkeleton v-if="loading && filteredTodos.length === 0" :count="skeletonCount" />
+  <TodoSkeleton v-if="loading && todoStore.initialLoad" :count="skeletonCount" />
 
   <div
     v-else-if="!loading && filteredTodos.length === 0"
