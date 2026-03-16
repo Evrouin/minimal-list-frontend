@@ -68,12 +68,18 @@ const cancelCreate = () => {
   createTitle.value = ''
   createBody.value = ''
 }
+const showScrollTop = ref(false)
 const onScroll = () => {
   const el = scrollContainer.value
-  if (!el || !todoStore.hasMore || todoStore.loadingMore) return
+  if (!el) return
+  showScrollTop.value = el.scrollTop > 1000
+  if (!todoStore.hasMore || todoStore.loadingMore) return
   if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
     todoStore.loadMore()
   }
+}
+const scrollToTop = () => {
+  scrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 </script>
 
@@ -174,6 +180,18 @@ const onScroll = () => {
         <span class="text-sm text-white/40">loading...</span>
       </div>
     </div>
+
+    <!-- Scroll to top -->
+    <Transition name="fade">
+      <button
+        v-if="showScrollTop"
+        class="fixed bottom-6 right-6 z-40 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
+        title="Back to top"
+        @click="scrollToTop"
+      >
+        <Icon name="uil:arrow-up" class="h-5 w-5" />
+      </button>
+    </Transition>
 
     <!-- Create dialog (lg+ screens) -->
     <Teleport to="body">
