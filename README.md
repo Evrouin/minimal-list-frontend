@@ -81,7 +81,7 @@ A clean, modern note-taking application built with Nuxt 4 and Django REST Framew
 - **Notes**: CRUD with soft delete, pinning, cursor pagination, bulk actions
 - **Admin**: User & note management, dashboard stats, search
 - **API**: Wrapped responses `{data, statusCode, timestamp}`
-- **Repo**: [django-todo](https://github.com/Evrouin/django-todo)
+- **Repo**: [minimal-list-backend](https://github.com/Evrouin/minimal-list-backend)
 
 ### Tech Stack
 
@@ -101,8 +101,8 @@ A clean, modern note-taking application built with Nuxt 4 and Django REST Framew
 ### Installation
 
 ```bash
-git clone https://github.com/Evrouin/nuxt3-todo.git
-cd nuxt3-todo
+git clone https://github.com/Evrouin/minimal-list-frontend.git
+cd minimal-list-frontend
 nvm use
 npm install
 ```
