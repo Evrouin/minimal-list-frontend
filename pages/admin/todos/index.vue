@@ -17,14 +17,22 @@ const hasMore = computed(() => !!nextCursor.value)
 const parseCursor = (url: string) => new URL(url).pathname + new URL(url).search
 
 const searching = ref(false)
+const error = ref('')
+const scrollContainer = ref<HTMLElement>()
+const showScrollTop = ref(false)
 
 const fetchTodos = async (query?: string) => {
   searching.value = true
-  const res = await api.getTodos(undefined, query)
-  todos.value = res.data ?? res.results ?? []
-  nextCursor.value = res.next ? parseCursor(res.next) : null
-  loading.value = false
-  searching.value = false
+  try {
+    const res = await api.getTodos(undefined, query)
+    todos.value = res.data ?? res.results ?? []
+    nextCursor.value = res.next ? parseCursor(res.next) : null
+  } catch {
+    error.value = 'failed to load notes'
+  } finally {
+    loading.value = false
+    searching.value = false
+  }
 }
 
 onMounted(() => fetchTodos())
@@ -41,6 +49,8 @@ const loadMore = async () => {
     const res = await api.getTodos(nextCursor.value)
     todos.value.push(...(res.data ?? res.results ?? []))
     nextCursor.value = res.next ? parseCursor(res.next) : null
+  } catch {
+    error.value = 'failed to load more'
   } finally {
     loadingMore.value = false
   }

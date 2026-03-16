@@ -11,6 +11,7 @@ const form = reactive({
 })
 const errorMsg = ref('')
 const successMsg = ref('')
+const submitting = ref(false)
 
 const handleCreate = async () => {
   errorMsg.value = ''
@@ -19,8 +20,13 @@ const handleCreate = async () => {
     await api.createUser(form)
     successMsg.value = 'user created.'
     setTimeout(() => navigateTo('/admin/users'), 800)
-  } catch {
-    errorMsg.value = 'failed to create user.'
+  } catch (e: any) {
+    const msg = e?.message || ''
+    if (msg.includes('email')) errorMsg.value = 'email already exists'
+    else if (msg.includes('username')) errorMsg.value = 'username already exists'
+    else errorMsg.value = 'failed to create user.'
+  } finally {
+    submitting.value = false
   }
 }
 </script>

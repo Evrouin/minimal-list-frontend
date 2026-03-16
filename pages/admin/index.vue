@@ -3,9 +3,14 @@ definePageMeta({ middleware: ['admin'] })
 
 const api = useAdminApi()
 const stats = ref<Awaited<ReturnType<typeof api.getStats>> | null>(null)
+const error = ref('')
 
 onMounted(async () => {
-  stats.value = await api.getStats()
+  try {
+    stats.value = await api.getStats()
+  } catch {
+    error.value = 'failed to load stats'
+  }
 })
 </script>
 

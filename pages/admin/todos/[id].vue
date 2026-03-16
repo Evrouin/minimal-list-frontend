@@ -7,14 +7,27 @@ const route = useRoute()
 const api = useAdminApi()
 const todo = ref<AdminTodo | null>(null)
 const showDeleteDialog = ref(false)
+const loadError = ref('')
 
 onMounted(async () => {
-  todo.value = await api.getTodo(Number(route.params.id))
+  try {
+    todo.value = await api.getTodo(Number(route.params.id))
+  } catch {
+    loadError.value = 'failed to load note'
+  }
 })
 
+const deleting = ref(false)
+
 const confirmDelete = async () => {
-  await api.deleteTodo(Number(route.params.id))
-  navigateTo('/admin/todos')
+  deleting.value = true
+  try {
+    await api.deleteTodo(Number(route.params.id))
+    navigateTo('/admin/todos')
+  } catch {
+    loadError.value = 'failed to delete note'
+    deleting.value = false
+  }
 }
 
 const formatDate = (date?: string) =>

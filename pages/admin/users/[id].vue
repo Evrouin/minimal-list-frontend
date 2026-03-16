@@ -34,9 +34,17 @@ const save = async () => {
   }
 }
 
+const deleting = ref(false)
+
 const confirmDelete = async () => {
-  await api.deleteUser(Number(route.params.id))
-  navigateTo('/admin/users')
+  deleting.value = true
+  try {
+    await api.deleteUser(Number(route.params.id))
+    navigateTo('/admin/users')
+  } catch {
+    errorMsg.value = 'failed to delete user'
+    deleting.value = false
+  }
 }
 </script>
 

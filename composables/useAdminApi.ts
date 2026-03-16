@@ -20,11 +20,11 @@ export const useAdminApi = () => {
 
   return {
     getStats: () => request<AdminStats>(`${base}/stats/`),
-    getUsers: (search?: string) => {
+    getUsers: (cursor?: string, search?: string) => {
+      if (cursor)
+        return request<{ results: User[]; next: string | null }>(cursor)
       const query = search ? `?search=${encodeURIComponent(search)}` : ''
-      return request<{ results: User[] }>(`${base}/users/${query}`).then(
-        (r) => r.results
-      )
+      return request<{ results: User[]; next: string | null }>(`${base}/users/${query}`)
     },
     getUser: (id: number) => request<User>(`${base}/users/${id}/`),
     createUser: (data: {
