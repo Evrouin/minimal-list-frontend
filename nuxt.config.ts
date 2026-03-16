@@ -6,9 +6,6 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   devtools: { enabled: true },
-  app: {
-    pageTransition: { name: 'page', mode: 'out-in' },
-  },
   modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/eslint', '@pinia/nuxt'],
   icon: {
     clientBundle: {

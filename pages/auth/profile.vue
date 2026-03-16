@@ -79,19 +79,16 @@ const handleLogout = () => {
 
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4">
-      <div class="flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">profile</h1>
-        <div class="flex items-center gap-3">
-          <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
-          <button
-            class="cursor-pointer text-sm text-white/60 lowercase hover:text-white"
-            @click="handleLogout"
-          >
-            logout
-          </button>
-        </div>
-      </div>
+    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+      <PageHeader title="profile">
+        <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
+        <button
+          class="cursor-pointer text-sm text-white/60 lowercase hover:text-white"
+          @click="handleLogout"
+        >
+          logout
+        </button>
+      </PageHeader>
 
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
 

@@ -35,73 +35,62 @@ const handleGoogleLogin = async () => {
 </script>
 
 <template>
-  <div
-    class="flex h-screen w-screen flex-col items-center justify-center bg-gray-800"
-  >
+  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
     <div class="w-full max-w-lg px-4">
-      <div class="mx-auto flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">login</h1>
-      </div>
+      <PageHeader title="login">
+        <NuxtLink to="/auth/register" class="text-sm text-white/60 lowercase hover:text-white">register</NuxtLink>
+      </PageHeader>
 
-      <form @submit.prevent="handleLogin">
-        <div
-          class="flex w-full flex-col gap-3 rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
-        >
-          <input
-            v-model="form.email"
-            type="email"
-            placeholder="email"
-            class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
-          />
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="password"
-            class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
-          />
-
-          <span v-if="errorMsg" class="text-xs text-red-300">{{
-            errorMsg
-          }}</span>
-
-          <button
-            type="submit"
-            :disabled="authStore.loading"
-            class="mt-2 cursor-pointer rounded-lg bg-gray-700 px-4 py-2 text-white lowercase transition-all duration-200 hover:bg-gray-600 disabled:opacity-50"
-          >
-            {{ authStore.loading ? 'logging in...' : 'login' }}
-          </button>
-
-          <div class="flex items-center gap-3">
-            <div class="h-px flex-1 bg-white/20" />
-            <span class="text-xs text-white/40 lowercase">or</span>
-            <div class="h-px flex-1 bg-white/20" />
+      <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleLogin">
+        <div class="space-y-4">
+          <div>
+            <label class="mb-1 block text-xs text-white/40">email</label>
+            <input
+              v-model="form.email"
+              type="email"
+              placeholder="user@example.com"
+              class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+            />
           </div>
-
-          <div class="flex justify-center">
-            <button
-              type="button"
-              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-700 px-4 py-2 text-white lowercase transition-all duration-200 hover:bg-gray-600"
-              @click="handleGoogleLogin"
-            >
-              <Icon name="logos:google-icon" />
-              sign in with google
-            </button>
+          <div>
+            <label class="mb-1 block text-xs text-white/40">password</label>
+            <input
+              v-model="form.password"
+              type="password"
+              placeholder="password"
+              class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+            />
           </div>
         </div>
+
+        <div v-if="errorMsg" class="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ errorMsg }}</div>
+
+        <button
+          type="submit"
+          :disabled="authStore.loading"
+          class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+        >
+          {{ authStore.loading ? 'logging in...' : 'login' }}
+        </button>
+
+        <div class="my-4 flex items-center gap-3">
+          <div class="h-px flex-1 bg-white/10" />
+          <span class="text-xs text-white/30 lowercase">or</span>
+          <div class="h-px flex-1 bg-white/10" />
+        </div>
+
+        <button
+          type="button"
+          class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500"
+          @click="handleGoogleLogin"
+        >
+          <Icon name="logos:google-icon" />
+          sign in with google
+        </button>
       </form>
 
-      <div class="mt-4 flex justify-center gap-4">
-        <NuxtLink
-          to="/auth/register"
-          class="text-sm text-white/60 lowercase hover:text-white"
-        >
-          register
-        </NuxtLink>
-        <NuxtLink
-          to="/auth/forgot-password"
-          class="text-sm text-white/60 lowercase hover:text-white"
-        >
+      <div class="mt-4 flex justify-center">
+        <NuxtLink to="/auth/forgot-password" class="text-sm text-white/60 lowercase hover:text-white">
           forgot password?
         </NuxtLink>
       </div>

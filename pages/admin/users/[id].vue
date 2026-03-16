@@ -54,11 +54,10 @@ const confirmDelete = async () => {
 
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-3xl px-4">
-      <div class="flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">user detail</h1>
+    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+      <PageHeader title="user detail">
         <NuxtLink to="/admin/users" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
-      </div>
+      </PageHeader>
 
       <div v-if="!user && !errorMsg" class="p-4 text-sm text-white/40">loading...</div>
       <div v-if="errorMsg && !user" class="p-4 text-sm text-red-400">{{ errorMsg }}</div>

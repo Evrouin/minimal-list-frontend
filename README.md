@@ -43,7 +43,7 @@ A clean, modern note-taking application built with Nuxt 4 and Django REST Framew
 │   ├── TodoCard.vue         # Reusable note card component
 │   ├── TodoList.vue         # Note list with masonry layout & multi-select
 │   ├── TodoAdd.vue          # Note creation form
-│   ├── TodoHeader.vue       # App header
+│   ├── PageHeader.vue       # Reusable page header
 │   ├── TodoSkeleton.vue     # Loading skeleton
 │   └── ConfirmDialog.vue    # Reusable confirm modal
 ├── composables/

@@ -21,50 +21,34 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div
-    class="flex h-screen w-screen flex-col items-center justify-center bg-gray-800"
-  >
+  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
     <div class="w-full max-w-lg px-4">
-      <div class="mx-auto flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">forgot password</h1>
-      </div>
+      <PageHeader title="forgot password">
+        <NuxtLink to="/auth/login" class="text-sm text-white/60 lowercase hover:text-white">login</NuxtLink>
+      </PageHeader>
 
-      <form @submit.prevent="handleSubmit">
-        <div
-          class="flex w-full flex-col gap-3 rounded-lg bg-gray-500 p-4 text-sm text-white shadow-md"
-        >
+      <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleSubmit">
+        <div>
+          <label class="mb-1 block text-xs text-white/40">email</label>
           <input
             v-model="email"
             type="email"
-            placeholder="email"
-            class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
+            placeholder="user@example.com"
+            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
           />
-
-          <span v-if="errorMsg" class="text-xs text-red-300">{{
-            errorMsg
-          }}</span>
-          <span v-if="successMsg" class="text-xs text-green-300">{{
-            successMsg
-          }}</span>
-
-          <button
-            type="submit"
-            :disabled="authStore.loading"
-            class="mt-2 cursor-pointer rounded-lg bg-gray-700 px-4 py-2 text-white lowercase transition-all duration-200 hover:bg-gray-600 disabled:opacity-50"
-          >
-            {{ authStore.loading ? 'sending...' : 'send reset link' }}
-          </button>
         </div>
-      </form>
 
-      <div class="mt-4 flex justify-center">
-        <NuxtLink
-          to="/auth/login"
-          class="text-sm text-white/60 lowercase hover:text-white"
+        <div v-if="errorMsg" class="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ errorMsg }}</div>
+        <div v-if="successMsg" class="mt-4 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-300">{{ successMsg }}</div>
+
+        <button
+          type="submit"
+          :disabled="authStore.loading"
+          class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
         >
-          back to login
-        </NuxtLink>
-      </div>
+          {{ authStore.loading ? 'sending...' : 'send reset link' }}
+        </button>
+      </form>
     </div>
   </div>
 </template>

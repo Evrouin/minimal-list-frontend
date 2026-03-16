@@ -118,24 +118,21 @@ const confirmDelete = async () => {
   <div
     class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10"
   >
-    <div class="w-full max-w-5xl px-4">
-      <div class="flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">all notes</h1>
-        <div class="flex items-center gap-3">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="search..."
-            class="w-40 rounded-lg bg-gray-600 px-3 py-1.5 text-sm text-white placeholder-white/40 focus:outline-none"
-            @input="onSearch"
-          />
-          <NuxtLink
-            to="/admin"
-            class="text-sm text-white/60 lowercase hover:text-white"
-            >back</NuxtLink
-          >
-        </div>
-      </div>
+    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+      <PageHeader title="notes">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="search..."
+          class="w-40 rounded-lg bg-gray-700 px-3 py-1.5 text-sm text-white placeholder-white/40 focus:outline-none"
+          @input="onSearch"
+        />
+        <NuxtLink
+          to="/admin"
+          class="text-sm text-white/60 lowercase hover:text-white"
+          >back</NuxtLink
+        >
+      </PageHeader>
 
       <div v-if="loading" class="p-4 text-sm text-white/40">loading...</div>
       <div v-else-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>

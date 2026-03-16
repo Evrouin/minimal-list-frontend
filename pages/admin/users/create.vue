@@ -41,11 +41,10 @@ const handleCreate = async () => {
 
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-3xl px-4">
-      <div class="flex items-center justify-between p-4">
-        <h1 class="text-2xl font-bold text-white lowercase">create user</h1>
+    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+      <PageHeader title="create user">
         <NuxtLink to="/admin/users" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
-      </div>
+      </PageHeader>
 
       <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleCreate">
         <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/40">account details</p>

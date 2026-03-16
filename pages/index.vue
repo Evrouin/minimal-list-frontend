@@ -98,8 +98,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       </div>
     </Transition>
     <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
-      <div class="flex items-center justify-between">
-        <TodoHeader title="minimal list" />
+      <PageHeader title="minimal list">
         <div class="flex shrink-0 items-center">
           <button
             class="hidden cursor-pointer p-2 text-white/60 hover:text-white lg:block"
@@ -158,7 +157,7 @@ const { toasts, undo: undoToast } = useUndoToast()
             </div>
           </div>
         </div>
-      </div>
+      </PageHeader>
       <!-- Inline form on mobile -->
       <div class="lg:hidden">
         <TodoAdd />
