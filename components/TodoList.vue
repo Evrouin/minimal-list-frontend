@@ -173,14 +173,24 @@ const confirmBulkDelete = () => {
   bulkDeleteIds.value = []
   showToast(
     `${count} note${count > 1 ? 's' : ''} deleted`,
-    () => {
-      todoStore.bulkDeleteCommit(ids)
-    },
+    () => todoStore.bulkDeleteCommit(ids),
     () => {
       todoStore.bulkDeleteRollback(snapshot)
     }
   )
 }
+const bulkRestoreSelected = () => {
+  const ids = [...selectedIds.value]
+  const count = ids.length
+  exitMultiSelect()
+  const snapshot = todoStore.bulkRestore(ids)
+  showToast(
+    `${count} note${count > 1 ? 's' : ''} restored`,
+    () => todoStore.bulkRestoreCommit(ids),
+    () => { todoStore.bulkRestoreRollback(snapshot) }
+  )
+}
+
 const bulkPinSelected = (pinned: boolean) => {
   const ids = [...selectedIds.value]
   const count = ids.length
@@ -188,9 +198,7 @@ const bulkPinSelected = (pinned: boolean) => {
   const snapshot = todoStore.bulkPin(ids, pinned)
   showToast(
     `${count} note${count > 1 ? 's' : ''} ${pinned ? 'pinned' : 'unpinned'}`,
-    () => {
-      todoStore.bulkPinCommit(ids, pinned)
-    },
+    () => todoStore.bulkPinCommit(ids, pinned),
     () => {
       todoStore.bulkPinRollback(snapshot)
     }
@@ -286,12 +294,19 @@ const confirmDelete = () => {
   todoToDelete.value = null
   showToast(
     isPermanent ? 'note permanently deleted' : 'note deleted',
-    () => {
-      todoStore.deleteTodoCommit(todo.id)
-    },
+    () => todoStore.deleteTodoCommit(todo.id),
     () => {
       todoStore.deleteTodoRollback(snapshot)
     }
+  )
+}
+
+const restoreTodo = (todo: Todo) => {
+  const snapshot = todoStore.restoreTodo(todo.id)
+  showToast(
+    'note restored',
+    () => todoStore.restoreTodoCommit(todo.id),
+    () => { todoStore.restoreTodoRollback(snapshot) }
   )
 }
 
@@ -318,7 +333,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
     </div>
   </div>
 
-  <div v-else class="transition-opacity duration-200" :class="loading ? 'animate-pulse pointer-events-none' : ''">
+  <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'animate-pulse pointer-events-none' : ''">
     <!-- Multi-select bar -->
     <div
       v-if="multiSelectMode"
@@ -339,6 +354,14 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
         @click="bulkPinSelected(false)"
       >
         <Icon name="mdi:pin" class="h-4 w-4" />
+      </button>
+      <button
+        v-if="todoStore.filterType === 'deleted'"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-white"
+        title="Restore selected"
+        @click="bulkRestoreSelected"
+      >
+        <Icon name="uil:redo" class="h-4 w-4" />
       </button>
       <button
         class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"
@@ -377,6 +400,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
             @toggle-pin="togglePin(todo)"
             @request-delete="requestDelete(todo)"
             @toggle-completion="toggleCompletion(todo)"
+            @restore="restoreTodo(todo)"
             @save="saveTodo(todo)"
             @cancel="cancelEdit(todo)"
             @toggle-select="toggleSelect(todo.id)"
@@ -410,6 +434,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
             @toggle-pin="togglePin(todo)"
             @request-delete="requestDelete(todo)"
             @toggle-completion="toggleCompletion(todo)"
+            @restore="restoreTodo(todo)"
             @save="saveTodo(todo)"
             @cancel="cancelEdit(todo)"
             @toggle-select="toggleSelect(todo.id)"

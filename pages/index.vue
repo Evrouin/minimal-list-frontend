@@ -7,11 +7,13 @@ const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const { online } = useOnline()
+const { flushAll } = useUndoToast()
 
 const { filterOptions } = todoStore
 
-const handleFilter = (filter: (typeof filterOptions)[number]) => {
-  todoStore.changeFilter(filter)
+const handleFilter = async (filter: (typeof filterOptions)[number]) => {
+  await flushAll()
+  await todoStore.changeFilter(filter)
   router.replace({ query: { filter } })
 }
 

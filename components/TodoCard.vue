@@ -13,6 +13,7 @@ const emit = defineEmits<{
   click: []
   'toggle-pin': []
   'request-delete': []
+  'restore': []
   'toggle-completion': []
   save: []
   cancel: []
@@ -81,6 +82,14 @@ const cardClasses = computed(() => [
           @click="emit('toggle-pin')"
         >
           <Icon name="mdi:pin" />
+        </button>
+        <button
+          v-if="todo.deleted"
+          class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+          title="Restore"
+          @click="emit('restore')"
+        >
+          <Icon name="uil:redo" />
         </button>
         <button
           class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"

@@ -7,6 +7,7 @@ interface Toast {
 }
 
 let nextId = 0
+const pendingCommits: Promise<void>[] = []
 
 export function useUndoToast() {
   const toasts = useState<Toast[]>('toasts', () => [])
@@ -15,7 +16,7 @@ export function useUndoToast() {
     const id = nextId++
     const timer = setTimeout(() => {
       dismiss(id, true)
-    }, 5000)
+    }, 400)
     toasts.value.push({ id, message, timer, onUndo, onCommit })
   }
 
@@ -31,16 +32,25 @@ export function useUndoToast() {
     const toast = toasts.value.find((t) => t.id === id)
     if (!toast) return
     clearTimeout(toast.timer)
-    if (commit) toast.onCommit()
+    if (commit) {
+      const p = Promise.resolve(toast.onCommit()).finally(() => {
+        const i = pendingCommits.indexOf(p)
+        if (i !== -1) pendingCommits.splice(i, 1)
+      })
+      pendingCommits.push(p)
+    }
     toasts.value = toasts.value.filter((t) => t.id !== id)
   }
 
-  const flushAll = () => {
-    toasts.value.forEach((t) => {
+  const flushAll = async () => {
+    const all = [...toasts.value]
+    const pending = [...pendingCommits]
+    const promises = all.map((t) => {
       clearTimeout(t.timer)
-      t.onCommit()
+      return t.onCommit()
     })
     toasts.value = []
+    await Promise.all([...promises, ...pending])
   }
 
   return { toasts, show, undo, dismiss, flushAll }

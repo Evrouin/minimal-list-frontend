@@ -6,10 +6,10 @@ export const useTodoApi = () => {
   const base = '/api/todos'
 
   return {
-    fetchTodos: (includeDeleted = false, cursor?: string) => {
+    fetchTodos: (deletedOnly = false, cursor?: string) => {
       if (cursor) return request<ApiResponse<Todo[]>>(cursor)
       return request<ApiResponse<Todo[]>>(
-        `${base}/${includeDeleted ? '?include_deleted=true' : ''}`
+        `${base}/${deletedOnly ? '?deleted_only=true' : ''}`
       )
     },
 
@@ -37,6 +37,12 @@ export const useTodoApi = () => {
       request<{ success: boolean }>(`${base}/bulk-pin/`, {
         method: 'POST',
         body: { ids, pinned },
+      }),
+
+    bulkRestore: (ids: number[]) =>
+      request<{ success: boolean }>(`${base}/bulk-restore/`, {
+        method: 'POST',
+        body: { ids },
       }),
   }
 }

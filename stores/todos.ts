@@ -16,8 +16,8 @@ export const useTodoStore = defineStore('todo', () => {
   const loadTodos = async () => {
     loading.value = true
     try {
-      const includeDeleted = filterType.value === 'deleted'
-      const response = await api.fetchTodos(includeDeleted)
+      const deletedOnly = filterType.value === 'deleted'
+      const response = await api.fetchTodos(deletedOnly)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
@@ -43,10 +43,10 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
-  const changeFilter = (type: (typeof filterOptions)[number]) => {
+  const changeFilter = async (type: (typeof filterOptions)[number]) => {
     if (filterType.value === type) return
     filterType.value = type
-    loadTodos()
+    await loadTodos()
   }
 
   const filteredTodos = computed(() => {
@@ -144,6 +144,33 @@ export const useTodoStore = defineStore('todo', () => {
     todos.value = snapshot
   }
 
+  const restoreTodoApply = (id: number) => {
+    const snapshot = [...todos.value]
+    const index = todos.value.findIndex((t) => t.id === id)
+    if (index !== -1) todos.value[index] = { ...todos.value[index], deleted: false }
+    return snapshot
+  }
+  const restoreTodoCommit = async (id: number) => {
+    await api.updateTodo(id, { deleted: false })
+  }
+  const restoreTodoRollback = (snapshot: Todo[]) => {
+    todos.value = snapshot
+  }
+
+  const bulkRestoreApply = (ids: number[]) => {
+    const snapshot = [...todos.value]
+    todos.value = todos.value.map((t) =>
+      ids.includes(t.id) ? { ...t, deleted: false } : t
+    )
+    return snapshot
+  }
+  const bulkRestoreCommit = async (ids: number[]) => {
+    await api.bulkRestore(ids)
+  }
+  const bulkRestoreRollback = (snapshot: Todo[]) => {
+    todos.value = snapshot
+  }
+
   const pinnedTodos = computed(() =>
     filteredTodos.value.filter((t) => t.pinned)
   )
@@ -177,5 +204,11 @@ export const useTodoStore = defineStore('todo', () => {
     deleteTodo: deleteTodoApply,
     deleteTodoCommit,
     deleteTodoRollback,
+    restoreTodo: restoreTodoApply,
+    restoreTodoCommit,
+    restoreTodoRollback,
+    bulkRestore: bulkRestoreApply,
+    bulkRestoreCommit,
+    bulkRestoreRollback,
   }
 })
