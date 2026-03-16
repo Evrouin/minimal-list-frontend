@@ -4,6 +4,7 @@ export interface User {
   username: string
   phone: string
   avatar: string
+  avatar_url: string
   bio: string
   is_verified: boolean
   is_superuser: boolean
