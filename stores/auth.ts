@@ -110,8 +110,13 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value
   }
 
-  const changePassword = (payload: ChangePasswordPayload) =>
-    api.changePassword(payload)
+  const changePassword = async (payload: ChangePasswordPayload) => {
+    const response = await api.changePassword(payload)
+    if (response.tokens) {
+      tokens.value = response.tokens
+      localStorage.setItem(TOKEN_KEY, JSON.stringify(response.tokens))
+    }
+  }
 
   const verifyEmail = (token: string) => api.verifyEmail(token)
 
