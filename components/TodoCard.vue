@@ -101,7 +101,7 @@ const cardClasses = computed(() => [
       timeAgo(todo.created_at)
     }}</span>
     <div v-if="todo.editing" @click.stop>
-      <TiptapEditor
+      <LazyTiptapEditor
         :ref="(el: any) => { if (el) emit('set-editor-ref', el) }"
         v-model="todo.body"
         placeholder="body"

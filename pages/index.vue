@@ -189,7 +189,7 @@ const onScroll = () => {
               class="w-full border-b border-white/20 bg-transparent pb-2 text-lg font-bold text-white lowercase placeholder-white/60 focus:outline-none"
             />
             <div class="min-h-[150px]">
-              <TiptapEditor
+              <LazyTiptapEditor
                 ref="createEditorRef"
                 v-model="createBody"
                 placeholder="body"

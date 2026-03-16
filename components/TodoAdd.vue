@@ -57,7 +57,7 @@ const handleTitleInput = (event: Event) => {
           class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
           @input="handleTitleInput"
         />
-        <TiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
+        <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         <div class="flex items-center justify-end sm:justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <span v-else class="hidden text-xs text-white/60 sm:inline">⌘/ctrl + enter to add</span>

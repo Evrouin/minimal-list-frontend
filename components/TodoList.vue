@@ -329,7 +329,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
               </button>
             </div>
           </div>
-          <TiptapEditor ref="dialogEditorRef" v-model="dialogBody" placeholder="body" @submit="saveDialogTodo" />
+          <LazyTiptapEditor ref="dialogEditorRef" v-model="dialogBody" placeholder="body" @submit="saveDialogTodo" />
           <div class="flex items-center justify-between">
             <span class="text-xs text-white/60">⌘/ctrl + enter to save</span>
             <button class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600" @click="saveDialogTodo">
