@@ -14,11 +14,15 @@ const showDeleteDialog = ref(false)
 const editForm = reactive({ username: '', phone: '', bio: '' })
 
 onMounted(async () => {
-  user.value = await api.getUser(Number(route.params.id))
-  if (user.value) {
-    editForm.username = user.value.username
-    editForm.phone = user.value.phone
-    editForm.bio = user.value.bio
+  try {
+    user.value = await api.getUser(Number(route.params.id))
+    if (user.value) {
+      editForm.username = user.value.username
+      editForm.phone = user.value.phone
+      editForm.bio = user.value.bio
+    }
+  } catch {
+    errorMsg.value = 'failed to load user'
   }
 })
 
@@ -56,7 +60,8 @@ const confirmDelete = async () => {
         <NuxtLink to="/admin/users" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </div>
 
-      <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="!user && !errorMsg" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="errorMsg && !user" class="p-4 text-sm text-red-400">{{ errorMsg }}</div>
 
       <template v-if="user">
         <!-- header card -->

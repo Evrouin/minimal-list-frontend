@@ -22,10 +22,6 @@ const isTodoEmptyMessage = computed(() => {
 })
 
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 1))
-const isInitialLoad = ref(true)
-watch(loading, (val: boolean) => {
-  if (!val) isInitialLoad.value = false
-})
 
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
@@ -305,10 +301,10 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
 </script>
 
 <template>
-  <TodoSkeleton v-if="loading && isInitialLoad" :count="skeletonCount" />
+  <TodoSkeleton v-if="loading && filteredTodos.length === 0" :count="skeletonCount" />
 
   <div
-    v-else-if="filteredTodos.length === 0"
+    v-else-if="!loading && filteredTodos.length === 0"
     class="flex items-center justify-center"
   >
     <div
@@ -322,7 +318,7 @@ const setEditorRef = (id: number, el: { focus: () => void }) => {
     </div>
   </div>
 
-  <div v-else>
+  <div v-else class="transition-opacity duration-200" :class="loading ? 'animate-pulse pointer-events-none' : ''">
     <!-- Multi-select bar -->
     <div
       v-if="multiSelectMode"

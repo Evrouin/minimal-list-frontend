@@ -138,7 +138,7 @@ const confirmDelete = async () => {
       </div>
 
       <div v-if="loading" class="p-4 text-sm text-white/40">loading...</div>
-      <div v-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>
+      <div v-else-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>
 
       <div
         v-else

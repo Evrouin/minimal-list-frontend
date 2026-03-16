@@ -44,6 +44,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const changeFilter = (type: (typeof filterOptions)[number]) => {
+    if (filterType.value === type) return
     filterType.value = type
     loadTodos()
   }
