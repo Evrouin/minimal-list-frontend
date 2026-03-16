@@ -190,8 +190,8 @@ const cancelEdit = (todo: Todo) => {
   editOriginals.value.delete(todo.id)
 }
 
-const toggleCompletion = async (todo: Todo) => { await todoStore.toggleTodoCompletion(todo.id) }
-const togglePin = async (todo: Todo) => { await todoStore.togglePin(todo.id) }
+const toggleCompletion = async (todo: Todo) => { await todoStore.toggleTodoCompletion(todo.id).catch(() => {}) }
+const togglePin = async (todo: Todo) => { await todoStore.togglePin(todo.id).catch(() => {}) }
 
 const dialogToggleCompletion = async () => {
   if (!dialogTodo.value) return
