@@ -40,9 +40,15 @@ export const useAuthApi = () => {
       request<User>(`${base}/profile/`, { method: 'PATCH', body: data }),
 
     changePassword: (payload: ChangePasswordPayload) =>
-      request<{ message: string }>(`${base}/change-password/`, {
-        method: 'PUT',
-        body: payload,
+      request<{ message: string; tokens: { access: string; refresh: string } }>(
+        `${base}/change-password/`,
+        { method: 'PUT', body: payload }
+      ),
+
+    logout: (refresh: string) =>
+      request<{ message: string }>(`${base}/logout/`, {
+        method: 'POST',
+        body: { refresh },
       }),
 
     verifyEmail: (token: string) =>

@@ -84,7 +84,8 @@ export const useApiFetch = () => {
       }
 
       if (status === 401) {
-        localStorage.removeItem('auth_tokens')
+        const { clearAuth } = useAuthStore()
+        clearAuth()
         if (window.location.pathname !== '/auth/login') {
           navigateTo('/auth/login')
         }

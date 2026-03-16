@@ -126,7 +126,11 @@ export const useAuthStore = defineStore('auth', () => {
     clearAuth()
   }
 
-  const logout = () => clearAuth()
+  const logout = () => {
+    const refresh = tokens.value?.refresh
+    clearAuth()
+    if (refresh) api.logout(refresh).catch(() => {})
+  }
 
   return {
     user,
