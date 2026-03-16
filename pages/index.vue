@@ -6,6 +6,7 @@ const todoStore = useTodoStore()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+const { online } = useOnline()
 
 const { filterOptions } = todoStore
 
@@ -78,6 +79,11 @@ const onScroll = () => {
 
 <template>
   <div class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10">
+    <Transition name="slide">
+      <div v-if="!online" class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase">
+        you're offline — changes won't sync
+      </div>
+    </Transition>
     <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
       <div class="flex items-center justify-between">
         <TodoHeader title="Minimalist Todo List" />
@@ -247,6 +253,16 @@ const onScroll = () => {
 }
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateY(-100%);
   opacity: 0;
 }
 </style>
