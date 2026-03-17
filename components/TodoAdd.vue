@@ -80,7 +80,7 @@ const handleTitleInput = (event: Event) => {
   <form @submit.prevent="addTodo">
     <div class="mb-5 flex items-center justify-center">
       <div
-        class="flex w-full flex-col gap-2 rounded-lg bg-gray-500 p-2 text-xs text-white shadow-md"
+        class="flex w-full flex-col gap-2 rounded-lg bg-gray-700 p-5 text-xs text-white shadow-md"
       >
         <input
           v-model="title"
