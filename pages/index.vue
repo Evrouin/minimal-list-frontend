@@ -234,7 +234,7 @@ const { toasts, undo: undoToast } = useUndoToast()
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          class="flex items-center gap-3 rounded-lg bg-gray-900 px-4 py-2.5 text-sm text-white shadow-lg"
+          class="flex items-center gap-3 whitespace-nowrap rounded-lg bg-gray-900 px-4 py-2.5 text-xs text-white shadow-lg sm:text-sm"
         >
           <span class="lowercase">{{ toast.message }}</span>
           <button
