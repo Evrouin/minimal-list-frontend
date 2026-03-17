@@ -195,41 +195,6 @@ const { toasts, undo: undoToast } = useUndoToast()
           >
             <Icon name="uil:user-circle" class="text-xl" />
           </NuxtLink>
-          <div class="group relative">
-            <button class="cursor-pointer p-2 text-white/60 hover:text-white">
-              <Icon name="uil:question-circle" class="text-xl" />
-            </button>
-            <div
-              v-once
-              class="pointer-events-none absolute right-0 z-50 w-64 rounded-lg bg-gray-700 p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
-            >
-              <p class="mb-2 font-bold lowercase">keyboard shortcuts</p>
-              <ul class="mb-2 space-y-1 text-white/70">
-                <li><span class="text-white">⌘/ctrl + enter</span> — save</li>
-              </ul>
-              <p class="mb-2 font-bold lowercase">formatting</p>
-              <ul class="mb-2 space-y-1 text-white/70">
-                <li><span class="text-white">⌘/ctrl + b</span> — bold</li>
-                <li><span class="text-white">⌘/ctrl + i</span> — italic</li>
-              </ul>
-              <p class="mb-2 font-bold lowercase">actions</p>
-              <ul class="space-y-1 text-white/70">
-                <li><span class="text-white">click text</span> — edit note</li>
-                <li>
-                  <span class="text-white"><Icon name="uil:circle" /></span> —
-                  toggle complete
-                </li>
-                <li>
-                  <span class="text-white"><Icon name="uil:trash" /></span> —
-                  delete
-                </li>
-                <li>
-                  <span class="text-white"><Icon name="mdi:pin" /></span> —
-                  pin/unpin
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </PageHeader>
       <!-- Inline form on mobile -->
