@@ -64,7 +64,7 @@ watch(isLg, (lg) => {
   } else if (lg && todoAddRef.value) {
     // Mobile → desktop: transfer TodoAdd state to dialog if has content
     const { title, body, imageFile, imagePreview } = todoAddRef.value
-    if (title || body) {
+    if (title || body || imageFile) {
       createTitle.value = title
       createBody.value = body
       if (imageFile) {
@@ -141,6 +141,8 @@ const cancelCreate = () => {
   showCreateDialog.value = false
   createTitle.value = ''
   createBody.value = ''
+  createImageFile.value = null
+  createImagePreview.value = ''
 }
 const showScrollTop = ref(false)
 const onScroll = () => {
