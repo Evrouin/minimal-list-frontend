@@ -35,8 +35,8 @@ const formatDate = (date?: string) =>
 
 const statusLabel = (t: AdminTodo) =>
   t.deleted ? 'deleted' : t.completed ? 'completed' : 'active'
-const statusClass = (t: AdminTodo) =>
-  t.deleted ? 'bg-red-500/20 text-red-300' : t.completed ? 'bg-green-500/20 text-green-300' : 'bg-blue-500/20 text-blue-300'
+const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' =>
+  t.deleted ? 'red' : t.completed ? 'green' : 'blue'
 </script>
 
 <template>
@@ -54,9 +54,7 @@ const statusClass = (t: AdminTodo) =>
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <div class="mb-3 flex items-start justify-between">
             <h2 class="text-sm font-bold text-white lowercase">{{ todo.title }}</h2>
-            <span class="ml-3 shrink-0 rounded-full px-2.5 py-0.5 text-xs" :class="statusClass(todo)">
-              {{ statusLabel(todo) }}
-            </span>
+            <PillBadge class="ml-3 shrink-0" :color="statusColor(todo)" :label="statusLabel(todo)" />
           </div>
           <div
             v-if="todo.body"

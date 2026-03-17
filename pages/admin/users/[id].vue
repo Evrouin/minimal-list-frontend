@@ -85,24 +85,9 @@ const confirmDelete = async () => {
             </div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
-            <span
-              class="rounded-full px-2.5 py-0.5 text-xs"
-              :class="user.is_active ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'"
-            >
-              {{ user.is_active ? 'active' : 'deactivated' }}
-            </span>
-            <span
-              class="rounded-full px-2.5 py-0.5 text-xs"
-              :class="user.is_verified ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'"
-            >
-              {{ user.is_verified ? 'verified' : 'unverified' }}
-            </span>
-            <span
-              v-if="user.is_superuser"
-              class="rounded-full bg-yellow-500/20 px-2.5 py-0.5 text-xs text-yellow-300"
-            >
-              admin
-            </span>
+            <PillBadge :color="user.is_active ? 'green' : 'red'" :label="user.is_active ? 'active' : 'deactivated'" />
+            <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
+            <PillBadge v-if="user.is_superuser" color="yellow" label="admin" />
           </div>
         </div>
 

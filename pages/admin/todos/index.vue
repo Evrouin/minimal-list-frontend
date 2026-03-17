@@ -63,8 +63,8 @@ const toggleSort = (key: typeof sortKey.value) => {
 
 const statusLabel = (t: AdminTodo) =>
   t.deleted ? 'deleted' : t.completed ? 'completed' : 'active'
-const statusClass = (t: AdminTodo) =>
-  t.deleted ? 'bg-red-500/20 text-red-300' : t.completed ? 'bg-green-500/20 text-green-300' : 'bg-blue-500/20 text-blue-300'
+const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' =>
+  t.deleted ? 'red' : t.completed ? 'green' : 'blue'
 
 const sortedTodos = computed(() => {
   const k = sortKey.value
@@ -136,7 +136,7 @@ const confirmDelete = async () => {
               </button>
             </div>
             <div class="flex items-center gap-3 text-xs">
-              <span class="rounded-full px-2 py-0.5" :class="statusClass(todo)">{{ statusLabel(todo) }}</span>
+              <PillBadge :color="statusColor(todo)" :label="statusLabel(todo)" />
               <span class="ml-auto text-white/40">
                 {{ todo.created_at ? new Date(todo.created_at).toLocaleDateString() : '—' }}
               </span>
@@ -175,7 +175,7 @@ const confirmDelete = async () => {
                 <td class="max-w-64 truncate px-4 py-3 lowercase">{{ todo.title }}</td>
                 <td class="max-w-48 truncate px-4 py-3 text-white/70">{{ todo.user_email }}</td>
                 <td class="px-4 py-3 text-center">
-                  <span class="rounded-full px-2 py-0.5 text-xs" :class="statusClass(todo)">{{ statusLabel(todo) }}</span>
+                  <PillBadge :color="statusColor(todo)" :label="statusLabel(todo)" />
                 </td>
                 <td class="px-4 py-3 text-center text-xs text-white/50">
                   {{ todo.created_at ? new Date(todo.created_at).toLocaleDateString() : '—' }}

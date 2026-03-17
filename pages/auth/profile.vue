@@ -165,12 +165,7 @@ const handleLogout = () => {
             </div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
-            <span
-              class="rounded-full px-2.5 py-0.5 text-xs"
-              :class="user.is_verified ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'"
-            >
-              {{ user.is_verified ? 'verified' : 'unverified' }}
-            </span>
+            <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
           </div>
         </div>
 

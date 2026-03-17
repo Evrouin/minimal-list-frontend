@@ -184,14 +184,13 @@ const confirmDelete = async () => {
                 <td class="w-64 truncate px-4 py-3">{{ u.email }}</td>
                 <td class="px-4 py-3 text-white/70">{{ u.username || '—' }}</td>
                 <td class="px-4 py-3 text-center">
-                  <span class="rounded-full px-2 py-0.5 text-xs" :class="u.is_active ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'">{{ u.is_active ? 'yes' : 'no' }}</span>
+                  <PillBadge :color="u.is_active ? 'green' : 'red'" :label="u.is_active ? 'yes' : 'no'" />
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span class="rounded-full px-2 py-0.5 text-xs" :class="u.is_verified ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'">{{ u.is_verified ? 'yes' : 'no' }}</span>
+                  <PillBadge :color="u.is_verified ? 'green' : 'red'" :label="u.is_verified ? 'yes' : 'no'" />
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span v-if="u.is_superuser" class="rounded-full bg-green-500/20 px-2 py-0.5 text-xs text-green-300">yes</span>
-                  <span v-else class="rounded-full bg-white/5 px-2 py-0.5 text-xs text-white/30">no</span>
+                  <PillBadge :color="u.is_superuser ? 'green' : 'muted'" :label="u.is_superuser ? 'yes' : 'no'" />
                 </td>
                 <td class="px-4 py-3 text-center text-white/50">{{ formatDate(u.created_at) }}</td>
                 <td class="px-4 py-3">
