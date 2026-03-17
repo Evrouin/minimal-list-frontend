@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AdminTodo } from '~/composables/useAdminApi'
 
-definePageMeta({ middleware: ['admin'] })
+definePageMeta({ middleware: ['admin'], layout: 'admin' })
 
 const route = useRoute()
 const api = useAdminApi()
@@ -40,11 +40,10 @@ const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' =>
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
-      <PageHeader title="note detail">
-        <NuxtLink to="/admin/todos" class="text-xs text-white/60 lowercase hover:text-white">back</NuxtLink>
-      </PageHeader>
+  <div>
+    <PageHeader title="note detail">
+      <NuxtLink to="/admin/todos" class="text-xs text-white/60 lowercase hover:text-white">back</NuxtLink>
+    </PageHeader>
 
       <div v-if="!todo && !loadError" class="p-4 text-xs text-white/40">loading...</div>
       <div v-if="loadError" class="p-4 text-xs text-red-400">{{ loadError }}</div>
@@ -104,7 +103,6 @@ const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' =>
           </div>
         </div>
       </template>
-    </div>
 
     <ConfirmDialog
       v-model="showDeleteDialog"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ['admin'] })
+definePageMeta({ middleware: ['admin'], layout: 'admin' })
 
 const api = useAdminApi()
 const form = reactive({
@@ -40,9 +40,8 @@ const handleCreate = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
-      <PageHeader title="create user">
+  <div>
+    <PageHeader title="create user">
         <NuxtLink to="/admin/users" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </PageHeader>
 
@@ -106,6 +105,5 @@ const handleCreate = async () => {
           </button>
         </div>
       </form>
-    </div>
   </div>
 </template>

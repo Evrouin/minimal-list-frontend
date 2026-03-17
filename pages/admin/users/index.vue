@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { User } from '~/types/auth'
 
-definePageMeta({ middleware: ['admin'] })
+definePageMeta({ middleware: ['admin'], layout: 'admin' })
 
 const api = useAdminApi()
 const users = ref<User[]>([])
@@ -96,8 +96,7 @@ const confirmDelete = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+  <div>
       <PageHeader title="users">
         <input
           v-model="search"
@@ -210,7 +209,6 @@ const confirmDelete = async () => {
         <!-- pagination -->
         <AdminPagination :page="page" :total-pages="totalPages" :total-count="totalCount" label="users" @update:page="goToPage" />
       </div>
-    </div>
 
     <ConfirmDialog
       v-model="showDeleteDialog"

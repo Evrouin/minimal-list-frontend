@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ['admin'] })
+definePageMeta({ middleware: ['admin'], layout: 'admin' })
 
 const api = useAdminApi()
 const stats = ref<Awaited<ReturnType<typeof api.getStats>> | null>(null)
@@ -15,9 +15,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
-      <PageHeader title="admin dashboard">
+  <div>
+    <PageHeader title="admin dashboard">
         <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </PageHeader>
 
@@ -98,6 +97,5 @@ onMounted(async () => {
           <Icon name="uil:arrow-right" class="text-white/40" />
         </NuxtLink>
       </div>
-    </div>
   </div>
 </template>

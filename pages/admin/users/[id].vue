@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { User } from '~/types/auth'
 
-definePageMeta({ middleware: ['admin'] })
+definePageMeta({ middleware: ['admin'], layout: 'admin' })
 
 const route = useRoute()
 const api = useAdminApi()
@@ -62,11 +62,10 @@ const confirmDelete = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
-      <PageHeader title="user detail">
-        <NuxtLink to="/admin/users" class="text-xs text-white/60 lowercase hover:text-white">back</NuxtLink>
-      </PageHeader>
+  <div>
+    <PageHeader title="user detail">
+      <NuxtLink to="/admin/users" class="text-xs text-white/60 lowercase hover:text-white">back</NuxtLink>
+    </PageHeader>
 
       <div v-if="!user && !errorMsg" class="p-4 text-xs text-white/40">loading...</div>
       <div v-if="errorMsg && !user" class="p-4 text-xs text-red-400">{{ errorMsg }}</div>
@@ -206,7 +205,6 @@ const confirmDelete = async () => {
           </div>
         </div>
       </template>
-    </div>
 
     <ConfirmDialog
       v-model="showDeleteDialog"
