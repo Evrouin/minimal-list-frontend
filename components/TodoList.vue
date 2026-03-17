@@ -285,10 +285,15 @@ const saveDialogTodo = async () => {
 }
 
 const editImageFiles = ref(new Map<number, File>())
+const editImagePreviews = ref(new Map<number, string>())
 
 const onEditImageSelect = async (todo: Todo, e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
-  if (file) editImageFiles.value.set(todo.id, await compressImage(file))
+  if (file) {
+    const compressed = await compressImage(file)
+    editImageFiles.value.set(todo.id, compressed)
+    editImagePreviews.value.set(todo.id, URL.createObjectURL(compressed))
+  }
 }
 
 const saveTodo = async (todo: Todo) => {
@@ -297,6 +302,7 @@ const saveTodo = async (todo: Todo) => {
   const imageFile = editImageFiles.value.get(todo.id)
   editOriginals.value.delete(todo.id)
   editImageFiles.value.delete(todo.id)
+  editImagePreviews.value.delete(todo.id)
   await todoStore.updateTodo({ ...todo }, imageFile)
 }
 
@@ -308,6 +314,8 @@ const cancelEdit = (todo: Todo) => {
   }
   todo.editing = false
   editOriginals.value.delete(todo.id)
+  editImageFiles.value.delete(todo.id)
+  editImagePreviews.value.delete(todo.id)
 }
 
 const toggleCompletion = async (todo: Todo) => {
@@ -444,6 +452,7 @@ defineExpose({ cancelAllEdits, isEditing })
             :selected="isSelected(todo.id)"
             :show-checkbox="hasCheckbox(todo.id)"
             :multi-select-mode="multiSelectMode"
+            :edit-image-preview="editImagePreviews.get(todo.id)"
             @click="handleCardClick(todo)"
             @toggle-pin="togglePin(todo)"
             @request-delete="requestDelete(todo)"
@@ -479,6 +488,7 @@ defineExpose({ cancelAllEdits, isEditing })
             :selected="isSelected(todo.id)"
             :show-checkbox="hasCheckbox(todo.id)"
             :multi-select-mode="multiSelectMode"
+            :edit-image-preview="editImagePreviews.get(todo.id)"
             @click="handleCardClick(todo)"
             @toggle-pin="togglePin(todo)"
             @request-delete="requestDelete(todo)"
