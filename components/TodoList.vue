@@ -514,6 +514,7 @@ defineExpose({ cancelAllEdits, isEditing })
         <div
           class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
         >
+          <ImagePreview v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image" :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!" :padding="6" />
           <div class="flex w-full items-center justify-between">
             <input
               v-model="dialogTitle"
@@ -559,7 +560,6 @@ defineExpose({ cancelAllEdits, isEditing })
             placeholder="body"
             @submit="saveDialogTodo"
           />
-          <ImagePreview v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image" :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!" />
           <div class="flex items-center justify-between">
             <span class="hidden text-xs text-white/60 sm:inline"
               >⌘/ctrl + enter to save</span

@@ -82,6 +82,7 @@ const handleTitleInput = (event: Event) => {
       <div
         class="flex w-full flex-col gap-2 rounded-lg bg-gray-700 p-5 text-xs text-white shadow-md"
       >
+        <ImagePreview v-if="imagePreview" :src="imagePreview" :padding="5" removable @remove="clearImage" />
         <input
           v-model="title"
           type="text"
@@ -91,7 +92,6 @@ const handleTitleInput = (event: Event) => {
           @input="handleTitleInput"
         />
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
-        <ImagePreview v-if="imagePreview" :src="imagePreview" removable @remove="clearImage" />
         <div class="flex items-center justify-end sm:justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{
             errorMsg

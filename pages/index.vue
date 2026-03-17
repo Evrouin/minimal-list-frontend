@@ -305,6 +305,7 @@ const { toasts, undo: undoToast } = useUndoToast()
             class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg bg-gray-800 p-8 shadow-xl"
             @submit.prevent="createDialogSubmit"
           >
+            <ImagePreview v-if="createImagePreview" :src="createImagePreview" :padding="8" removable @remove="clearCreateImage" />
             <input
               v-model="createTitle"
               type="text"
@@ -320,7 +321,6 @@ const { toasts, undo: undoToast } = useUndoToast()
                 @submit="createDialogSubmit"
               />
             </div>
-            <ImagePreview v-if="createImagePreview" :src="createImagePreview" removable @remove="clearCreateImage" />
             <div class="flex items-center justify-between">
               <span
                 class="text-xs"
