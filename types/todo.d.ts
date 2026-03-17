@@ -3,6 +3,7 @@ export interface Todo {
   title: string
   body: string
   image?: string
+  thumbnail?: string
   completed: boolean
   deleted: boolean
   pinned: boolean
