@@ -21,7 +21,23 @@ onMounted(async () => {
         <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
       </PageHeader>
 
-      <div v-if="!stats && !error" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="!stats && !error">
+        <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div v-for="i in 4" :key="i" class="animate-pulse rounded-lg bg-gray-700 p-4 text-center">
+            <div class="mx-auto mb-2 h-8 w-12 rounded bg-gray-600" />
+            <div class="mx-auto h-3 w-16 rounded bg-gray-600" />
+          </div>
+        </div>
+        <div class="mb-6 animate-pulse rounded-lg bg-gray-700 p-4">
+          <div class="mb-3 h-3 w-28 rounded bg-gray-600" />
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div v-for="i in 3" :key="i">
+              <div class="mx-auto mb-2 h-6 w-10 rounded bg-gray-600" />
+              <div class="mx-auto h-3 w-14 rounded bg-gray-600" />
+            </div>
+          </div>
+        </div>
+      </div>
       <div v-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>
 
       <template v-if="stats">
