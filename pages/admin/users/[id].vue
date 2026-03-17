@@ -175,18 +175,18 @@ const confirmDelete = async () => {
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">account settings</p>
           <div class="space-y-3">
-            <label class="flex cursor-pointer items-center justify-between">
+            <div class="flex items-center justify-between">
               <span class="text-xs text-white">active</span>
-              <input type="checkbox" :checked="user.is_active" class="accent-green-500" @change="toggleField('is_active', !user.is_active)" />
-            </label>
-            <label class="flex cursor-pointer items-center justify-between">
+              <ToggleSwitch :model-value="user.is_active" @update:model-value="toggleField('is_active', $event)" />
+            </div>
+            <div class="flex items-center justify-between">
               <span class="text-xs text-white">verified</span>
-              <input type="checkbox" :checked="user.is_verified" class="accent-green-500" @change="toggleField('is_verified', !user.is_verified)" />
-            </label>
-            <label class="flex cursor-pointer items-center justify-between">
+              <ToggleSwitch :model-value="user.is_verified" @update:model-value="toggleField('is_verified', $event)" />
+            </div>
+            <div class="flex items-center justify-between">
               <span class="text-xs text-white">admin</span>
-              <input type="checkbox" :checked="user.is_superuser" class="accent-yellow-500" @change="toggleField('is_superuser', !user.is_superuser)" />
-            </label>
+              <ToggleSwitch :model-value="user.is_superuser" color="yellow" @update:model-value="toggleField('is_superuser', $event)" />
+            </div>
           </div>
         </div>
 

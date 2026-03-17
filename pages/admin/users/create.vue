@@ -83,12 +83,12 @@ const handleCreate = async () => {
 
         <div class="flex gap-6">
           <label class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
-            <input v-model="form.is_verified" type="checkbox" class="accent-green-500" />
+            <ToggleSwitch v-model="form.is_verified" />
             verified
           </label>
           <label class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
-            <input v-model="form.is_superuser" type="checkbox" class="accent-yellow-500" />
-            superuser
+            <ToggleSwitch v-model="form.is_superuser" color="yellow" />
+            admin
           </label>
         </div>
 
