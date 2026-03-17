@@ -34,8 +34,8 @@ const cardClasses = computed(() => [
     ? 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full'
     : 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full min-h-[120px] max-h-[300px] lg:min-h-0 lg:max-h-[400px]',
   props.todo.completed || props.todo.deleted
-    ? 'bg-gray-700 opacity-50 hover:bg-gray-900 transition-colors duration-200'
-    : 'bg-gray-700 hover:bg-gray-900 transition-colors duration-200',
+    ? 'bg-gray-700 opacity-50 lg:hover:bg-gray-900 transition-colors duration-200'
+    : 'bg-gray-700 lg:hover:bg-gray-900 transition-colors duration-200',
 ])
 </script>
 
