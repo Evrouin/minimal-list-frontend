@@ -65,7 +65,7 @@ const clearCreateImage = () => {
 }
 
 const createDialogSubmit = async () => {
-  if (!createTitle.value.trim() || !hasCreateBody.value) return
+  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value)) return
   createErrorMsg.value = ''
   try {
     if (createImageFile.value) {
@@ -277,7 +277,7 @@ const { toasts, undo: undoToast } = useUndoToast()
             </div>
             <div v-if="createImagePreview" class="relative">
               <img :src="createImagePreview" class="h-32 w-full rounded object-cover" />
-              <button type="button" class="absolute top-1 right-1 cursor-pointer rounded-full bg-black/50 p-0.5 text-white hover:bg-black/70" @click="clearCreateImage">
+              <button type="button" class="absolute top-1 right-1 cursor-pointer text-xs text-white/60 hover:text-white" @click="clearCreateImage">
                 <Icon name="uil:times" class="text-xs" />
               </button>
             </div>
@@ -304,11 +304,11 @@ const { toasts, undo: undoToast } = useUndoToast()
                   type="submit"
                   class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs lowercase hover:bg-gray-600"
                   :class="
-                    createTitle.trim() && hasCreateBody
+                    createTitle.trim() && (hasCreateBody || createImageFile)
                       ? 'text-white'
                       : 'text-white/20'
                   "
-                  :disabled="!createTitle.trim() || !hasCreateBody"
+                  :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile)"
                 >
                   add
                 </button>

@@ -15,7 +15,7 @@ const hasBody = computed(
       .trim().length > 0
 )
 const isValidTodo = computed(
-  () => title.value.trim().length > 0 && hasBody.value
+  () => title.value.trim().length > 0 && (hasBody.value || !!imageFile.value)
 )
 
 const errorMsg = ref('')
@@ -86,7 +86,7 @@ const handleTitleInput = (event: Event) => {
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         <div v-if="imagePreview" class="relative">
           <img :src="imagePreview" class="h-32 w-full rounded object-cover" />
-          <button type="button" class="absolute top-1 right-1 cursor-pointer rounded-full bg-black/50 p-0.5 text-white hover:bg-black/70" @click="clearImage">
+          <button type="button" class="absolute top-1 right-1 cursor-pointer text-xs text-white/60 hover:text-white" @click="clearImage">
             <Icon name="uil:times" class="text-xs" />
           </button>
         </div>
