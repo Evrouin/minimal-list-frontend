@@ -241,7 +241,7 @@ const { toasts, undo: undoToast } = useUndoToast()
               type="text"
               placeholder="title"
               maxlength="100"
-              class="w-full border-b border-white/20 bg-transparent pb-2 text-lg font-bold text-white lowercase placeholder-white/60 focus:outline-none"
+              class="w-full border-b border-white/20 bg-transparent pb-2 text-sm font-bold text-white lowercase placeholder-white/60 focus:outline-none"
             />
             <div class="min-h-[150px]">
               <LazyTiptapEditor
@@ -268,7 +268,7 @@ const { toasts, undo: undoToast } = useUndoToast()
                 </button>
                 <button
                   type="submit"
-                  class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm lowercase hover:bg-gray-600"
+                  class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs lowercase hover:bg-gray-600"
                   :class="
                     createTitle.trim() && hasCreateBody
                       ? 'text-white'

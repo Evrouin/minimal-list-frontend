@@ -1,6 +1,5 @@
 import type { User } from '../types/auth'
 import type { Todo } from '../types'
-import type { ApiResponse } from '../server/types/api'
 
 interface AdminStats {
   users: { total: number; verified: number; joined_today: number }
@@ -20,11 +19,10 @@ export const useAdminApi = () => {
 
   return {
     getStats: () => request<AdminStats>(`${base}/stats/`),
-    getUsers: (cursor?: string, search?: string) => {
-      if (cursor)
-        return request<{ results: User[]; next: string | null }>(cursor)
-      const query = search ? `?search=${encodeURIComponent(search)}` : ''
-      return request<{ results: User[]; next: string | null }>(`${base}/users/${query}`)
+    getUsers: (page = 1, search?: string) => {
+      const params = new URLSearchParams({ page: String(page) })
+      if (search) params.set('search', search)
+      return request<{ count: number; next: string | null; previous: string | null; results: User[] }>(`${base}/users/?${params}`)
     },
     getUser: (id: number) => request<User>(`${base}/users/${id}/`),
     createUser: (data: {
@@ -38,15 +36,10 @@ export const useAdminApi = () => {
       request<User>(`${base}/users/${id}/`, { method: 'PATCH', body: data }),
     deleteUser: (id: number) =>
       request(`${base}/users/${id}/`, { method: 'DELETE' }),
-    getTodos: (cursor?: string, search?: string) => {
-      if (cursor)
-        return request<ApiResponse<AdminTodo[]> & { results?: AdminTodo[] }>(
-          cursor
-        )
-      const query = search ? `?search=${encodeURIComponent(search)}` : ''
-      return request<ApiResponse<AdminTodo[]> & { results?: AdminTodo[] }>(
-        `${base}/todos/${query}`
-      )
+    getTodos: (page = 1, search?: string) => {
+      const params = new URLSearchParams({ page: String(page) })
+      if (search) params.set('search', search)
+      return request<{ count: number; next: string | null; previous: string | null; results: AdminTodo[] }>(`${base}/todos/?${params}`)
     },
     getTodo: (id: number) => request<AdminTodo>(`${base}/todos/${id}/`),
     deleteTodo: (id: number) =>

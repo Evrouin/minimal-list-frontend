@@ -153,7 +153,7 @@ const handleLogout = () => {
                 <label class="mb-1 block text-xs text-white/40">username</label>
                 <input
                   v-model="editForm.username"
-                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                   placeholder="username"
                 />
               </div>
@@ -162,7 +162,7 @@ const handleLogout = () => {
                 <input
                   v-model="editForm.phone"
                   type="tel"
-                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                   placeholder="phone"
                 />
               </div>
@@ -170,7 +170,7 @@ const handleLogout = () => {
                 <label class="mb-1 block text-xs text-white/40">bio</label>
                 <textarea
                   v-model="editForm.bio"
-                  class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+                  class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                   placeholder="bio"
                   rows="3"
                 />
@@ -183,13 +183,13 @@ const handleLogout = () => {
             <div class="mt-4 flex gap-2">
               <button
                 :disabled="loading"
-                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-sm text-white lowercase hover:bg-gray-500 disabled:opacity-50"
+                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500 disabled:opacity-50"
                 @click="saveProfile"
               >
                 save
               </button>
               <button
-                class="cursor-pointer rounded-lg px-4 py-2 text-sm text-white/60 lowercase hover:text-white"
+                class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 lowercase hover:text-white"
                 @click="isEditing = false"
               >
                 cancel
@@ -207,7 +207,7 @@ const handleLogout = () => {
               <input
                 v-model="passwordForm.old_password"
                 type="password"
-                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="current password"
               />
             </div>
@@ -216,7 +216,7 @@ const handleLogout = () => {
               <input
                 v-model="passwordForm.new_password"
                 type="password"
-                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="new password"
               />
             </div>
@@ -225,7 +225,7 @@ const handleLogout = () => {
               <input
                 v-model="passwordForm.new_password2"
                 type="password"
-                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="confirm new password"
               />
             </div>
@@ -237,7 +237,7 @@ const handleLogout = () => {
           <button
             type="submit"
             :disabled="loading"
-            class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+            class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
           >
             change password
           </button>
@@ -251,7 +251,7 @@ const handleLogout = () => {
               <p class="text-xs text-white/40">this action cannot be undone</p>
             </div>
             <button
-              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-sm text-red-300 lowercase hover:bg-red-500/30"
+              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
               @click="showDeleteDialog = true"
             >
               delete

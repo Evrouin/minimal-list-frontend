@@ -65,23 +65,23 @@ const confirmDelete = async () => {
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
     <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
       <PageHeader title="user detail">
-        <NuxtLink to="/admin/users" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
+        <NuxtLink to="/admin/users" class="text-xs text-white/60 lowercase hover:text-white">back</NuxtLink>
       </PageHeader>
 
-      <div v-if="!user && !errorMsg" class="p-4 text-sm text-white/40">loading...</div>
-      <div v-if="errorMsg && !user" class="p-4 text-sm text-red-400">{{ errorMsg }}</div>
+      <div v-if="!user && !errorMsg" class="p-4 text-xs text-white/40">loading...</div>
+      <div v-if="errorMsg && !user" class="p-4 text-xs text-red-400">{{ errorMsg }}</div>
 
       <template v-if="user">
         <!-- header card -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <div class="flex items-center gap-4">
             <img v-if="(user.avatar || user.avatar_url) && !avatarError" :src="user.avatar || user.avatar_url" class="h-12 w-12 rounded-full object-cover" @error="avatarError = true" />
-            <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
+            <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-sm font-bold text-white/70">
               {{ (user.username || user.email)[0].toUpperCase() }}
             </div>
             <div class="min-w-0 flex-1">
-              <p class="truncate text-lg font-medium text-white">{{ user.email }}</p>
-              <p class="text-sm text-white/50">{{ user.username || 'no username' }}</p>
+              <p class="truncate text-sm font-medium text-white">{{ user.email }}</p>
+              <p class="text-xs text-white/50">{{ user.username || 'no username' }}</p>
             </div>
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ const confirmDelete = async () => {
         <!-- info / edit card -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <template v-if="!isEditing">
-            <div class="space-y-3 text-sm">
+            <div class="space-y-3 text-xs">
               <div class="flex items-center justify-between">
                 <p class="text-xs font-bold uppercase tracking-wider text-white/40">profile</p>
                 <button
@@ -143,7 +143,7 @@ const confirmDelete = async () => {
                 <label class="mb-1 block text-xs text-white/40">username</label>
                 <input
                   v-model="editForm.username"
-                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                   placeholder="username"
                 />
               </div>
@@ -151,7 +151,7 @@ const confirmDelete = async () => {
                 <label class="mb-1 block text-xs text-white/40">phone</label>
                 <input
                   v-model="editForm.phone"
-                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                   placeholder="phone"
                 />
               </div>
@@ -159,7 +159,7 @@ const confirmDelete = async () => {
                 <label class="mb-1 block text-xs text-white/40">bio</label>
                 <textarea
                   v-model="editForm.bio"
-                  class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+                  class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                   placeholder="bio"
                   rows="3"
                 />
@@ -171,13 +171,13 @@ const confirmDelete = async () => {
 
             <div class="mt-4 flex gap-2">
               <button
-                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-sm text-white lowercase hover:bg-gray-500"
+                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500"
                 @click="save"
               >
                 save
               </button>
               <button
-                class="cursor-pointer rounded-lg px-4 py-2 text-sm text-white/60 lowercase hover:text-white"
+                class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 lowercase hover:text-white"
                 @click="isEditing = false"
               >
                 cancel
@@ -191,15 +191,15 @@ const confirmDelete = async () => {
           <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">account settings</p>
           <div class="space-y-3">
             <label class="flex cursor-pointer items-center justify-between">
-              <span class="text-sm text-white">active</span>
+              <span class="text-xs text-white">active</span>
               <input type="checkbox" :checked="user.is_active" class="accent-green-500" @change="toggleField('is_active', !user.is_active)" />
             </label>
             <label class="flex cursor-pointer items-center justify-between">
-              <span class="text-sm text-white">verified</span>
+              <span class="text-xs text-white">verified</span>
               <input type="checkbox" :checked="user.is_verified" class="accent-green-500" @change="toggleField('is_verified', !user.is_verified)" />
             </label>
             <label class="flex cursor-pointer items-center justify-between">
-              <span class="text-sm text-white">admin</span>
+              <span class="text-xs text-white">admin</span>
               <input type="checkbox" :checked="user.is_superuser" class="accent-yellow-500" @change="toggleField('is_superuser', !user.is_superuser)" />
             </label>
           </div>
@@ -209,11 +209,11 @@ const confirmDelete = async () => {
         <div class="rounded-lg border border-red-500/20 bg-gray-700 p-5">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-red-300">delete user</p>
+              <p class="text-xs font-medium text-red-300">delete user</p>
               <p class="text-xs text-white/40">this action cannot be undone</p>
             </div>
             <button
-              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-sm text-red-300 lowercase hover:bg-red-500/30"
+              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
               @click="showDeleteDialog = true"
             >
               delete

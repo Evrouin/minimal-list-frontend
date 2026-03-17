@@ -52,7 +52,7 @@ const handleGoogleLogin = async () => {
               v-model="form.email"
               type="email"
               placeholder="user@example.com"
-              class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+              class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
             />
           </div>
           <div>
@@ -61,7 +61,7 @@ const handleGoogleLogin = async () => {
               v-model="form.password"
               type="password"
               placeholder="password"
-              class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+              class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
             />
           </div>
         </div>
@@ -71,7 +71,7 @@ const handleGoogleLogin = async () => {
         <button
           type="submit"
           :disabled="authStore.loading"
-          class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+          class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
         >
           {{ authStore.loading ? 'logging in...' : 'login' }}
         </button>
@@ -84,7 +84,7 @@ const handleGoogleLogin = async () => {
 
         <button
           type="button"
-          class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500"
+          class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500"
           @click="handleGoogleLogin"
         >
           <Icon name="logos:google-icon" />

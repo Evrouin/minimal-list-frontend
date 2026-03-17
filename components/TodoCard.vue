@@ -59,7 +59,7 @@ const cardClasses = computed(() => [
     <div class="flex w-full items-center justify-between">
       <span
         v-if="!todo.editing"
-        class="flex-grow text-sm font-bold text-white lowercase sm:text-base"
+        class="flex-grow text-sm font-bold text-white lowercase"
       >
         {{ todo.title }}
       </span>
@@ -67,7 +67,7 @@ const cardClasses = computed(() => [
       <input
         v-if="todo.editing"
         v-model="todo.title"
-        class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none sm:text-base"
+        class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
         @keydown.enter="emit('save')"
         @click.stop
       />
@@ -109,7 +109,7 @@ const cardClasses = computed(() => [
     </div>
     <div
       v-if="!todo.editing"
-      class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase sm:text-sm"
+      class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase"
       v-html="todo.body"
     />
     <span v-if="!todo.editing && now" class="text-xs text-white/30">{{

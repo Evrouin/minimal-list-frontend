@@ -348,7 +348,7 @@ defineExpose({ cancelAllEdits })
     <!-- Multi-select bar -->
     <div
       v-if="multiSelectMode"
-      class="sticky top-0 z-20 mb-4 flex items-center justify-end gap-2 bg-gray-800 py-2"
+      class="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-end gap-2 bg-gray-800 px-4 py-2"
     >
       <button
         v-if="allSelectedUnpinned"
@@ -475,7 +475,7 @@ defineExpose({ cancelAllEdits })
           <div class="flex w-full items-center justify-between">
             <input
               v-model="dialogTitle"
-              class="flex-grow border-b border-white/20 bg-transparent text-lg font-bold text-white lowercase focus:outline-none"
+              class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
               @keydown.enter.prevent
             />
             <div class="flex shrink-0 items-center space-x-2">
@@ -522,7 +522,7 @@ defineExpose({ cancelAllEdits })
               >⌘/ctrl + enter to save</span
             >
             <button
-              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-sm text-white lowercase hover:bg-gray-600"
+              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs text-white lowercase hover:bg-gray-600"
               @click="saveDialogTodo"
             >
               save

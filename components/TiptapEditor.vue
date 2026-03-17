@@ -40,7 +40,7 @@ onMounted(() => {
     ],
     editorProps: {
       attributes: {
-        class: 'focus:outline-none text-sm text-white lowercase min-h-[1.5rem]',
+        class: 'focus:outline-none text-xs text-white lowercase min-h-[1.5rem]',
       },
       handleKeyDown: (_view: unknown, event: KeyboardEvent) => {
         if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {

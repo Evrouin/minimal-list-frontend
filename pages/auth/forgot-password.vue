@@ -34,7 +34,7 @@ const handleSubmit = async () => {
             v-model="email"
             type="email"
             placeholder="user@example.com"
-            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
           />
         </div>
 
@@ -44,7 +44,7 @@ const handleSubmit = async () => {
         <button
           type="submit"
           :disabled="authStore.loading"
-          class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-sm text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+          class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
         >
           {{ authStore.loading ? 'sending...' : 'send reset link' }}
         </button>
