@@ -318,12 +318,7 @@ const { toasts, undo: undoToast } = useUndoToast()
                 @submit="createDialogSubmit"
               />
             </div>
-            <div v-if="createImagePreview" class="relative">
-              <img :src="createImagePreview" class="h-32 w-full rounded object-cover" />
-              <button type="button" class="absolute top-1 right-1 cursor-pointer text-xs text-white/60 hover:text-white" @click="clearCreateImage">
-                <Icon name="uil:times" class="text-xs" />
-              </button>
-            </div>
+            <ImagePreview v-if="createImagePreview" :src="createImagePreview" removable @remove="clearCreateImage" />
             <div class="flex items-center justify-between">
               <span
                 class="text-xs"

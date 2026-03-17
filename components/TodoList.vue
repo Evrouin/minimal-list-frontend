@@ -543,9 +543,7 @@ defineExpose({ cancelAllEdits, isEditing })
             placeholder="body"
             @submit="saveDialogTodo"
           />
-          <div v-if="dialogImagePreview || dialogTodo.image" class="relative">
-            <img :src="dialogImagePreview || dialogTodo.image" class="h-32 w-full rounded object-cover" />
-          </div>
+          <ImagePreview v-if="dialogImagePreview || dialogTodo.image" :src="dialogImagePreview || dialogTodo.image!" />
           <div class="flex items-center justify-between">
             <span class="hidden text-xs text-white/60 sm:inline"
               >⌘/ctrl + enter to save</span

@@ -91,12 +91,7 @@ const handleTitleInput = (event: Event) => {
           @input="handleTitleInput"
         />
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
-        <div v-if="imagePreview" class="relative">
-          <img :src="imagePreview" class="h-32 w-full rounded object-cover" />
-          <button type="button" class="absolute top-1 right-1 cursor-pointer text-xs text-white/60 hover:text-white" @click="clearImage">
-            <Icon name="uil:times" class="text-xs" />
-          </button>
-        </div>
+        <ImagePreview v-if="imagePreview" :src="imagePreview" removable @remove="clearImage" />
         <div class="flex items-center justify-end sm:justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{
             errorMsg
