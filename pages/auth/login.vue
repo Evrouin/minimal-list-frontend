@@ -40,7 +40,7 @@ const handleGoogleLogin = async () => {
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
     <div class="w-full max-w-lg px-4">
-      <PageHeader title="login">
+      <PageHeader title="minimal list">
         <NuxtLink to="/auth/register" class="text-sm text-white/60 lowercase hover:text-white">register</NuxtLink>
       </PageHeader>
 

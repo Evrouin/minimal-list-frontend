@@ -33,7 +33,9 @@ const handleRegister = async () => {
   }
 
   try {
-    const res = (await authStore.register(form)) as { message?: string }
+    const payload = { ...form }
+    if (!payload.username.trim()) delete (payload as Record<string, unknown>).username
+    const res = (await authStore.register(payload)) as { message?: string }
     successMsg.value =
       res.message || 'registration successful. check your email.'
   } catch {
@@ -45,7 +47,7 @@ const handleRegister = async () => {
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
     <div class="w-full max-w-lg px-4">
-      <PageHeader title="register">
+      <PageHeader title="minimal list">
         <NuxtLink to="/auth/login" class="text-sm text-white/60 lowercase hover:text-white">login</NuxtLink>
       </PageHeader>
 
