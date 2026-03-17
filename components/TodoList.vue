@@ -33,6 +33,7 @@ const dialogBody = ref('')
 const dialogEditorRef = ref<{ focus: () => void } | null>(null)
 const dialogPinned = ref(false)
 const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
+const cardRefs = ref(new Map<number, Element>())
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
@@ -244,7 +245,10 @@ const editTodo = (todo: Todo) => {
   } else {
     editOriginals.value.set(todo.id, { title: todo.title, body: todo.body })
     todo.editing = true
-    nextTick(() => inlineEditorRefs.value.get(todo.id)?.focus())
+    nextTick(() => {
+      inlineEditorRefs.value.get(todo.id)?.focus()
+      cardRefs.value.get(todo.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
   }
 }
 
@@ -354,7 +358,9 @@ const restoreTodo = (todo: Todo) => {
 const setEditorRef = (id: number, el: { focus: () => void }) => {
   inlineEditorRefs.value.set(id, el)
 }
-defineExpose({ cancelAllEdits })
+const isEditing = computed(() => filteredTodos.value.some((t) => t.editing))
+
+defineExpose({ cancelAllEdits, isEditing })
 </script>
 
 <template>
@@ -423,7 +429,7 @@ defineExpose({ cancelAllEdits })
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div v-for="todo in pinnedTodos" :key="todo.id" class="mb-5 inline-block w-full break-inside-avoid">
+        <div v-for="todo in pinnedTodos" :key="todo.id" :ref="(el) => { if (el) cardRefs.set(todo.id, el as Element) }" class="mb-5 inline-block w-full break-inside-avoid">
           <TodoCard
             :todo="todo"
             :pinned="true"
@@ -458,7 +464,7 @@ defineExpose({ cancelAllEdits })
         others
       </p>
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div v-for="todo in unpinnedTodos" :key="todo.id" class="mb-5 inline-block w-full break-inside-avoid">
+        <div v-for="todo in unpinnedTodos" :key="todo.id" :ref="(el) => { if (el) cardRefs.set(todo.id, el as Element) }" class="mb-5 inline-block w-full break-inside-avoid">
           <TodoCard
             :todo="todo"
             :pinned="false"

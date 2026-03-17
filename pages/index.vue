@@ -10,6 +10,8 @@ const { online } = useOnline()
 const { flushAll } = useUndoToast()
 
 const { filterOptions } = todoStore
+const { filteredTodos } = storeToRefs(todoStore)
+const mobileEditing = computed(() => filteredTodos.value.some((t) => t.editing))
 
 const handleFilter = async (filter: (typeof filterOptions)[number]) => {
   await flushAll()
@@ -29,7 +31,7 @@ onMounted(() => {
 })
 
 const scrollContainer = ref<HTMLElement | null>(null)
-const todoListRef = ref<{ cancelAllEdits: () => void } | null>(null)
+const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean } | null>(null)
 const showCreateDialog = ref(false)
 const createTitle = ref('')
 const createBody = ref('')
@@ -191,13 +193,17 @@ const { toasts, undo: undoToast } = useUndoToast()
         </div>
       </PageHeader>
       <!-- Inline form on mobile -->
-      <div class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
-        <TodoAdd />
-      </div>
+      <Transition name="fade">
+        <div v-if="!mobileEditing" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
+          <TodoAdd />
+        </div>
+      </Transition>
     </div>
-    <div
-      class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
-    >
+    <Transition name="fade">
+      <div
+        v-if="!mobileEditing"
+        class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
+      >
       <button
         v-for="(filter, index) in filterOptions"
         :key="index"
@@ -207,7 +213,8 @@ const { toasts, undo: undoToast } = useUndoToast()
       >
         {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
       </button>
-    </div>
+      </div>
+    </Transition>
     <div
       ref="scrollContainer"
       class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
