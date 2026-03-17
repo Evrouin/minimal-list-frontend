@@ -27,6 +27,7 @@ const emit = defineEmits<{
 }>()
 
 const { now, timeAgo } = useTimeAgo()
+const showPreview = ref(false)
 
 const cardClasses = computed(() => [
   props.todo.editing
@@ -57,7 +58,13 @@ const cardClasses = computed(() => [
     >
       <Icon v-if="selected" name="uil:check" class="text-white" />
     </button>
-    <img v-if="!todo.editing && todo.image" :src="todo.image" class="-mx-5 -mt-5 mb-1 block h-32 self-stretch rounded-t object-cover" style="width: calc(100% + 2.5rem); max-width: none" />
+    <img v-if="!todo.editing && todo.image" :src="todo.image" class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" @click.stop="showPreview = true" />
+    <Teleport to="body">
+      <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80" @click="showPreview = false">
+        <button class="absolute top-4 right-4 cursor-pointer text-2xl text-white/60 hover:text-white" @click.stop="showPreview = false">✕</button>
+        <img :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop />
+      </div>
+    </Teleport>
     <div class="flex w-full items-center justify-between">
       <span
         v-if="!todo.editing"
