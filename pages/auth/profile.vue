@@ -323,7 +323,7 @@ const handleLogout = () => {
     />
 
     <!-- avatar crop modal -->
-    <div v-if="showCropper" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70" @click.self="cancelCrop">
+    <ModalOverlay :show="showCropper" backdrop-class="bg-black/70" @click.self="cancelCrop">
       <div class="w-full max-w-sm rounded-lg bg-gray-700 p-4">
         <div class="mb-3 max-h-[60vh] overflow-hidden">
           <img ref="cropImgEl" :src="cropImageSrc" class="max-w-full" />
@@ -333,6 +333,6 @@ const handleLogout = () => {
           <button class="cursor-pointer rounded bg-white/10 px-3 py-1 text-xs text-white hover:bg-white/20" @click="confirmCrop">save</button>
         </div>
       </div>
-    </div>
+    </ModalOverlay>
   </div>
 </template>

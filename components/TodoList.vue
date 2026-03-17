@@ -494,14 +494,7 @@ defineExpose({ cancelAllEdits, isEditing })
   </div>
 
   <!-- Edit dialog (lg+ screens) -->
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="dialogTodo"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-        tabindex="0"
-        @keydown.esc="saveDialogTodo"
-      >
+  <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="saveDialogTodo">
         <div
           class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
         >
@@ -571,9 +564,7 @@ defineExpose({ cancelAllEdits, isEditing })
             </div>
           </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+  </ModalOverlay>
 
   <ConfirmDialog
     v-model="showDeleteDialog"

@@ -25,13 +25,7 @@ const confirm = () => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="props.modelValue"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-        @click.self="!props.loading && close()"
-      >
+  <ModalOverlay :show="props.modelValue" @click.self="!props.loading && close()">
         <div class="mx-4 w-full max-w-sm rounded-lg bg-gray-700 p-5 shadow-md">
           <h3 class="text-md mb-2 font-bold text-white lowercase">
             {{ props.title || 'confirm' }}
@@ -56,9 +50,7 @@ const confirm = () => {
             </button>
           </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+  </ModalOverlay>
 </template>
 
 <style scoped>

@@ -298,14 +298,7 @@ const { toasts, undo: undoToast } = useUndoToast()
     </Transition>
 
     <!-- Create dialog (lg+ screens) -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="showCreateDialog"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          tabindex="0"
-          @keydown.esc="cancelCreate"
-        >
+    <ModalOverlay :show="showCreateDialog" tabindex="0" @keydown.esc="cancelCreate">
           <form
             class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg bg-gray-800 p-8 shadow-xl"
             @submit.prevent="createDialogSubmit"
@@ -365,9 +358,7 @@ const { toasts, undo: undoToast } = useUndoToast()
               </div>
             </div>
           </form>
-        </div>
-      </Transition>
-    </Teleport>
+    </ModalOverlay>
   </div>
 </template>
 
