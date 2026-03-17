@@ -114,7 +114,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
 
 <template>
   <div v-if="ready && editor" class="tiptap-wrapper">
-    <div class="mb-1 flex gap-1">
+    <div class="mb-2 flex gap-1">
       <button
         v-for="btn in [
           { type: 'bold', label: 'B', class: '' },
