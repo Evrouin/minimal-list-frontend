@@ -266,6 +266,12 @@ const onDialogImageSelect = async (e: Event) => {
   }
 }
 
+const cancelDialogTodo = () => {
+  dialogTodo.value = null
+  dialogImageFile.value = null
+  dialogImagePreview.value = ''
+}
+
 const saveDialogTodo = async () => {
   if (!dialogTodo.value || !dialogTitle.value.trim()) return
   dialogTodo.value.title = dialogTitle.value
@@ -494,7 +500,7 @@ defineExpose({ cancelAllEdits, isEditing })
   </div>
 
   <!-- Edit dialog (lg+ screens) -->
-  <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="saveDialogTodo">
+  <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="cancelDialogTodo">
         <div
           class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
         >
@@ -543,7 +549,7 @@ defineExpose({ cancelAllEdits, isEditing })
             placeholder="body"
             @submit="saveDialogTodo"
           />
-          <ImagePreview v-if="dialogImagePreview || dialogTodo.image" :src="dialogImagePreview || dialogTodo.image!" />
+          <ImagePreview v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image" :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!" />
           <div class="flex items-center justify-between">
             <span class="hidden text-xs text-white/60 sm:inline"
               >⌘/ctrl + enter to save</span
@@ -553,6 +559,12 @@ defineExpose({ cancelAllEdits, isEditing })
                 <Icon name="uil:image" class="text-sm" />
                 <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" />
               </label>
+              <button
+                class="cursor-pointer rounded-lg px-4 py-1.5 text-xs text-white/40 lowercase hover:text-white"
+                @click="cancelDialogTodo"
+              >
+                cancel
+              </button>
               <button
                 class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs text-white lowercase hover:bg-gray-600"
                 @click="saveDialogTodo"
