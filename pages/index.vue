@@ -48,6 +48,7 @@ const hasCreateBody = computed(
 )
 
 const createErrorMsg = ref('')
+const createSubmitting = ref(false)
 const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
 
@@ -66,7 +67,8 @@ const clearCreateImage = () => {
 }
 
 const createDialogSubmit = async () => {
-  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value)) return
+  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value) || createSubmitting.value) return
+  createSubmitting.value = true
   createErrorMsg.value = ''
   try {
     if (createImageFile.value) {
@@ -90,6 +92,8 @@ const createDialogSubmit = async () => {
     createErrorMsg.value = msg.includes('limit')
       ? 'note limit reached'
       : 'failed to add note'
+  } finally {
+    createSubmitting.value = false
   }
 }
 

@@ -19,6 +19,7 @@ const isValidTodo = computed(
 )
 
 const errorMsg = ref('')
+const submitting = ref(false)
 const imageFile = ref<File | null>(null)
 const imagePreview = ref('')
 
@@ -37,7 +38,8 @@ const clearImage = () => {
 }
 
 const addTodo = async () => {
-  if (!isValidTodo.value) return
+  if (!isValidTodo.value || submitting.value) return
+  submitting.value = true
   errorMsg.value = ''
   try {
     if (imageFile.value) {
@@ -60,6 +62,8 @@ const addTodo = async () => {
     errorMsg.value = msg.includes('limit')
       ? 'note limit reached'
       : 'failed to add note'
+  } finally {
+    submitting.value = false
   }
 }
 
