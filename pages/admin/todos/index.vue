@@ -195,22 +195,7 @@ const confirmDelete = async () => {
         </div>
 
         <!-- pagination -->
-        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between text-xs">
-          <span class="text-white/40">{{ totalCount }} notes</span>
-          <div class="flex items-center gap-2">
-            <button
-              :disabled="page === 1"
-              class="rounded px-3 py-1 text-white/60 transition-colors hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-              @click="goToPage(page - 1)"
-            >prev</button>
-            <span class="text-white/60">{{ page }} / {{ totalPages }}</span>
-            <button
-              :disabled="page === totalPages"
-              class="rounded px-3 py-1 text-white/60 transition-colors hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-              @click="goToPage(page + 1)"
-            >next</button>
-          </div>
-        </div>
+        <AdminPagination :page="page" :total-pages="totalPages" :total-count="totalCount" label="notes" @update:page="goToPage" />
       </div>
     </div>
 
