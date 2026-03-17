@@ -45,13 +45,8 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
-    <div class="w-full max-w-lg px-4">
-      <PageHeader title="minimal list">
-        <NuxtLink to="/auth/login" class="text-sm text-white/60 lowercase hover:text-white">login</NuxtLink>
-      </PageHeader>
-
-      <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleRegister">
+  <AuthFormCard title="minimal list" link-to="/auth/login" link-label="login">
+      <form @submit.prevent="handleRegister">
         <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/40">account details</p>
 
         <div class="space-y-4">
@@ -118,6 +113,5 @@ const handleRegister = async () => {
           {{ authStore.loading ? 'registering...' : 'register' }}
         </button>
       </form>
-    </div>
-  </div>
+  </AuthFormCard>
 </template>

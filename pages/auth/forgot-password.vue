@@ -21,13 +21,8 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
-    <div class="w-full max-w-lg px-4">
-      <PageHeader title="forgot password">
-        <NuxtLink to="/auth/login" class="text-sm text-white/60 lowercase hover:text-white">login</NuxtLink>
-      </PageHeader>
-
-      <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleSubmit">
+  <AuthFormCard title="forgot password" link-to="/auth/login" link-label="login">
+      <form @submit.prevent="handleSubmit">
         <div>
           <label class="mb-1 block text-xs text-white/40">email</label>
           <input
@@ -49,6 +44,5 @@ const handleSubmit = async () => {
           {{ authStore.loading ? 'sending...' : 'send reset link' }}
         </button>
       </form>
-    </div>
-  </div>
+  </AuthFormCard>
 </template>

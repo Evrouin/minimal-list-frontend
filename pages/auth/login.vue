@@ -38,13 +38,8 @@ const handleGoogleLogin = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-[20vh]">
-    <div class="w-full max-w-lg px-4">
-      <PageHeader title="minimal list">
-        <NuxtLink to="/auth/register" class="text-sm text-white/60 lowercase hover:text-white">register</NuxtLink>
-      </PageHeader>
-
-      <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleLogin">
+  <AuthFormCard title="minimal list" link-to="/auth/register" link-label="register">
+      <form @submit.prevent="handleLogin">
         <div class="space-y-4">
           <div>
             <label class="mb-1 block text-xs text-white/40">email</label>
@@ -97,6 +92,5 @@ const handleGoogleLogin = async () => {
           forgot password?
         </NuxtLink>
       </div>
-    </div>
-  </div>
+  </AuthFormCard>
 </template>
