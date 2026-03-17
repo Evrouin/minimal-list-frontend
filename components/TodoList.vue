@@ -251,11 +251,12 @@ const editTodo = (todo: Todo) => {
 const dialogImageFile = ref<File | null>(null)
 const dialogImagePreview = ref('')
 
-const onDialogImageSelect = (e: Event) => {
+const onDialogImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (file) {
-    dialogImageFile.value = file
-    dialogImagePreview.value = URL.createObjectURL(file)
+    const compressed = await compressImage(file)
+    dialogImageFile.value = compressed
+    dialogImagePreview.value = URL.createObjectURL(compressed)
   }
 }
 
@@ -273,9 +274,9 @@ const saveDialogTodo = async () => {
 
 const editImageFiles = ref(new Map<number, File>())
 
-const onEditImageSelect = (todo: Todo, e: Event) => {
+const onEditImageSelect = async (todo: Todo, e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
-  if (file) editImageFiles.value.set(todo.id, file)
+  if (file) editImageFiles.value.set(todo.id, await compressImage(file))
 }
 
 const saveTodo = async (todo: Todo) => {

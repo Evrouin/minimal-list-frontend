@@ -51,11 +51,12 @@ const createErrorMsg = ref('')
 const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
 
-const onCreateImageSelect = (e: Event) => {
+const onCreateImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (file) {
-    createImageFile.value = file
-    createImagePreview.value = URL.createObjectURL(file)
+    const compressed = await compressImage(file)
+    createImageFile.value = compressed
+    createImagePreview.value = URL.createObjectURL(compressed)
   }
 }
 

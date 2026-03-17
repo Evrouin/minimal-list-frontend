@@ -22,11 +22,12 @@ const errorMsg = ref('')
 const imageFile = ref<File | null>(null)
 const imagePreview = ref('')
 
-const onImageSelect = (e: Event) => {
+const onImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (file) {
-    imageFile.value = file
-    imagePreview.value = URL.createObjectURL(file)
+    const compressed = await compressImage(file)
+    imageFile.value = compressed
+    imagePreview.value = URL.createObjectURL(compressed)
   }
 }
 
