@@ -105,7 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const updateProfile = async (data: Partial<User>) => {
+  const updateProfile = async (data: Partial<User> | FormData) => {
     user.value = await api.updateProfile(data)
     return user.value
   }

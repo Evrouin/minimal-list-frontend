@@ -36,7 +36,7 @@ export const useAuthApi = () => {
 
     fetchProfile: () => request<User>(`${base}/profile/`),
 
-    updateProfile: (data: Partial<User>) =>
+    updateProfile: (data: Partial<User> | FormData) =>
       request<User>(`${base}/profile/`, { method: 'PATCH', body: data }),
 
     changePassword: (payload: ChangePasswordPayload) =>

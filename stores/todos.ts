@@ -66,18 +66,26 @@ export const useTodoStore = defineStore('todo', () => {
     })
   })
 
-  const addTodo = async (todo: Partial<Todo>) => {
+  const addTodo = async (todo: Partial<Todo> | FormData) => {
     const response = await api.createTodo(todo)
     todos.value.unshift({ ...response.data, editing: false })
   }
 
-  const updateTodo = async (updatedTodo: Todo) => {
+  const updateTodo = async (updatedTodo: Todo, imageFile?: File) => {
     const index = todos.value.findIndex((t) => t.id === updatedTodo.id)
     if (index === -1) return
     const previous = { ...todos.value[index] }
     todos.value[index] = { ...updatedTodo, editing: false }
     try {
-      const response = await api.updateTodo(updatedTodo.id, updatedTodo)
+      let body: Partial<Todo> | FormData = updatedTodo
+      if (imageFile) {
+        const fd = new FormData()
+        fd.append('title', updatedTodo.title)
+        fd.append('body', updatedTodo.body)
+        fd.append('image', imageFile)
+        body = fd
+      }
+      const response = await api.updateTodo(updatedTodo.id, body)
       todos.value[index] = { ...response.data, editing: false }
     } catch {
       todos.value[index] = previous

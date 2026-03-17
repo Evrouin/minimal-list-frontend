@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 import { storeToRefs } from 'pinia'
+import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
 
 const authStore = useAuthStore()
 const { user, loading } = storeToRefs(authStore)
@@ -9,6 +11,56 @@ const isEditing = ref(false)
 const successMsg = ref('')
 const errorMsg = ref('')
 const avatarError = ref(false)
+const avatarInput = ref<HTMLInputElement>()
+
+const showCropper = ref(false)
+const cropImageSrc = ref('')
+const cropImgEl = ref<HTMLImageElement>()
+let cropper: Cropper | null = null
+
+const onAvatarSelect = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  cropImageSrc.value = URL.createObjectURL(file)
+  showCropper.value = true
+  nextTick(() => {
+    if (cropImgEl.value) {
+      cropper = new Cropper(cropImgEl.value, {
+        aspectRatio: 1,
+        viewMode: 1,
+        dragMode: 'move',
+        cropBoxResizable: false,
+        cropBoxMovable: false,
+        background: false,
+      })
+    }
+  })
+}
+
+const cancelCrop = () => {
+  cropper?.destroy()
+  cropper = null
+  showCropper.value = false
+  cropImageSrc.value = ''
+  if (avatarInput.value) avatarInput.value.value = ''
+}
+
+const confirmCrop = async () => {
+  if (!cropper) return
+  const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 })
+  canvas.toBlob(async (blob) => {
+    if (!blob) return
+    const formData = new FormData()
+    formData.append('avatar', blob, 'avatar.jpg')
+    try {
+      await authStore.updateProfile(formData)
+      avatarError.value = false
+    } catch {
+      errorMsg.value = 'failed to upload avatar.'
+    }
+    cancelCrop()
+  }, 'image/jpeg', 0.9)
+}
 
 const editForm = reactive({
   username: '',
@@ -97,10 +149,16 @@ const handleLogout = () => {
         <!-- header card -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <div class="flex items-center gap-4">
-            <img v-if="(user.avatar || user.avatar_url) && !avatarError" :src="user.avatar || user.avatar_url" class="h-12 w-12 rounded-full object-cover" @error="avatarError = true" />
-            <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
-              {{ (user.username || user.email)[0].toUpperCase() }}
+            <div class="group relative cursor-pointer" @click="avatarInput?.click()">
+              <img v-if="(user.avatar || user.avatar_url) && !avatarError" :src="user.avatar || user.avatar_url" class="h-12 w-12 rounded-full object-cover" @error="avatarError = true" />
+              <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
+                {{ (user.username || user.email)[0].toUpperCase() }}
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                <Icon name="uil:camera" class="text-sm text-white" />
+              </div>
             </div>
+            <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-lg font-medium text-white">{{ user.username || 'no username' }}</p>
               <p class="text-sm text-white/50">{{ user.email }}</p>
@@ -268,5 +326,18 @@ const handleLogout = () => {
       confirm-text="delete forever"
       @confirm="handleDeleteAccount"
     />
+
+    <!-- avatar crop modal -->
+    <div v-if="showCropper" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70" @click.self="cancelCrop">
+      <div class="w-full max-w-sm rounded-lg bg-gray-700 p-4">
+        <div class="mb-3 max-h-[60vh] overflow-hidden">
+          <img ref="cropImgEl" :src="cropImageSrc" class="max-w-full" />
+        </div>
+        <div class="flex justify-end gap-2">
+          <button class="cursor-pointer rounded px-3 py-1 text-xs text-white/60 hover:text-white" @click="cancelCrop">cancel</button>
+          <button class="cursor-pointer rounded bg-white/10 px-3 py-1 text-xs text-white hover:bg-white/20" @click="confirmCrop">save</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

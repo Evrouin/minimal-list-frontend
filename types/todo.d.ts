@@ -2,6 +2,7 @@ export interface Todo {
   id: number
   title: string
   body: string
+  image?: string
   completed: boolean
   deleted: boolean
   pinned: boolean
