@@ -247,7 +247,9 @@ const editTodo = (todo: Todo) => {
     todo.editing = true
     nextTick(() => {
       inlineEditorRefs.value.get(todo.id)?.focus()
-      cardRefs.value.get(todo.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => {
+        cardRefs.value.get(todo.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 220)
     })
   }
 }
