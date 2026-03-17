@@ -59,6 +59,7 @@ const cardClasses = computed(() => [
       <Icon v-if="selected" name="uil:check" class="text-white" />
     </button>
     <img v-if="!todo.editing && todo.image" :src="todo.image" loading="lazy" class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" @click.stop="showPreview = true" />
+    <img v-if="todo.editing && todo.image" :src="todo.image" class="-mx-5 -mt-5 mb-1 block h-32 rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" />
     <Teleport to="body">
       <div v-if="showPreview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80" @click="showPreview = false">
         <button class="absolute top-4 right-4 cursor-pointer text-2xl text-white/60 hover:text-white" @click.stop="showPreview = false">✕</button>
