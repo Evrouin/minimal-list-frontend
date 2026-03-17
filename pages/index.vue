@@ -32,6 +32,7 @@ onMounted(() => {
 
 const scrollContainer = ref<HTMLElement | null>(null)
 const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean } | null>(null)
+const todoAddRef = ref<{ title: string; body: string; imageFile: File | null; imagePreview: string; clearImage: () => void } | null>(null)
 const showCreateDialog = ref(false)
 const createTitle = ref('')
 const createBody = ref('')
@@ -39,6 +40,43 @@ const createEditorRef = ref<{ focus: () => void } | null>(null)
 
 watch(showCreateDialog, (val) => {
   if (val) nextTick(() => createEditorRef.value?.focus())
+})
+
+const isLg = ref(false)
+let lgQuery: MediaQueryList | null = null
+onMounted(() => {
+  lgQuery = window.matchMedia('(min-width: 1024px)')
+  isLg.value = lgQuery.matches
+  lgQuery.addEventListener('change', (e) => { isLg.value = e.matches })
+})
+watch(isLg, (lg) => {
+  if (!lg && showCreateDialog.value) {
+    // Desktop → mobile: transfer dialog state to TodoAdd
+    if (todoAddRef.value) {
+      todoAddRef.value.title = createTitle.value
+      todoAddRef.value.body = createBody.value
+      if (createImageFile.value) {
+        todoAddRef.value.imageFile = createImageFile.value
+        todoAddRef.value.imagePreview = createImagePreview.value
+      }
+    }
+    cancelCreate()
+  } else if (lg && todoAddRef.value) {
+    // Mobile → desktop: transfer TodoAdd state to dialog if has content
+    const { title, body, imageFile, imagePreview } = todoAddRef.value
+    if (title || body) {
+      createTitle.value = title
+      createBody.value = body
+      if (imageFile) {
+        createImageFile.value = imageFile
+        createImagePreview.value = imagePreview
+      }
+      todoAddRef.value.title = ''
+      todoAddRef.value.body = ''
+      todoAddRef.value.clearImage()
+      showCreateDialog.value = true
+    }
+  }
 })
 
 const hasCreateBody = computed(
@@ -195,7 +233,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       <!-- Inline form on mobile -->
       <Transition name="fade">
         <div v-if="!mobileEditing" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
-          <TodoAdd />
+          <TodoAdd ref="todoAddRef" />
         </div>
       </Transition>
     </div>

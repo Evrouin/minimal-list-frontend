@@ -67,6 +67,8 @@ const addTodo = async () => {
   }
 }
 
+defineExpose({ title, body, imageFile, imagePreview, clearImage })
+
 const handleTitleInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   input.value = input.value.toLowerCase()
