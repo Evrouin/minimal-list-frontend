@@ -13,10 +13,10 @@ export const useTodoApi = () => {
       )
     },
 
-    createTodo: (todo: Partial<Todo>) =>
+    createTodo: (todo: Partial<Todo> | FormData) =>
       request<ApiResponse<Todo>>(`${base}/`, { method: 'POST', body: todo }),
 
-    updateTodo: (id: number, todo: Partial<Todo>) =>
+    updateTodo: (id: number, todo: Partial<Todo> | FormData) =>
       request<ApiResponse<Todo>>(`${base}/${id}/`, {
         method: 'PATCH',
         body: todo,

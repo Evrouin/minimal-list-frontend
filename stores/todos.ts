@@ -77,15 +77,18 @@ export const useTodoStore = defineStore('todo', () => {
     const previous = { ...todos.value[index] }
     todos.value[index] = { ...updatedTodo, editing: false }
     try {
-      let body: Partial<Todo> | FormData = updatedTodo
+      const { title, body, completed, pinned } = updatedTodo
+      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned }
       if (imageFile) {
         const fd = new FormData()
-        fd.append('title', updatedTodo.title)
-        fd.append('body', updatedTodo.body)
+        fd.append('title', title)
+        fd.append('body', body)
+        fd.append('completed', String(completed))
+        fd.append('pinned', String(pinned))
         fd.append('image', imageFile)
-        body = fd
+        payload = fd
       }
-      const response = await api.updateTodo(updatedTodo.id, body)
+      const response = await api.updateTodo(updatedTodo.id, payload)
       todos.value[index] = { ...response.data, editing: false }
     } catch {
       todos.value[index] = previous
