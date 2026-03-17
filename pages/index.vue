@@ -48,17 +48,41 @@ const hasCreateBody = computed(
 )
 
 const createErrorMsg = ref('')
+const createImageFile = ref<File | null>(null)
+const createImagePreview = ref('')
+
+const onCreateImageSelect = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) {
+    createImageFile.value = file
+    createImagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+const clearCreateImage = () => {
+  createImageFile.value = null
+  createImagePreview.value = ''
+}
 
 const createDialogSubmit = async () => {
   if (!createTitle.value.trim() || !hasCreateBody.value) return
   createErrorMsg.value = ''
   try {
-    await todoStore.addTodo({
-      title: createTitle.value.toLowerCase(),
-      body: createBody.value,
-    })
+    if (createImageFile.value) {
+      const fd = new FormData()
+      fd.append('title', createTitle.value.toLowerCase())
+      fd.append('body', createBody.value)
+      fd.append('image', createImageFile.value)
+      await todoStore.addTodo(fd)
+    } else {
+      await todoStore.addTodo({
+        title: createTitle.value.toLowerCase(),
+        body: createBody.value,
+      })
+    }
     createTitle.value = ''
     createBody.value = ''
+    clearCreateImage()
     showCreateDialog.value = false
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
@@ -251,6 +275,12 @@ const { toasts, undo: undoToast } = useUndoToast()
                 @submit="createDialogSubmit"
               />
             </div>
+            <div v-if="createImagePreview" class="relative">
+              <img :src="createImagePreview" class="h-32 w-full rounded object-cover" />
+              <button type="button" class="absolute top-1 right-1 cursor-pointer rounded-full bg-black/50 p-0.5 text-white hover:bg-black/70" @click="clearCreateImage">
+                <Icon name="uil:times" class="text-xs" />
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span
                 class="text-xs"
@@ -258,7 +288,11 @@ const { toasts, undo: undoToast } = useUndoToast()
               >
                 {{ createErrorMsg || '⌘/ctrl + enter to add' }}
               </span>
-              <div class="flex gap-2">
+              <div class="flex items-center gap-2">
+                <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
+                  <Icon name="uil:image" class="text-sm" />
+                  <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" />
+                </label>
                 <button
                   type="button"
                   class="cursor-pointer rounded-lg px-4 py-1.5 text-sm text-white/60 lowercase hover:text-white"

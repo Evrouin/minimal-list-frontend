@@ -23,6 +23,7 @@ const emit = defineEmits<{
   'start-long-press': []
   'end-long-press': []
   'set-editor-ref': [el: { focus: () => void }]
+  'image-select': [e: Event]
 }>()
 
 const { now, timeAgo } = useTimeAgo()
@@ -56,6 +57,7 @@ const cardClasses = computed(() => [
     >
       <Icon v-if="selected" name="uil:check" class="text-white" />
     </button>
+    <img v-if="!todo.editing && todo.image" :src="todo.image" class="-mx-5 -mt-5 mb-1 block h-32 self-stretch rounded-t object-cover" style="width: calc(100% + 2.5rem); max-width: none" />
     <div class="flex w-full items-center justify-between">
       <span
         v-if="!todo.editing"
@@ -132,7 +134,11 @@ const cardClasses = computed(() => [
         <span class="hidden text-xs text-white/60 sm:inline"
           >⌘/ctrl + enter to save</span
         >
-        <div class="flex gap-1">
+        <div class="flex items-center gap-1">
+          <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
+            <Icon name="uil:image" class="text-xs" />
+            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" />
+          </label>
           <button
             type="button"
             class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"

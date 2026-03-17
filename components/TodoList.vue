@@ -248,21 +248,43 @@ const editTodo = (todo: Todo) => {
   }
 }
 
+const dialogImageFile = ref<File | null>(null)
+const dialogImagePreview = ref('')
+
+const onDialogImageSelect = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) {
+    dialogImageFile.value = file
+    dialogImagePreview.value = URL.createObjectURL(file)
+  }
+}
+
 const saveDialogTodo = async () => {
   if (!dialogTodo.value || !dialogTitle.value.trim()) return
   dialogTodo.value.title = dialogTitle.value
   dialogTodo.value.body = dialogBody.value
   dialogTodo.value.pinned = dialogPinned.value
   dialogTodo.value.editing = false
-  await todoStore.updateTodo({ ...dialogTodo.value })
+  await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined)
   dialogTodo.value = null
+  dialogImageFile.value = null
+  dialogImagePreview.value = ''
+}
+
+const editImageFiles = ref(new Map<number, File>())
+
+const onEditImageSelect = (todo: Todo, e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) editImageFiles.value.set(todo.id, file)
 }
 
 const saveTodo = async (todo: Todo) => {
   if (!todo.title.trim()) return
   todo.editing = false
+  const imageFile = editImageFiles.value.get(todo.id)
   editOriginals.value.delete(todo.id)
-  await todoStore.updateTodo({ ...todo })
+  editImageFiles.value.delete(todo.id)
+  await todoStore.updateTodo({ ...todo }, imageFile)
 }
 
 const cancelEdit = (todo: Todo) => {
@@ -420,6 +442,7 @@ defineExpose({ cancelAllEdits })
             @start-long-press="startLongPress(todo.id)"
             @end-long-press="endLongPress()"
             @set-editor-ref="(el) => setEditorRef(todo.id, el)"
+            @image-select="(e: Event) => onEditImageSelect(todo, e)"
           />
         </div>
       </div>
@@ -454,6 +477,7 @@ defineExpose({ cancelAllEdits })
             @start-long-press="startLongPress(todo.id)"
             @end-long-press="endLongPress()"
             @set-editor-ref="(el) => setEditorRef(todo.id, el)"
+            @image-select="(e: Event) => onEditImageSelect(todo, e)"
           />
         </div>
       </div>
@@ -517,16 +541,25 @@ defineExpose({ cancelAllEdits })
             placeholder="body"
             @submit="saveDialogTodo"
           />
+          <div v-if="dialogImagePreview || dialogTodo.image" class="relative">
+            <img :src="dialogImagePreview || dialogTodo.image" class="h-32 w-full rounded object-cover" />
+          </div>
           <div class="flex items-center justify-between">
             <span class="hidden text-xs text-white/60 sm:inline"
               >⌘/ctrl + enter to save</span
             >
-            <button
-              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs text-white lowercase hover:bg-gray-600"
-              @click="saveDialogTodo"
-            >
-              save
-            </button>
+            <div class="flex items-center gap-2">
+              <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
+                <Icon name="uil:image" class="text-sm" />
+                <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" />
+              </label>
+              <button
+                class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs text-white lowercase hover:bg-gray-600"
+                @click="saveDialogTodo"
+              >
+                save
+              </button>
+            </div>
           </div>
         </div>
       </div>
