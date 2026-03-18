@@ -65,7 +65,7 @@ const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' =>
 
         <!-- metadata -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
-          <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">details</p>
+          <p class="mb-3 text-xs font-bold lowercase tracking-wider text-white/40">details</p>
           <div class="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
             <div>
               <p class="text-xs text-white/40">user</p>

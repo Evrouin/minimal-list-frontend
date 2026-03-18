@@ -46,7 +46,7 @@ const handleCreate = async () => {
       </PageHeader>
 
       <form class="rounded-lg bg-gray-700 p-5" @submit.prevent="handleCreate">
-        <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/40">account details</p>
+        <p class="mb-4 text-xs font-bold lowercase tracking-wider text-white/40">account details</p>
 
         <div class="space-y-4">
           <div>
@@ -78,7 +78,7 @@ const handleCreate = async () => {
           </div>
         </div>
 
-        <p class="mb-3 mt-5 text-xs font-bold uppercase tracking-wider text-white/40">permissions</p>
+        <p class="mb-3 mt-5 text-xs font-bold lowercase tracking-wider text-white/40">permissions</p>
 
         <div class="flex gap-6">
           <label class="flex cursor-pointer items-center gap-2 text-sm text-white/70">

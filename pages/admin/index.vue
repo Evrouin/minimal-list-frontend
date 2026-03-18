@@ -62,7 +62,7 @@ onMounted(async () => {
 
         <!-- notes breakdown -->
         <div class="mb-6 rounded-lg bg-gray-700 p-4">
-          <p class="mb-3 text-xs font-bold text-white/50 uppercase tracking-wider">notes breakdown</p>
+          <p class="mb-3 text-xs font-bold text-white/50 lowercase tracking-wider">notes breakdown</p>
           <div class="grid grid-cols-3 gap-3 text-center">
             <div>
               <p class="text-lg font-bold text-blue-300">{{ stats.todos.active }}</p>

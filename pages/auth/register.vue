@@ -47,7 +47,7 @@ const handleRegister = async () => {
 <template>
   <AuthFormCard title="minimal list" link-to="/auth/login" link-label="login">
       <form @submit.prevent="handleRegister">
-        <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/40">account details</p>
+        <p class="mb-4 text-xs font-bold lowercase tracking-wider text-white/40">account details</p>
 
         <div class="space-y-4">
           <div>
@@ -79,7 +79,7 @@ const handleRegister = async () => {
           </div>
         </div>
 
-        <p class="mb-3 mt-5 text-xs font-bold uppercase tracking-wider text-white/40">password</p>
+        <p class="mb-3 mt-5 text-xs font-bold lowercase tracking-wider text-white/40">password</p>
 
         <div class="space-y-4">
           <div>

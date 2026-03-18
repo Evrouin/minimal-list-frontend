@@ -95,7 +95,7 @@ const confirmDelete = async () => {
           <template v-if="!isEditing">
             <div class="space-y-3 text-xs">
               <div class="flex items-center justify-between">
-                <p class="text-xs font-bold uppercase tracking-wider text-white/40">profile</p>
+                <p class="text-xs font-bold lowercase tracking-wider text-white/40">profile</p>
                 <button
                   class="cursor-pointer text-xs text-blue-300 lowercase hover:text-blue-200"
                   @click="isEditing = true"
@@ -121,7 +121,7 @@ const confirmDelete = async () => {
           </template>
 
           <template v-if="isEditing">
-            <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">edit profile</p>
+            <p class="mb-3 text-xs font-bold lowercase tracking-wider text-white/40">edit profile</p>
             <div class="space-y-3">
               <div>
                 <label class="mb-1 block text-xs text-white/40">username</label>
@@ -172,7 +172,7 @@ const confirmDelete = async () => {
 
         <!-- account settings -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
-          <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">account settings</p>
+          <p class="mb-3 text-xs font-bold lowercase tracking-wider text-white/40">account settings</p>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-xs text-white">active</span>
