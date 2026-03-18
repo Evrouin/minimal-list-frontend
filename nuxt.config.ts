@@ -34,6 +34,12 @@ export default defineNuxtConfig({
     '/**': {
       headers: {
         'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+    },
+    '/_nuxt/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     },
   },
