@@ -35,7 +35,7 @@ onMounted(() => {
 
 const scrollContainer = ref<HTMLElement | null>(null)
 const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean } | null>(null)
-const todoAddRef = ref<{ title: string; body: string; imageFile: File | null; imagePreview: string; clearImage: () => void } | null>(null)
+const todoAddRef = ref<{ title: string; body: string; imageFile: File | null; imagePreview: string; color: import('~/types/todo').NoteColor; clearImage: () => void } | null>(null)
 const showCreateDialog = ref(false)
 const createTitle = ref('')
 const createBody = ref('')
@@ -58,6 +58,7 @@ watch(isLg, (lg) => {
     if (todoAddRef.value) {
       todoAddRef.value.title = createTitle.value
       todoAddRef.value.body = createBody.value
+      todoAddRef.value.color = createColor.value
       if (createImageFile.value) {
         todoAddRef.value.imageFile = createImageFile.value
         todoAddRef.value.imagePreview = createImagePreview.value
@@ -66,16 +67,18 @@ watch(isLg, (lg) => {
     cancelCreate()
   } else if (lg && todoAddRef.value) {
     // Mobile → desktop: transfer TodoAdd state to dialog if has content
-    const { title, body, imageFile, imagePreview } = todoAddRef.value
+    const { title, body, imageFile, imagePreview, color } = todoAddRef.value
     if (title || body || imageFile) {
       createTitle.value = title
       createBody.value = body
+      createColor.value = color
       if (imageFile) {
         createImageFile.value = imageFile
         createImagePreview.value = imagePreview
       }
       todoAddRef.value.title = ''
       todoAddRef.value.body = ''
+      todoAddRef.value.color = 'default'
       todoAddRef.value.clearImage()
       showCreateDialog.value = true
     }
@@ -94,6 +97,7 @@ const createErrorMsg = ref('')
 const createSubmitting = ref(false)
 const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
+const createColor = ref<import('~/types/todo').NoteColor>('default')
 
 const onCreateImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -118,16 +122,19 @@ const createDialogSubmit = async () => {
       const fd = new FormData()
       fd.append('title', createTitle.value.toLowerCase())
       fd.append('body', createBody.value)
+      fd.append('color', createColor.value)
       fd.append('image', createImageFile.value)
       await todoStore.addTodo(fd)
     } else {
       await todoStore.addTodo({
         title: createTitle.value.toLowerCase(),
         body: createBody.value,
+        color: createColor.value,
       })
     }
     createTitle.value = ''
     createBody.value = ''
+    createColor.value = 'default'
     clearCreateImage()
     showCreateDialog.value = false
   } catch (e: unknown) {
@@ -144,6 +151,7 @@ const cancelCreate = () => {
   showCreateDialog.value = false
   createTitle.value = ''
   createBody.value = ''
+  createColor.value = 'default'
   createImageFile.value = null
   createImagePreview.value = ''
 }
@@ -275,7 +283,8 @@ const { toasts, undo: undoToast } = useUndoToast()
     <!-- Create dialog (lg+ screens) -->
     <ModalOverlay :show="showCreateDialog" tabindex="0" @keydown.esc="cancelCreate">
           <form
-            class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg bg-gray-800 p-8 shadow-xl"
+            class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg p-8 shadow-xl"
+            :class="noteColors[createColor]?.bg || 'bg-gray-800'"
             @submit.prevent="createDialogSubmit"
           >
             <ImagePreview v-if="createImagePreview" :src="createImagePreview" :padding="8" removable @remove="clearCreateImage" />
@@ -295,12 +304,8 @@ const { toasts, undo: undoToast } = useUndoToast()
               />
             </div>
             <div class="flex items-center justify-between">
-              <span
-                class="text-xs"
-                :class="createErrorMsg ? 'text-red-400' : 'text-white/60'"
-              >
-                {{ createErrorMsg || '⌘/ctrl + enter to add' }}
-              </span>
+              <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
+              <ColorPicker v-else v-model="createColor" />
               <div class="flex items-center gap-2">
                 <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
                   <Icon name="uil:image" class="text-sm" />

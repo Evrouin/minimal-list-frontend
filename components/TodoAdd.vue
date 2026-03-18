@@ -2,10 +2,13 @@
 import { ref, computed } from 'vue'
 import { useTodoStore } from '~/stores/todos'
 
+import type { NoteColor } from '~/types/todo'
+
 const todoStore = useTodoStore()
 
 const title = ref<string>('')
 const body = ref<string>('')
+const color = ref<NoteColor>('default')
 
 const hasBody = computed(
   () =>
@@ -46,16 +49,19 @@ const addTodo = async () => {
       const fd = new FormData()
       fd.append('title', title.value.toLowerCase())
       fd.append('body', body.value)
+      fd.append('color', color.value)
       fd.append('image', imageFile.value)
       await todoStore.addTodo(fd)
     } else {
       await todoStore.addTodo({
         title: title.value.toLowerCase(),
         body: body.value,
+        color: color.value,
       })
     }
     title.value = ''
     body.value = ''
+    color.value = 'default'
     clearImage()
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
@@ -67,7 +73,7 @@ const addTodo = async () => {
   }
 }
 
-defineExpose({ title, body, imageFile, imagePreview, clearImage })
+defineExpose({ title, body, imageFile, imagePreview, color, clearImage })
 
 const handleTitleInput = (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -80,7 +86,8 @@ const handleTitleInput = (event: Event) => {
   <form @submit.prevent="addTodo">
     <div class="mb-5 flex items-center justify-center">
       <div
-        class="flex w-full flex-col gap-2 rounded-lg bg-gray-700 p-5 text-xs text-white shadow-md"
+        class="flex w-full flex-col gap-2 rounded-lg p-5 text-xs text-white shadow-md"
+        :class="noteColors[color]?.bg || 'bg-gray-700'"
       >
         <ImagePreview v-if="imagePreview" :src="imagePreview" :padding="5" removable @remove="clearImage" />
         <input
@@ -92,13 +99,9 @@ const handleTitleInput = (event: Event) => {
           @input="handleTitleInput"
         />
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
-        <div class="flex items-center justify-end sm:justify-between">
-          <span v-if="errorMsg" class="text-xs text-red-400">{{
-            errorMsg
-          }}</span>
-          <span v-else class="hidden text-xs text-white/60 sm:inline"
-            >⌘/ctrl + enter to add</span
-          >
+        <div class="flex items-center justify-between">
+          <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
+          <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
             <label class="cursor-pointer rounded px-2 py-0.5 mt-1 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-xs" />

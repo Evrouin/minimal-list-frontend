@@ -77,14 +77,15 @@ export const useTodoStore = defineStore('todo', () => {
     const previous = { ...todos.value[index] }
     todos.value[index] = { ...updatedTodo, editing: false }
     try {
-      const { title, body, completed, pinned } = updatedTodo
-      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned }
+      const { title, body, completed, pinned, color } = updatedTodo
+      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned, color }
       if (imageFile) {
         const fd = new FormData()
         fd.append('title', title)
         fd.append('body', body)
         fd.append('completed', String(completed))
         fd.append('pinned', String(pinned))
+        fd.append('color', color)
         fd.append('image', imageFile)
         payload = fd
       }

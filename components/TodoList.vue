@@ -32,6 +32,7 @@ const dialogTitle = ref('')
 const dialogBody = ref('')
 const dialogEditorRef = ref<{ focus: () => void } | null>(null)
 const dialogPinned = ref(false)
+const dialogColor = ref<import('~/types/todo').NoteColor>('default')
 const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
 const cardRefs = ref(new Map<number, Element>())
 
@@ -62,6 +63,7 @@ watch(isLg, (lg) => {
     dialogTitle.value = todo.title
     dialogBody.value = todo.body
     dialogPinned.value = todo.pinned
+    dialogColor.value = todo.color
     nextTick(() => dialogEditorRef.value?.focus())
   } else if (!lg && dialogTodo.value) {
     const todo = dialogTodo.value
@@ -241,6 +243,7 @@ const editTodo = (todo: Todo) => {
     dialogTitle.value = todo.title
     dialogBody.value = todo.body
     dialogPinned.value = todo.pinned
+    dialogColor.value = todo.color
     nextTick(() => dialogEditorRef.value?.focus())
   } else {
     editOriginals.value.set(todo.id, { title: todo.title, body: todo.body })
@@ -277,6 +280,7 @@ const saveDialogTodo = async () => {
   dialogTodo.value.title = dialogTitle.value
   dialogTodo.value.body = dialogBody.value
   dialogTodo.value.pinned = dialogPinned.value
+  dialogTodo.value.color = dialogColor.value
   dialogTodo.value.editing = false
   await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined)
   dialogTodo.value = null
@@ -512,7 +516,8 @@ defineExpose({ cancelAllEdits, isEditing })
   <!-- Edit dialog (lg+ screens) -->
   <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="cancelDialogTodo">
         <div
-          class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg bg-gray-800 p-6 shadow-xl"
+          class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg p-6 shadow-xl"
+          :class="noteColors[dialogColor]?.bg || 'bg-gray-800'"
         >
           <ImagePreview v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image" :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!" :padding="6" />
           <div class="flex w-full items-center justify-between">
@@ -561,9 +566,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @submit="saveDialogTodo"
           />
           <div class="flex items-center justify-between">
-            <span class="hidden text-xs text-white/60 sm:inline"
-              >⌘/ctrl + enter to save</span
-            >
+            <ColorPicker v-model="dialogColor" />
             <div class="flex items-center gap-2">
               <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-sm" />

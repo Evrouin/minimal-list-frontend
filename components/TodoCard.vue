@@ -30,13 +30,16 @@ const emit = defineEmits<{
 const { now, timeAgo } = useTimeAgo()
 const showPreview = ref(false)
 
+const colors = computed(() => noteColors[props.todo.color] || noteColors.default)
+
 const cardClasses = computed(() => [
   props.todo.editing
     ? 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full'
     : 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full min-h-[120px] max-h-[300px] lg:min-h-0 lg:max-h-[400px]',
-  props.todo.completed || props.todo.deleted
-    ? 'bg-gray-700 opacity-50 lg:hover:bg-gray-900 transition-colors duration-200'
-    : 'bg-gray-700 lg:hover:bg-gray-900 transition-colors duration-200',
+  colors.value.bg,
+  colors.value.hover,
+  'transition-colors duration-200',
+  (props.todo.completed || props.todo.deleted) && 'opacity-50',
 ])
 </script>
 
@@ -137,10 +140,10 @@ const cardClasses = computed(() => [
         @submit="emit('save')"
       />
       <!-- eslint-enable vue/no-mutating-props -->
-      <div class="mt-1 flex items-center justify-end sm:justify-between">
-        <span class="hidden text-xs text-white/60 sm:inline"
-          >⌘/ctrl + enter to save</span
-        >
+      <div class="mt-1 flex items-center justify-between">
+        <!-- eslint-disable vue/no-mutating-props -->
+        <ColorPicker v-model="todo.color" />
+        <!-- eslint-enable vue/no-mutating-props -->
         <div class="flex items-center gap-1">
           <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />
