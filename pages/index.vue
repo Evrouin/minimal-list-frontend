@@ -12,6 +12,9 @@ const { flushAll } = useUndoToast()
 const { filterOptions } = todoStore
 const { filteredTodos } = storeToRefs(todoStore)
 const mobileEditing = computed(() => filteredTodos.value.some((t) => t.editing))
+const scrollingDown = ref(false)
+let lastScrollTop = 0
+const mobileHidden = computed(() => mobileEditing.value || scrollingDown.value)
 
 const handleFilter = async (filter: (typeof filterOptions)[number]) => {
   await flushAll()
@@ -148,9 +151,14 @@ const showScrollTop = ref(false)
 const onScroll = () => {
   const el = scrollContainer.value
   if (!el) return
-  showScrollTop.value = el.scrollTop > 1000
+  const top = el.scrollTop
+  if (Math.abs(top - lastScrollTop) > 10) {
+    scrollingDown.value = top > lastScrollTop && top > 50
+    lastScrollTop = top
+  }
+  showScrollTop.value = top > 1000
   if (!todoStore.hasMore || todoStore.loadingMore) return
-  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+  if (top + el.clientHeight >= el.scrollHeight - 100) {
     todoStore.loadMore()
   }
 }
@@ -198,15 +206,15 @@ const { toasts, undo: undoToast } = useUndoToast()
         </div>
       </PageHeader>
       <!-- Inline form on mobile -->
-      <Transition name="fade">
-        <div v-if="!mobileEditing" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
+      <Transition name="slide-up">
+        <div v-show="!mobileHidden" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
           <TodoAdd ref="todoAddRef" />
         </div>
       </Transition>
     </div>
-    <Transition name="fade">
+    <Transition name="slide-up">
       <div
-        v-if="!mobileEditing"
+        v-show="!mobileHidden"
         class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
       >
       <button
