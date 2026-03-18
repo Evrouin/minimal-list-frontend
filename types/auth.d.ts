@@ -6,6 +6,7 @@ export interface User {
   avatar: string
   avatar_url: string
   bio: string
+  has_password: boolean
   is_active: boolean
   is_verified: boolean
   is_superuser: boolean

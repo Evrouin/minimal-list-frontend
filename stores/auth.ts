@@ -118,6 +118,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const setPassword = async (payload: { new_password: string; confirm_password: string; current_password?: string }) => {
+    const response = await api.setPassword(payload)
+    if (response.tokens) {
+      tokens.value = response.tokens
+      localStorage.setItem(TOKEN_KEY, JSON.stringify(response.tokens))
+    }
+    if (user.value) user.value.has_password = true
+    return response
+  }
+
   const verifyEmail = (token: string) => api.verifyEmail(token)
 
   const requestPasswordReset = (payload: PasswordResetRequestPayload) =>
@@ -151,6 +161,7 @@ export const useAuthStore = defineStore('auth', () => {
     fetchProfile,
     updateProfile,
     changePassword,
+    setPassword,
     verifyEmail,
     requestPasswordReset,
     confirmPasswordReset,

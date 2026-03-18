@@ -69,9 +69,9 @@ const editForm = reactive({
 })
 
 const passwordForm = reactive({
-  old_password: '',
+  current_password: '',
   new_password: '',
-  new_password2: '',
+  confirm_password: '',
 })
 const passwordMsg = ref('')
 const passwordError = ref('')
@@ -101,19 +101,32 @@ const handleChangePassword = async () => {
   passwordError.value = ''
   passwordMsg.value = ''
 
-  if (passwordForm.new_password !== passwordForm.new_password2) {
+  if (passwordForm.new_password.length < 8) {
+    passwordError.value = 'password must be at least 8 characters'
+    return
+  }
+  if (!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(passwordForm.new_password)) {
+    passwordError.value = 'password must include letters, numbers, and a special character'
+    return
+  }
+  if (passwordForm.new_password !== passwordForm.confirm_password) {
     passwordError.value = "passwords don't match"
     return
   }
 
   try {
-    const res = await authStore.changePassword(passwordForm)
-    passwordMsg.value = res.message || 'password changed.'
-    passwordForm.old_password = ''
+    const payload: { new_password: string; confirm_password: string; current_password?: string } = {
+      new_password: passwordForm.new_password,
+      confirm_password: passwordForm.confirm_password,
+    }
+    if (user.value?.has_password) payload.current_password = passwordForm.current_password
+    const res = await authStore.setPassword(payload)
+    passwordMsg.value = res.message?.toLowerCase() || 'password updated.'
+    passwordForm.current_password = ''
     passwordForm.new_password = ''
-    passwordForm.new_password2 = ''
+    passwordForm.confirm_password = ''
   } catch {
-    passwordError.value = 'wrong current password.'
+    passwordError.value = user.value?.has_password ? 'wrong current password.' : 'failed to set password.'
   }
 }
 
@@ -251,14 +264,14 @@ const handleLogout = () => {
           </template>
         </div>
 
-        <!-- change password card -->
+        <!-- password card -->
         <form class="mb-3 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
-          <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">change password</p>
+          <p class="mb-3 text-xs font-bold uppercase tracking-wider text-white/40">{{ user.has_password ? 'change password' : 'set password' }}</p>
           <div class="space-y-3">
-            <div>
+            <div v-if="user.has_password">
               <label class="mb-1 block text-xs text-white/40">current password</label>
               <input
-                v-model="passwordForm.old_password"
+                v-model="passwordForm.current_password"
                 type="password"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="current password"
@@ -276,7 +289,7 @@ const handleLogout = () => {
             <div>
               <label class="mb-1 block text-xs text-white/40">confirm new password</label>
               <input
-                v-model="passwordForm.new_password2"
+                v-model="passwordForm.confirm_password"
                 type="password"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="confirm new password"
@@ -292,7 +305,7 @@ const handleLogout = () => {
             :disabled="loading"
             class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
           >
-            change password
+            {{ user.has_password ? 'change password' : 'set password' }}
           </button>
         </form>
 

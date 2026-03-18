@@ -100,7 +100,7 @@ const handleTitleInput = (event: Event) => {
             >⌘/ctrl + enter to add</span
           >
           <div class="flex items-center gap-1">
-            <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
+            <label class="cursor-pointer rounded px-2 py-0.5 mt-1 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-xs" />
               <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
             </label>

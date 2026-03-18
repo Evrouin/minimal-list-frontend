@@ -45,6 +45,12 @@ export const useAuthApi = () => {
         { method: 'PUT', body: payload }
       ),
 
+    setPassword: (payload: { new_password: string; confirm_password: string; current_password?: string }) =>
+      request<{ message: string; tokens: AuthTokens }>(
+        `${base}/set-password/`,
+        { method: 'POST', body: payload }
+      ),
+
     logout: (refresh: string) =>
       request<{ message: string }>(`${base}/logout/`, {
         method: 'POST',
