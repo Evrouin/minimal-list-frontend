@@ -12,13 +12,22 @@ const { flushAll } = useUndoToast()
 const { filterOptions } = todoStore
 const { filteredTodos } = storeToRefs(todoStore)
 const mobileEditing = computed(() => filteredTodos.value.some((t) => t.editing))
-const scrollingDown = ref(false)
+const scrolledDown = ref(false)
 let lastScrollTop = 0
-const mobileHidden = computed(() => mobileEditing.value || scrollingDown.value)
+let scrollLock = false
+const mobileHidden = computed(() => mobileEditing.value || scrolledDown.value)
+
+watch(scrolledDown, () => {
+  scrollLock = true
+  setTimeout(() => { scrollLock = false }, 300)
+})
 
 const handleFilter = async (filter: (typeof filterOptions)[number]) => {
   await flushAll()
   await todoStore.changeFilter(filter)
+  scrollContainer.value?.scrollTo({ top: 0 })
+  scrolledDown.value = false
+  lastScrollTop = 0
   router.replace({ query: { filter } })
 }
 
@@ -160,13 +169,18 @@ const onScroll = () => {
   const el = scrollContainer.value
   if (!el) return
   const top = el.scrollTop
-  if (Math.abs(top - lastScrollTop) > 10) {
-    scrollingDown.value = top > lastScrollTop && top > 50
+  const scrollable = el.scrollHeight > el.clientHeight * 1.5
+  if (!scrollLock && scrollable && Math.abs(top - lastScrollTop) > 30) {
+    scrolledDown.value = top > lastScrollTop && top > 150
     lastScrollTop = top
+  } else if (!scrollable) {
+    scrolledDown.value = false
+    lastScrollTop = 0
   }
   showScrollTop.value = top > 1000
   if (!todoStore.hasMore || todoStore.loadingMore) return
-  if (top + el.clientHeight >= el.scrollHeight - 100) {
+  const canPaginate = todoStore.filterType === 'all' || todoStore.filterType === 'deleted'
+  if (canPaginate && el.scrollTop > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
     todoStore.loadMore()
   }
 }
@@ -215,14 +229,14 @@ const { toasts, undo: undoToast } = useUndoToast()
       </PageHeader>
       <!-- Inline form on mobile -->
       <Transition name="slide-up">
-        <div v-show="!mobileHidden" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
+        <div v-if="!mobileHidden" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
           <TodoAdd ref="todoAddRef" />
         </div>
       </Transition>
     </div>
     <Transition name="slide-up">
       <div
-        v-show="!mobileHidden"
+        v-if="!mobileHidden"
         class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
       >
       <button
