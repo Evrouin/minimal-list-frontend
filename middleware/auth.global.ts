@@ -1,4 +1,9 @@
 export default defineNuxtRouteMiddleware(async (to) => {
+  const config = useRuntimeConfig()
+  if (config.public.maintenanceMode && to.path !== '/maintenance') {
+    return navigateTo('/maintenance')
+  }
+
   const authStore = useAuthStore()
   const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/maintenance']
   const isPublic =
