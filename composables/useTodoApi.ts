@@ -6,11 +6,9 @@ export const useTodoApi = () => {
   const base = '/api/todos'
 
   return {
-    fetchTodos: (deletedOnly = false, cursor?: string) => {
+    fetchTodos: (params?: string, cursor?: string) => {
       if (cursor) return request<ApiResponse<Todo[]>>(cursor)
-      return request<ApiResponse<Todo[]>>(
-        `${base}/${deletedOnly ? '?deleted_only=true' : ''}`
-      )
+      return request<ApiResponse<Todo[]>>(`${base}/${params ? `?${params}` : ''}`)
     },
 
     createTodo: (todo: Partial<Todo> | FormData) =>

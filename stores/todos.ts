@@ -14,11 +14,19 @@ export const useTodoStore = defineStore('todo', () => {
 
   const hasMore = computed(() => !!nextCursor.value)
 
+  const filterParams = computed(() => {
+    switch (filterType.value) {
+      case 'active': return 'completed=false'
+      case 'completed': return 'completed=true'
+      case 'deleted': return 'deleted_only=true'
+      default: return ''
+    }
+  })
+
   const loadTodos = async () => {
     loading.value = true
     try {
-      const deletedOnly = filterType.value === 'deleted'
-      const response = await api.fetchTodos(deletedOnly)
+      const response = await api.fetchTodos(filterParams.value)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
@@ -33,7 +41,7 @@ export const useTodoStore = defineStore('todo', () => {
     if (!nextCursor.value || loadingMore.value) return
     loadingMore.value = true
     try {
-      const response = await api.fetchTodos(false, nextCursor.value)
+      const response = await api.fetchTodos(undefined, nextCursor.value)
       todos.value.push(
         ...response.data.map((t: Todo) => ({ ...t, editing: false }))
       )
@@ -52,18 +60,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const filteredTodos = computed(() => {
-    return todos.value.filter((todo) => {
-      switch (filterType.value) {
-        case 'completed':
-          return todo.completed && !todo.deleted
-        case 'deleted':
-          return todo.deleted
-        case 'active':
-          return !todo.completed && !todo.deleted
-        default:
-          return !todo.deleted
-      }
-    })
+    return todos.value.filter((t) => !t.deleted || filterType.value === 'deleted')
   })
 
   const addTodo = async (todo: Partial<Todo> | FormData) => {

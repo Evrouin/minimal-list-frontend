@@ -179,8 +179,7 @@ const onScroll = () => {
   }
   showScrollTop.value = top > 1000
   if (!todoStore.hasMore || todoStore.loadingMore) return
-  const canPaginate = todoStore.filterType === 'all' || todoStore.filterType === 'deleted'
-  if (canPaginate && el.scrollTop > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+  if (el.scrollTop > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
     todoStore.loadMore()
   }
 }
