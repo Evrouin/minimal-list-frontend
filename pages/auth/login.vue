@@ -9,6 +9,7 @@ const form = reactive({
   password: '',
 })
 const errorMsg = ref('')
+const showPassword = ref(false)
 
 const handleLogin = async () => {
   errorMsg.value = ''
@@ -54,12 +55,22 @@ const handleGoogleLogin = async () => {
         </div>
         <div>
           <label class="mb-1 block text-xs text-white/40">password</label>
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="password"
-            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          >
+          <div class="relative">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="password"
+              class="w-full rounded-lg bg-gray-600 px-3 py-2 pr-9 text-xs text-white placeholder-white/30 focus:outline-none"
+            >
+            <button
+              type="button"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+              tabindex="-1"
+              @click="showPassword = !showPassword"
+            >
+              <Icon :name="showPassword ? 'uil:eye-slash' : 'uil:eye'" class="text-sm text-white/40 hover:text-white/60" />
+            </button>
+          </div>
         </div>
       </div>
 
