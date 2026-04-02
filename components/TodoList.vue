@@ -582,20 +582,20 @@ defineExpose({ cancelAllEdits, isEditing })
           />
           <div class="flex items-center justify-between">
             <ColorPicker v-model="dialogColor" />
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
               <ReminderPicker v-model="dialogReminderAt" />
-              <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
-                <Icon name="uil:image" class="text-sm" />
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                <Icon name="uil:image" class="text-xs" />
                 <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
               </label>
               <button
-                class="cursor-pointer rounded-lg px-4 py-1.5 text-xs text-white/40 lowercase hover:text-white"
+                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white"
                 @click="cancelDialogTodo"
               >
                 cancel
               </button>
               <button
-                class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs text-white lowercase hover:bg-gray-600"
+                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 lowercase hover:text-white"
                 @click="saveDialogTodo"
               >
                 save

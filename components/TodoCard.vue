@@ -84,9 +84,9 @@ const cardClasses = computed(() => [
         @click.stop
       >
       <!-- eslint-enable vue/no-mutating-props -->
-      <div class="flex items-center space-x-2" @click.stop>
+      <div class="flex items-center gap-1" @click.stop>
         <button
-          class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
+          class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
           :class="
             pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'
           "
@@ -97,21 +97,21 @@ const cardClasses = computed(() => [
         </button>
         <button
           v-if="todo.deleted"
-          class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+          class="cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
           title="Restore"
           @click="emit('restore')"
         >
           <Icon name="uil:redo" />
         </button>
         <button
-          class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+          class="cursor-pointer rounded px-1 py-0.5 -mt-0.5 text-xs text-gray-400 hover:text-gray-200"
           :title="`Delete ${todo.title}`"
           @click="emit('request-delete')"
         >
           <Icon name="uil:trash" />
         </button>
         <button
-          class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+          class="cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
           :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
           @click="emit('toggle-completion')"
         >
@@ -151,7 +151,7 @@ const cardClasses = computed(() => [
           <!-- eslint-disable vue/no-mutating-props -->
           <ReminderPicker v-model="todo.reminder_at" />
           <!-- eslint-enable vue/no-mutating-props -->
-          <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
+          <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />
             <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" >
           </label>

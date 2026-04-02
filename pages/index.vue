@@ -304,23 +304,23 @@ const { toasts, undo: undoToast } = useUndoToast()
         <div class="flex items-center justify-between">
           <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
           <ColorPicker v-else v-model="createColor" />
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1">
             <ReminderPicker v-model="createReminderAt" />
-            <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
-              <Icon name="uil:image" class="text-sm" />
+            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+              <Icon name="uil:image" class="text-xs" />
               <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
             </label>
             <button
               type="button"
-              class="cursor-pointer rounded-lg px-4 py-1.5 text-sm text-white/60 lowercase hover:text-white"
+              class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 lowercase hover:text-white"
               @click="cancelCreate"
             >
               cancel
             </button>
             <button
               type="submit"
-              class="cursor-pointer rounded-lg bg-gray-700 px-4 py-1.5 text-xs lowercase hover:bg-gray-600"
-              :class="createTitle.trim() && (hasCreateBody || createImageFile) ? 'text-white' : 'text-white/20'"
+              class="cursor-pointer rounded px-2 py-0.5 text-xs lowercase"
+              :class="createTitle.trim() && (hasCreateBody || createImageFile) ? 'text-white/60 hover:text-white' : 'text-white/20'"
               :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile)"
             >
               add

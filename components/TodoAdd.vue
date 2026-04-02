@@ -108,14 +108,14 @@ const handleTitleInput = (event: Event) => {
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-model="reminderAt" />
-            <label class="cursor-pointer rounded px-2 py-0.5 mt-1 text-white/30 transition-colors hover:text-white/60">
+            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-xs" />
               <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
             </label>
             <button
               type="submit"
               :disabled="!isValidTodo"
-              class="cursor-pointer rounded px-2 py-0.5 text-xs transition-colors"
+              class="cursor-pointer rounded px-2 py-0.5 -mt-0.5 text-xs transition-colors"
               :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
             >
               add
