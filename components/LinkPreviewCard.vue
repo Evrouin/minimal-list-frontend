@@ -18,7 +18,7 @@ const emit = defineEmits<{ remove: [] }>()
       :src="preview.image"
       class="h-14 w-14 shrink-0 rounded object-cover"
       @error="($event.target as HTMLImageElement).style.display = 'none'"
-    >
+    />
     <div v-else class="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white/10">
       <Icon name="uil:link" class="text-lg text-white/30" />
     </div>
@@ -29,7 +29,7 @@ const emit = defineEmits<{ remove: [] }>()
     </div>
     <button
       type="button"
-      class="shrink-0 self-start text-xs text-white/20 opacity-0 transition-opacity hover:text-white/50 group-hover:opacity-100"
+      class="shrink-0 self-start text-xs text-white/20 opacity-0 transition-opacity group-hover:opacity-100 hover:text-white/50"
       @click.prevent.stop="emit('remove')"
     >
       ✕

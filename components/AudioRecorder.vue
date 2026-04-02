@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-  recorded: [file: File, url: string]
+  'recorded': [file: File, url: string]
   'update:recording': [value: boolean]
 }>()
 
@@ -15,8 +15,11 @@ const start = async () => {
   loading.value = true
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    const supportedMime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
-      MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : ''
+    const supportedMime = MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : ''
     mediaRecorder = new MediaRecorder(stream, supportedMime ? { mimeType: supportedMime } : undefined)
     chunks = []
     duration.value = 0
@@ -24,7 +27,9 @@ const start = async () => {
     const finalMime = mediaRecorder.mimeType || 'audio/webm'
     const ext = finalMime.includes('mp4') ? 'm4a' : 'webm'
 
-    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunks.push(e.data)
+    }
     mediaRecorder.onstop = () => {
       stream.getTracks().forEach((t) => t.stop())
       const blob = new Blob(chunks, { type: finalMime })
@@ -36,7 +41,9 @@ const start = async () => {
     mediaRecorder.start()
     recording.value = true
     emit('update:recording', true)
-    timer = setInterval(() => { duration.value++ }, 1000)
+    timer = setInterval(() => {
+      duration.value++
+    }, 1000)
   } catch {
     // Permission denied or not available
   } finally {
@@ -48,7 +55,10 @@ const stop = () => {
   mediaRecorder?.stop()
   recording.value = false
   emit('update:recording', false)
-  if (timer) { clearInterval(timer); timer = null }
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
 }
 
 defineExpose({ recording, stop })

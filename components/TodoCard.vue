@@ -11,13 +11,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  click: []
+  'click': []
   'toggle-pin': []
   'request-delete': []
   'restore': []
   'toggle-completion': []
-  save: []
-  cancel: []
+  'save': []
+  'cancel': []
   'toggle-select': []
   'start-hover': []
   'end-hover': []
@@ -63,17 +63,28 @@ const cardClasses = computed(() => [
     >
       <Icon v-if="selected" name="uil:check" class="text-white" />
     </button>
-    <img v-if="!todo.editing && (todo.thumbnail || todo.image)" :src="todo.thumbnail || todo.image" loading="lazy" class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" @click.stop="showPreview = true" >
-    <img v-if="todo.editing && (editImagePreview || todo.thumbnail || todo.image)" :src="editImagePreview || todo.thumbnail || todo.image" class="-mx-5 -mt-5 mb-1 block h-32 rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" >
+    <img
+      v-if="!todo.editing && (todo.thumbnail || todo.image)"
+      :src="todo.thumbnail || todo.image"
+      loading="lazy"
+      class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover"
+      style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none"
+      @click.stop="showPreview = true"
+    />
+    <img
+      v-if="todo.editing && (editImagePreview || todo.thumbnail || todo.image)"
+      :src="editImagePreview || todo.thumbnail || todo.image"
+      class="-mx-5 -mt-5 mb-1 block h-32 rounded-t object-cover"
+      style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none"
+    />
     <ModalOverlay :show="showPreview" backdrop-class="bg-black/80" @click="showPreview = false">
-      <button class="absolute top-4 right-4 cursor-pointer text-2xl text-white/60 hover:text-white" @click.stop="showPreview = false">✕</button>
-      <img :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop >
+      <button class="absolute top-4 right-4 cursor-pointer text-2xl text-white/60 hover:text-white" @click.stop="showPreview = false">
+        ✕
+      </button>
+      <img :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop />
     </ModalOverlay>
     <div class="flex w-full items-center justify-between">
-      <span
-        v-if="!todo.editing"
-        class="flex-grow text-sm font-bold text-white lowercase"
-      >
+      <span v-if="!todo.editing" class="flex-grow text-sm font-bold text-white lowercase">
         {{ todo.title }}
       </span>
       <!-- eslint-disable vue/no-mutating-props -->
@@ -83,14 +94,12 @@ const cardClasses = computed(() => [
         class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
         @keydown.enter="emit('save')"
         @click.stop
-      >
+      />
       <!-- eslint-enable vue/no-mutating-props -->
       <div class="flex items-center gap-1" @click.stop>
         <button
           class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
-          :class="
-            pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'
-          "
+          :class="pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'"
           :title="pinned ? 'Unpin' : 'Pin'"
           @click="emit('toggle-pin')"
         >
@@ -105,7 +114,7 @@ const cardClasses = computed(() => [
           <Icon name="uil:redo" />
         </button>
         <button
-          class="cursor-pointer rounded px-1 py-0.5 -mt-0.5 text-xs text-gray-400 hover:text-gray-200"
+          class="-mt-0.5 cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
           :title="`Delete ${todo.title}`"
           @click="emit('request-delete')"
         >
@@ -120,11 +129,7 @@ const cardClasses = computed(() => [
         </button>
       </div>
     </div>
-    <div
-      v-if="!todo.editing"
-      class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase"
-      v-html="todo.body"
-    />
+    <div v-if="!todo.editing" class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase" v-html="todo.body" />
     <div v-if="!todo.editing && todo.link_previews?.length" class="flex flex-col gap-1">
       <LinkPreviewCard v-for="lp in todo.link_previews" :key="lp.url" :preview="lp" />
     </div>
@@ -132,7 +137,12 @@ const cardClasses = computed(() => [
     <span v-if="!todo.editing && now" class="text-xs text-white/30">
       {{ timeAgo(todo.created_at) }}
       <template v-if="todo.reminder_at">
-        · <Icon name="uil:bell" class="inline text-xs" :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'" />
+        ·
+        <Icon
+          name="uil:bell"
+          class="inline text-xs"
+          :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'"
+        />
         <span :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
           {{ new Date(todo.reminder_at).getTime() <= Date.now() ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
         </span>
@@ -161,7 +171,7 @@ const cardClasses = computed(() => [
           <!-- eslint-enable vue/no-mutating-props -->
           <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />
-            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" >
+            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" />
           </label>
           <button
             type="button"
@@ -170,18 +180,10 @@ const cardClasses = computed(() => [
           >
             <Icon name="uil:expand-arrows-alt" class="text-xs" />
           </button>
-          <button
-            type="button"
-            class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"
-            @click="emit('cancel')"
-          >
+          <button type="button" class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white" @click="emit('cancel')">
             cancel
           </button>
-          <button
-            type="button"
-            class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
-            @click="emit('save')"
-          >
+          <button type="button" class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white" @click="emit('save')">
             save
           </button>
         </div>
@@ -236,8 +238,7 @@ const cardClasses = computed(() => [
   background: transparent;
   margin-top: 0.15rem;
 }
-.todo-body
-  :deep(ul[data-type='taskList'] li label input[type='checkbox']:checked) {
+.todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']:checked) {
   background: #60a5fa;
   border-color: #60a5fa;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");

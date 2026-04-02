@@ -39,12 +39,16 @@ const canGoPrev = computed(() => {
 
 const prevMonth = () => {
   if (!canGoPrev.value) return
-  if (viewMonth.value === 0) { viewMonth.value = 11; viewYear.value-- }
-  else viewMonth.value--
+  if (viewMonth.value === 0) {
+    viewMonth.value = 11
+    viewYear.value--
+  } else viewMonth.value--
 }
 const nextMonth = () => {
-  if (viewMonth.value === 11) { viewMonth.value = 0; viewYear.value++ }
-  else viewMonth.value++
+  if (viewMonth.value === 11) {
+    viewMonth.value = 0
+    viewYear.value++
+  } else viewMonth.value++
 }
 
 const isToday = (day: number) => {
@@ -103,7 +107,9 @@ watch(selectedHour, (v) => {
     hourDisplay.value = String(h === 0 ? 12 : h).padStart(2, '0')
   }
 })
-watch(selectedMinute, (v) => { if (!minuteFocused.value) minuteDisplay.value = String(v).padStart(2, '0') })
+watch(selectedMinute, (v) => {
+  if (!minuteFocused.value) minuteDisplay.value = String(v).padStart(2, '0')
+})
 watch(ampm, () => {
   const h12 = parseInt(hourDisplay.value) || 12
   selectedHour.value = to24(h12, ampm.value)
@@ -123,14 +129,28 @@ const selectHour = (h12: number) => {
   hourFocused.value = false
   hourDisplay.value = String(h12).padStart(2, '0')
 }
-const selectMinute = (m: number) => { selectedMinute.value = m; showMinuteList.value = false; minuteFocused.value = false; minuteDisplay.value = String(m).padStart(2, '0') }
+const selectMinute = (m: number) => {
+  selectedMinute.value = m
+  showMinuteList.value = false
+  minuteFocused.value = false
+  minuteDisplay.value = String(m).padStart(2, '0')
+}
 const onHourInput = () => {
   const n = parseInt(hourDisplay.value)
   if (!isNaN(n) && n >= 1 && n <= 12) selectedHour.value = to24(n, ampm.value)
 }
-const onMinuteInput = () => { const n = parseInt(minuteDisplay.value); if (!isNaN(n) && n >= 0 && n <= 59) selectedMinute.value = n }
-const onHourFocus = () => { hourFocused.value = true; showHourList.value = true }
-const onMinuteFocus = () => { minuteFocused.value = true; showMinuteList.value = true }
+const onMinuteInput = () => {
+  const n = parseInt(minuteDisplay.value)
+  if (!isNaN(n) && n >= 0 && n <= 59) selectedMinute.value = n
+}
+const onHourFocus = () => {
+  hourFocused.value = true
+  showHourList.value = true
+}
+const onMinuteFocus = () => {
+  minuteFocused.value = true
+  showMinuteList.value = true
+}
 const onHourBlur = () => {
   hourFocused.value = false
   showHourList.value = false
@@ -159,15 +179,16 @@ const onMinuteBlur = () => {
     </button>
 
     <Teleport to="body">
-      <div
-        v-if="open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-        @click.self="open = false"
-      >
+      <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60" @click.self="open = false">
         <div class="w-72 rounded-lg bg-gray-700 p-4 shadow-xl" @click.stop>
           <!-- Month nav -->
           <div class="mb-3 flex items-center justify-between">
-            <button type="button" class="cursor-pointer p-1 hover:text-white" :class="canGoPrev ? 'text-white/40' : 'text-white/10 pointer-events-none'" @click="prevMonth">
+            <button
+              type="button"
+              class="cursor-pointer p-1 hover:text-white"
+              :class="canGoPrev ? 'text-white/40' : 'pointer-events-none text-white/10'"
+              @click="prevMonth"
+            >
               <Icon name="uil:angle-left" />
             </button>
             <span class="text-sm text-white/70">{{ months[viewMonth] }} {{ viewYear }}</span>
@@ -190,10 +211,13 @@ const onMinuteBlur = () => {
               type="button"
               class="cursor-pointer rounded py-1.5 transition-colors"
               :class="[
-                isSelected(day) ? 'bg-blue-500 text-white' :
-                isToday(day) ? 'text-blue-400' :
-                isPast(day) ? 'cursor-not-allowed text-white/15' :
-                'text-white/60 hover:bg-gray-600',
+                isSelected(day)
+                  ? 'bg-blue-500 text-white'
+                  : isToday(day)
+                    ? 'text-blue-400'
+                    : isPast(day)
+                      ? 'cursor-not-allowed text-white/15'
+                      : 'text-white/60 hover:bg-gray-600',
               ]"
               :disabled="isPast(day)"
               @click="selectDay(day)"
@@ -214,14 +238,14 @@ const onMinuteBlur = () => {
                 @focus="onHourFocus"
                 @blur="onHourBlur"
                 @input="onHourInput"
-              >
+              />
               <div v-if="showHourList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
                   v-for="h in 12"
                   :key="h"
                   type="button"
                   class="w-full px-2 py-1 text-center text-sm text-white/60 hover:bg-gray-500 hover:text-white"
-                  :class="displayHour === h && 'text-white bg-gray-500'"
+                  :class="displayHour === h && 'bg-gray-500 text-white'"
                   @mousedown.prevent="selectHour(h)"
                 >
                   {{ String(h).padStart(2, '0') }}
@@ -239,24 +263,21 @@ const onMinuteBlur = () => {
                 @focus="onMinuteFocus"
                 @blur="onMinuteBlur"
                 @input="onMinuteInput"
-              >
+              />
               <div v-if="showMinuteList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
                   v-for="m in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]"
                   :key="m"
                   type="button"
                   class="w-full px-2 py-1 text-center text-sm text-white/60 hover:bg-gray-500 hover:text-white"
-                  :class="selectedMinute === m && 'text-white bg-gray-500'"
+                  :class="selectedMinute === m && 'bg-gray-500 text-white'"
                   @mousedown.prevent="selectMinute(m)"
                 >
                   {{ String(m).padStart(2, '0') }}
                 </button>
               </div>
             </div>
-            <select
-              v-model="ampm"
-              class="cursor-pointer rounded bg-gray-600 px-2 py-1.5 text-sm text-white focus:outline-none"
-            >
+            <select v-model="ampm" class="cursor-pointer rounded bg-gray-600 px-2 py-1.5 text-sm text-white focus:outline-none">
               <option value="AM">AM</option>
               <option value="PM">PM</option>
             </select>
@@ -264,12 +285,14 @@ const onMinuteBlur = () => {
 
           <!-- Actions -->
           <div class="mt-4 flex justify-between">
-            <button v-if="hasReminder" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clear">clear</button>
+            <button v-if="hasReminder" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clear">
+              clear
+            </button>
             <span v-else />
             <button
               type="button"
               class="cursor-pointer rounded bg-gray-600 px-4 py-1.5 text-xs text-white hover:bg-gray-500"
-              :class="!selectedDate && 'opacity-30 pointer-events-none'"
+              :class="!selectedDate && 'pointer-events-none opacity-30'"
               @click="confirm"
             >
               set

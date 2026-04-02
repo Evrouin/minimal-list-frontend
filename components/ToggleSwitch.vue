@@ -5,11 +5,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
-const bg = computed(() =>
-  props.modelValue
-    ? props.color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
-    : 'bg-gray-600'
-)
+const bg = computed(() => (props.modelValue ? (props.color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500') : 'bg-gray-600'))
 </script>
 
 <template>
@@ -19,9 +15,6 @@ const bg = computed(() =>
     :class="bg"
     @click="emit('update:modelValue', !modelValue)"
   >
-    <span
-      class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform"
-      :class="modelValue ? 'translate-x-4' : ''"
-    />
+    <span class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform" :class="modelValue ? 'translate-x-4' : ''" />
   </button>
 </template>

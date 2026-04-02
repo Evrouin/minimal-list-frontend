@@ -108,7 +108,7 @@ const confirmDelete = async () => {
         placeholder="search..."
         class="w-40 rounded-lg bg-gray-700 px-3 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none"
         @input="onSearch"
-      >
+      />
       <NuxtLink to="/admin/users/create" class="text-sm text-white/60 lowercase hover:text-white">create</NuxtLink>
       <NuxtLink to="/admin" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
     </PageHeader>

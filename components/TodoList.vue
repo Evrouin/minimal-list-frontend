@@ -7,8 +7,7 @@ import { storeToRefs } from 'pinia'
 const { tap } = useHaptics()
 
 const todoStore = useTodoStore()
-const { filteredTodos, pinnedTodos, unpinnedTodos, loading } =
-  storeToRefs(todoStore)
+const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
 
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
@@ -111,9 +110,8 @@ const startHover = (id: number) => {
   hoverTimers.set(
     id,
     setTimeout(() => {
-      if (!visibleCheckboxIds.value.includes(id))
-        visibleCheckboxIds.value.push(id)
-    }, 800)
+      if (!visibleCheckboxIds.value.includes(id)) visibleCheckboxIds.value.push(id)
+    }, 800),
   )
 }
 
@@ -161,21 +159,15 @@ const exitMultiSelect = () => {
 }
 
 const allSelectedPinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) =>
-    selectedIds.value.includes(t.id)
-  )
+  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
   return sel.length > 0 && sel.every((t) => t.pinned)
 })
 const allSelectedUnpinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) =>
-    selectedIds.value.includes(t.id)
-  )
+  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
   return sel.length > 0 && sel.every((t) => !t.pinned)
 })
 const allSelectedDeleted = computed(() => {
-  const sel = filteredTodos.value.filter((t) =>
-    selectedIds.value.includes(t.id)
-  )
+  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
   return sel.length > 0 && sel.every((t) => t.deleted)
 })
 
@@ -201,7 +193,7 @@ const confirmBulkDelete = () => {
     () => todoStore.bulkDeleteCommit(ids),
     () => {
       todoStore.bulkDeleteRollback(snapshot)
-    }
+    },
   )
 }
 const bulkRestoreSelected = () => {
@@ -213,7 +205,9 @@ const bulkRestoreSelected = () => {
   showToast(
     `${count} note${count > 1 ? 's' : ''} restored`,
     () => todoStore.bulkRestoreCommit(ids),
-    () => { todoStore.bulkRestoreRollback(snapshot) }
+    () => {
+      todoStore.bulkRestoreRollback(snapshot)
+    },
   )
 }
 
@@ -228,7 +222,7 @@ const bulkPinSelected = (pinned: boolean) => {
     () => todoStore.bulkPinCommit(ids, pinned),
     () => {
       todoStore.bulkPinRollback(snapshot)
-    }
+    },
   )
 }
 
@@ -245,7 +239,10 @@ const cancelAllEdits = () => {
   const current = filteredTodos.value.find((t) => t.editing)
   if (current) {
     const orig = editOriginals.value.get(current.id)
-    if (orig) { current.title = orig.title; current.body = orig.body }
+    if (orig) {
+      current.title = orig.title
+      current.body = orig.body
+    }
     current.editing = false
     editOriginals.value.delete(current.id)
   }
@@ -258,7 +255,10 @@ const editTodo = (todo: Todo) => {
   const current = filteredTodos.value.find((t) => t.editing && t.id !== todo.id)
   if (current) {
     const orig = editOriginals.value.get(current.id)
-    if (orig) { current.title = orig.title; current.body = orig.body }
+    if (orig) {
+      current.title = orig.title
+      current.body = orig.body
+    }
     current.editing = false
     editOriginals.value.delete(current.id)
   }
@@ -371,7 +371,7 @@ const cancelEdit = (todo: Todo) => {
 }
 
 const expandedEditId = ref<number | null>(null)
-const expandedTodo = computed(() => expandedEditId.value ? todoStore.todos.find((t) => t.id === expandedEditId.value) : null)
+const expandedTodo = computed(() => (expandedEditId.value ? todoStore.todos.find((t) => t.id === expandedEditId.value) : null))
 
 const expandEdit = (todo: Todo) => {
   expandedEditId.value = todo.id
@@ -435,7 +435,7 @@ const confirmDelete = () => {
     () => todoStore.deleteTodoCommit(todo.id),
     () => {
       todoStore.deleteTodoRollback(snapshot)
-    }
+    },
   )
 }
 
@@ -445,7 +445,9 @@ const restoreTodo = (todo: Todo) => {
   showToast(
     'note restored',
     () => todoStore.restoreTodoCommit(todo.id),
-    () => { todoStore.restoreTodoRollback(snapshot) }
+    () => {
+      todoStore.restoreTodoRollback(snapshot)
+    },
   )
 }
 
@@ -460,19 +462,13 @@ defineExpose({ cancelAllEdits, isEditing })
 <template>
   <TodoSkeleton v-if="loading && todoStore.initialLoad" :count="skeletonCount" />
 
-  <div
-    v-else-if="!loading && filteredTodos.length === 0"
-    class="flex items-center justify-center py-20"
-  >
+  <div v-else-if="!loading && filteredTodos.length === 0" class="flex items-center justify-center py-20">
     <span class="text-sm text-white/30 lowercase">{{ isTodoEmptyMessage }}</span>
   </div>
 
-  <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'animate-pulse pointer-events-none' : ''">
+  <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'pointer-events-none animate-pulse' : ''">
     <!-- Multi-select bar -->
-    <div
-      v-if="multiSelectMode"
-      class="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-end gap-2 bg-gray-800 px-4 py-2"
-    >
+    <div v-if="multiSelectMode" class="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-end gap-2 bg-gray-800 px-4 py-2">
       <button
         v-if="allSelectedUnpinned"
         class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
@@ -504,16 +500,9 @@ defineExpose({ cancelAllEdits, isEditing })
       >
         <Icon name="uil:trash" class="h-4 w-4" />
       </button>
-      <div
-        class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5"
-      >
-        <span class="text-sm leading-none text-white/70"
-          >{{ selectedIds.length }} selected</span
-        >
-        <button
-          class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white"
-          @click="exitMultiSelect"
-        >
+      <div class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5">
+        <span class="text-sm leading-none text-white/70">{{ selectedIds.length }} selected</span>
+        <button class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white" @click="exitMultiSelect">
           <Icon name="uil:times" class="h-4 w-4" />
         </button>
       </div>
@@ -523,7 +512,16 @@ defineExpose({ cancelAllEdits, isEditing })
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div v-for="todo in pinnedTodos" :key="todo.id" :ref="(el) => { if (el) cardRefs.set(todo.id, el as Element) }" class="mb-5 inline-block w-full break-inside-avoid">
+        <div
+          v-for="todo in pinnedTodos"
+          :key="todo.id"
+          :ref="
+            (el) => {
+              if (el) cardRefs.set(todo.id, el as Element)
+            }
+          "
+          class="mb-5 inline-block w-full break-inside-avoid"
+        >
           <TodoCard
             :todo="todo"
             :pinned="true"
@@ -553,14 +551,18 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
-      <p
-        v-if="pinnedTodos.length > 0"
-        class="mb-3 text-xs text-white/40 lowercase"
-      >
-        others
-      </p>
+      <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div v-for="todo in unpinnedTodos" :key="todo.id" :ref="(el) => { if (el) cardRefs.set(todo.id, el as Element) }" class="mb-5 inline-block w-full break-inside-avoid">
+        <div
+          v-for="todo in unpinnedTodos"
+          :key="todo.id"
+          :ref="
+            (el) => {
+              if (el) cardRefs.set(todo.id, el as Element)
+            }
+          "
+          class="mb-5 inline-block w-full break-inside-avoid"
+        >
           <TodoCard
             :todo="todo"
             :pinned="false"
@@ -591,97 +593,91 @@ defineExpose({ cancelAllEdits, isEditing })
 
   <!-- Edit dialog (lg+ screens) -->
   <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="cancelDialogTodo">
-        <div
-          class="mx-4 flex w-full flex-col gap-3 rounded-lg p-6 shadow-xl transition-all duration-200"
-          :class="[noteColors[dialogColor]?.bg || 'bg-gray-800', dialogExpanded ? 'max-w-4xl max-h-[85vh]' : 'max-w-xl']"
-        >
-          <ImagePreview v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image" :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!" :padding="6" />
-          <div class="flex w-full items-center justify-between">
-            <input
-              v-model="dialogTitle"
-              class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
-              @keydown.enter.prevent
-            >
-            <div class="flex shrink-0 items-center space-x-2">
-              <button
-                class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
-                :class="dialogPinned ? 'text-blue-400' : 'text-gray-400'"
-                :title="dialogPinned ? 'Unpin' : 'Pin'"
-                @click="dialogTogglePin"
-              >
-                <Icon name="mdi:pin" />
-              </button>
-              <button
-                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
-                title="Delete"
-                @click="dialogRequestDelete"
-              >
-                <Icon name="uil:trash" />
-              </button>
-              <button
-                class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
-                :title="
-                  dialogTodo.completed
-                    ? 'Mark as incomplete'
-                    : 'Mark as complete'
-                "
-                @click="dialogToggleCompletion"
-              >
-                <Icon
-                  :name="
-                    dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'
-                  "
-                />
-              </button>
-            </div>
-          </div>
-          <div :class="dialogExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : ''">
-            <LazyTiptapEditor
-              ref="dialogEditorRef"
-              v-model="dialogBody"
-              placeholder="body"
-              @submit="saveDialogTodo"
-            />
-          </div>
-          <AudioPlayer v-if="dialogAudioPreview || dialogTodo?.audio" :src="dialogAudioPreview || dialogTodo?.audio!" removable @remove="dialogAudioFile = null; dialogAudioPreview = ''" />
-          <div class="flex items-center justify-between">
-            <ColorPicker v-model="dialogColor" />
-            <div class="flex items-center gap-1">
-              <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" />
-              <AudioRecorder @recorded="(f, u) => { dialogAudioFile = f; dialogAudioPreview = u }" @update:recording="v => dialogAudioRecording = v" />
-              <template v-if="!dialogAudioRecording">
-                <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-                  <Icon name="uil:image" class="text-xs" />
-                  <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
-                </label>
-                <button
-                  type="button"
-                  class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
-                  @click="dialogExpanded = !dialogExpanded"
-                >
-                  <Icon :name="dialogExpanded ? 'uil:compress-arrows' : 'uil:expand-arrows-alt'" class="text-xs" />
-                </button>
-                <button
-                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white"
-                  @click="cancelDialogTodo"
-                >
-                cancel
-              </button>
-              <button
-                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 lowercase hover:text-white"
-                @click="saveDialogTodo"
-              >
-                save
-              </button>
-              </template>
-            </div>
-          </div>
+    <div
+      class="mx-4 flex w-full flex-col gap-3 rounded-lg p-6 shadow-xl transition-all duration-200"
+      :class="[noteColors[dialogColor]?.bg || 'bg-gray-800', dialogExpanded ? 'max-h-[85vh] max-w-4xl' : 'max-w-xl']"
+    >
+      <ImagePreview
+        v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image"
+        :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!"
+        :padding="6"
+      />
+      <div class="flex w-full items-center justify-between">
+        <input
+          v-model="dialogTitle"
+          class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
+          @keydown.enter.prevent
+        />
+        <div class="flex shrink-0 items-center space-x-2">
+          <button
+            class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
+            :class="dialogPinned ? 'text-blue-400' : 'text-gray-400'"
+            :title="dialogPinned ? 'Unpin' : 'Pin'"
+            @click="dialogTogglePin"
+          >
+            <Icon name="mdi:pin" />
+          </button>
+          <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200" title="Delete" @click="dialogRequestDelete">
+            <Icon name="uil:trash" />
+          </button>
+          <button
+            class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+            :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+            @click="dialogToggleCompletion"
+          >
+            <Icon :name="dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+          </button>
         </div>
+      </div>
+      <div :class="dialogExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : ''">
+        <LazyTiptapEditor ref="dialogEditorRef" v-model="dialogBody" placeholder="body" @submit="saveDialogTodo" />
+      </div>
+      <AudioPlayer
+        v-if="dialogAudioPreview || dialogTodo?.audio"
+        :src="dialogAudioPreview || dialogTodo?.audio!"
+        removable
+        @remove="dialogAudioFile = null; dialogAudioPreview = ''"
+      />
+      <div class="flex items-center justify-between">
+        <ColorPicker v-model="dialogColor" />
+        <div class="flex items-center gap-1">
+          <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" />
+          <AudioRecorder
+            @recorded="
+              (f, u) => {
+                dialogAudioFile = f
+                dialogAudioPreview = u
+              }
+            "
+            @update:recording="(v) => (dialogAudioRecording = v)"
+          />
+          <template v-if="!dialogAudioRecording">
+            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+              <Icon name="uil:image" class="text-xs" />
+              <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" />
+            </label>
+            <button
+              type="button"
+              class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+              @click="dialogExpanded = !dialogExpanded"
+            >
+              <Icon :name="dialogExpanded ? 'uil:compress-arrows' : 'uil:expand-arrows-alt'" class="text-xs" />
+            </button>
+            <button class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white" @click="cancelDialogTodo">
+              cancel
+            </button>
+            <button class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 lowercase hover:text-white" @click="saveDialogTodo">
+              save
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
   </ModalOverlay>
 
   <!-- Expanded inline edit (mobile) -->
   <Teleport to="body">
-    <div v-if="expandedTodo" class="fixed inset-0 z-50 flex flex-col p-3 bg-gray-800">
+    <div v-if="expandedTodo" class="fixed inset-0 z-50 flex flex-col bg-gray-800 p-3">
       <div
         class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
         :class="noteColors[expandedTodo.color]?.bg || 'bg-gray-700'"
@@ -695,7 +691,7 @@ defineExpose({ cancelAllEdits, isEditing })
         <input
           v-model="expandedTodo.title"
           class="border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
-        >
+        />
         <div class="flex-1 overflow-y-auto">
           <LazyTiptapEditor v-model="expandedTodo.body" placeholder="body" />
         </div>
@@ -704,11 +700,26 @@ defineExpose({ cancelAllEdits, isEditing })
           <ColorPicker v-model="expandedTodo.color" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!expandedAudioRecording" v-model="expandedTodo.reminder_at" />
-            <AudioRecorder @recorded="(f, u) => { if (expandedTodo) { editAudioFiles.set(expandedTodo.id, f); editAudioPreviews.set(expandedTodo.id, u) } }" @update:recording="v => expandedAudioRecording = v" />
+            <AudioRecorder
+              @recorded="
+                (f, u) => {
+                  if (expandedTodo) {
+                    editAudioFiles.set(expandedTodo.id, f)
+                    editAudioPreviews.set(expandedTodo.id, u)
+                  }
+                }
+              "
+              @update:recording="(v) => (expandedAudioRecording = v)"
+            />
             <template v-if="!expandedAudioRecording">
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="(e: Event) => expandedTodo && onEditImageSelect(expandedTodo, e)" >
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="(e: Event) => expandedTodo && onEditImageSelect(expandedTodo, e)"
+                />
               </label>
               <button
                 type="button"
@@ -742,11 +753,7 @@ defineExpose({ cancelAllEdits, isEditing })
   <ConfirmDialog
     v-model="showDeleteDialog"
     :title="todoToDelete?.deleted ? 'permanent delete' : 'delete note'"
-    :message="
-      todoToDelete?.deleted
-        ? 'this cannot be undone. delete forever?'
-        : 'move this note to deleted?'
-    "
+    :message="todoToDelete?.deleted ? 'this cannot be undone. delete forever?' : 'move this note to deleted?'"
     :confirm-text="todoToDelete?.deleted ? 'delete forever' : 'delete'"
     @confirm="confirmDelete"
   />

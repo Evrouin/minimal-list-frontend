@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  submit: []
+  'submit': []
 }>()
 
 const editor = shallowRef<Editor | null>(null)
@@ -77,7 +77,7 @@ watch(
     if (editor.value && editor.value.getHTML() !== val) {
       editor.value.commands.setContent(val, { emitUpdate: false })
     }
-  }
+  },
 )
 
 onBeforeUnmount(() => editor.value?.destroy())
@@ -129,9 +129,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
         :class="[
           'cursor-pointer rounded px-1.5 py-0.5 text-xs transition-colors',
           btn.class,
-          isActive(btn.type)
-            ? 'bg-white/20 text-white'
-            : 'text-white/40 hover:text-white/70',
+          isActive(btn.type) ? 'bg-white/20 text-white' : 'text-white/40 hover:text-white/70',
         ]"
         @mousedown.prevent="toggle(btn.type)"
       >
@@ -195,12 +193,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
 .tiptap-wrapper .tiptap ul[data-type='taskList'] li label {
   margin-top: 0.15rem;
 }
-.tiptap-wrapper
-  .tiptap
-  ul[data-type='taskList']
-  li
-  label
-  input[type='checkbox'] {
+.tiptap-wrapper .tiptap ul[data-type='taskList'] li label input[type='checkbox'] {
   cursor: pointer;
   appearance: none;
   width: 0.9rem;
@@ -209,12 +202,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
   border-radius: 3px;
   background: transparent;
 }
-.tiptap-wrapper
-  .tiptap
-  ul[data-type='taskList']
-  li
-  label
-  input[type='checkbox']:checked {
+.tiptap-wrapper .tiptap ul[data-type='taskList'] li label input[type='checkbox']:checked {
   background: #60a5fa;
   border-color: #60a5fa;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");

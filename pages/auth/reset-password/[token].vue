@@ -41,7 +41,7 @@ const handleSubmit = async () => {
             type="password"
             placeholder="min 8 characters"
             class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          >
+          />
         </div>
         <div>
           <label class="mb-1 block text-xs text-white/40">confirm password</label>
@@ -50,7 +50,7 @@ const handleSubmit = async () => {
             type="password"
             placeholder="confirm password"
             class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          >
+          />
         </div>
       </div>
 

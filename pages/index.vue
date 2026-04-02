@@ -149,7 +149,8 @@ const clearCreateImage = () => {
 const { fetchPreviews: fetchCreatePreviews } = useLinkPreviews()
 
 const createDialogSubmit = async () => {
-  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value && !createAudioFile.value) || createSubmitting.value) return
+  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value && !createAudioFile.value) || createSubmitting.value)
+    return
   createSubmitting.value = true
   createErrorMsg.value = ''
   try {
@@ -312,7 +313,7 @@ const { toasts, undo: undoToast } = useUndoToast()
     <ModalOverlay :show="showCreateDialog" tabindex="0" @keydown.esc="cancelCreate">
       <form
         class="mx-4 flex w-full flex-col gap-4 rounded-lg p-8 shadow-xl transition-all duration-200"
-        :class="[noteColors[createColor]?.bg || 'bg-gray-800', createExpanded ? 'max-w-4xl max-h-[85vh]' : 'max-w-xl']"
+        :class="[noteColors[createColor]?.bg || 'bg-gray-800', createExpanded ? 'max-h-[85vh] max-w-4xl' : 'max-w-xl']"
         @submit.prevent="createDialogSubmit"
       >
         <ImagePreview v-if="createImagePreview" :src="createImagePreview" :padding="8" removable @remove="clearCreateImage" />
@@ -322,7 +323,7 @@ const { toasts, undo: undoToast } = useUndoToast()
           placeholder="title"
           maxlength="100"
           class="w-full border-b border-white/20 bg-transparent pb-2 text-sm font-bold text-white lowercase placeholder-white/60 focus:outline-none"
-        >
+        />
         <div :class="createExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : 'min-h-[150px]'">
           <LazyTiptapEditor ref="createEditorRef" v-model="createBody" placeholder="body" @submit="createDialogSubmit" />
         </div>
@@ -332,11 +333,19 @@ const { toasts, undo: undoToast } = useUndoToast()
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
-            <AudioRecorder @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }" @update:recording="v => createAudioRecording = v" />
+            <AudioRecorder
+              @recorded="
+                (f, u) => {
+                  createAudioFile = f
+                  createAudioPreview = u
+                }
+              "
+              @update:recording="(v) => (createAudioRecording = v)"
+            />
             <template v-if="!createAudioRecording">
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
+                <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" />
               </label>
               <button
                 type="button"
@@ -355,7 +364,11 @@ const { toasts, undo: undoToast } = useUndoToast()
               <button
                 type="submit"
                 class="cursor-pointer rounded px-2 py-0.5 text-xs lowercase"
-                :class="createTitle.trim() && (hasCreateBody || createImageFile || createAudioFile) ? 'text-white/60 hover:text-white' : 'text-white/20'"
+                :class="
+                  createTitle.trim() && (hasCreateBody || createImageFile || createAudioFile)
+                    ? 'text-white/60 hover:text-white'
+                    : 'text-white/20'
+                "
                 :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile && !createAudioFile)"
               >
                 add

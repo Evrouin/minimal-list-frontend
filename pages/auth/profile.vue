@@ -167,7 +167,7 @@ const handleLogout = () => {
                 :src="user.avatar || user.avatar_url"
                 class="h-12 w-12 rounded-full object-cover"
                 @error="avatarError = true"
-              >
+              />
               <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
                 {{ (user.username || user.email)[0].toUpperCase() }}
               </div>
@@ -177,7 +177,7 @@ const handleLogout = () => {
                 <Icon name="uil:camera" class="text-sm text-white" />
               </div>
             </div>
-            <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" >
+            <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-lg font-medium text-white">{{ user.username || 'no username' }}</p>
               <p class="text-sm text-white/50">{{ user.email }}</p>
@@ -222,7 +222,7 @@ const handleLogout = () => {
                   v-model="editForm.username"
                   class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                   placeholder="username"
-                >
+                />
               </div>
               <div>
                 <label class="mb-1 block text-xs text-white/40">phone</label>
@@ -231,7 +231,7 @@ const handleLogout = () => {
                   type="tel"
                   class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                   placeholder="phone"
-                >
+                />
               </div>
               <div>
                 <label class="mb-1 block text-xs text-white/40">bio</label>
@@ -278,7 +278,7 @@ const handleLogout = () => {
                 type="password"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="current password"
-              >
+              />
             </div>
             <div>
               <label class="mb-1 block text-xs text-white/40">new password</label>
@@ -287,7 +287,7 @@ const handleLogout = () => {
                 type="password"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="new password"
-              >
+              />
             </div>
             <div>
               <label class="mb-1 block text-xs text-white/40">confirm new password</label>
@@ -296,7 +296,7 @@ const handleLogout = () => {
                 type="password"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                 placeholder="confirm new password"
-              >
+              />
             </div>
           </div>
 
@@ -342,7 +342,7 @@ const handleLogout = () => {
     <ModalOverlay :show="showCropper" backdrop-class="bg-black/70" @click.self="cancelCrop">
       <div class="w-full max-w-sm rounded-lg bg-gray-700 p-4">
         <div class="mb-3 max-h-[60vh] overflow-hidden">
-          <img ref="cropImgEl" :src="cropImageSrc" class="max-w-full" >
+          <img ref="cropImgEl" :src="cropImageSrc" class="max-w-full" />
         </div>
         <div class="flex justify-end gap-2">
           <button class="cursor-pointer rounded px-3 py-1 text-xs text-white/60 hover:text-white" @click="cancelCrop">cancel</button>

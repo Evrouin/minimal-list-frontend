@@ -16,13 +16,13 @@ const hasBody = computed(
     body.value
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, '')
-      .trim().length > 0
+      .trim().length > 0,
 )
 const audioFile = ref<File | null>(null)
 const audioPreview = ref('')
 const audioRecording = ref(false)
 const isValidTodo = computed(
-  () => title.value.trim().length > 0 && (hasBody.value || !!imageFile.value || !!audioFile.value) && !audioRecording.value
+  () => title.value.trim().length > 0 && (hasBody.value || !!imageFile.value || !!audioFile.value) && !audioRecording.value,
 )
 
 const errorMsg = ref('')
@@ -85,9 +85,7 @@ const addTodo = async () => {
     expanded.value = false
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
-    errorMsg.value = msg.includes('limit')
-      ? 'note limit reached'
-      : 'failed to add note'
+    errorMsg.value = msg.includes('limit') ? 'note limit reached' : 'failed to add note'
   } finally {
     submitting.value = false
   }
@@ -109,10 +107,7 @@ const handleTitleInput = (event: Event) => {
   <!-- Compact form -->
   <form v-if="!expanded" @submit.prevent="addTodo">
     <div class="mb-5 flex items-center justify-center">
-      <div
-        class="flex w-full flex-col gap-2 rounded-lg p-5 text-xs text-white shadow-md"
-        :class="noteColors[color]?.bg || 'bg-gray-700'"
-      >
+      <div class="flex w-full flex-col gap-2 rounded-lg p-5 text-xs text-white shadow-md" :class="noteColors[color]?.bg || 'bg-gray-700'">
         <ImagePreview v-if="imagePreview" :src="imagePreview" :padding="5" removable @remove="clearImage" />
         <input
           v-model="title"
@@ -123,7 +118,7 @@ const handleTitleInput = (event: Event) => {
           @input="handleTitleInput"
           @focus="focused = true"
           @blur="focused = false"
-        >
+        />
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" @focus="focused = true" @blur="focused = false" />
         <AudioPlayer v-if="audioPreview" :src="audioPreview" removable @remove="clearAudio" />
         <div class="flex items-center justify-between">
@@ -131,11 +126,19 @@ const handleTitleInput = (event: Event) => {
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
-            <AudioRecorder @recorded="(f, u) => { audioFile = f; audioPreview = u }" @update:recording="v => audioRecording = v" />
+            <AudioRecorder
+              @recorded="
+                (f, u) => {
+                  audioFile = f
+                  audioPreview = u
+                }
+              "
+              @update:recording="(v) => (audioRecording = v)"
+            />
             <template v-if="!audioRecording">
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
+                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
               </label>
               <button
                 v-if="focused || title || hasBody"
@@ -148,7 +151,7 @@ const handleTitleInput = (event: Event) => {
               <button
                 type="submit"
                 :disabled="!isValidTodo"
-                class="cursor-pointer rounded px-2 py-0.5 -mt-0.5 text-xs transition-colors"
+                class="-mt-0.5 cursor-pointer rounded px-2 py-0.5 text-xs transition-colors"
                 :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
               >
                 add
@@ -162,7 +165,7 @@ const handleTitleInput = (event: Event) => {
 
   <!-- Expanded fullscreen -->
   <Teleport to="body">
-    <div v-if="expanded" class="fixed inset-0 z-50 flex flex-col p-3 bg-gray-800">
+    <div v-if="expanded" class="fixed inset-0 z-50 flex flex-col bg-gray-800 p-3">
       <form
         class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
         :class="noteColors[color]?.bg || 'bg-gray-700'"
@@ -176,7 +179,7 @@ const handleTitleInput = (event: Event) => {
           maxlength="100"
           class="border-b border-white/20 bg-transparent text-sm placeholder-white/60 focus:outline-none"
           @input="handleTitleInput"
-        >
+        />
         <div class="flex-1 overflow-y-auto">
           <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         </div>
@@ -188,11 +191,19 @@ const handleTitleInput = (event: Event) => {
             <template v-if="!audioRecording">
               <ReminderPicker v-model="reminderAt" />
             </template>
-            <AudioRecorder @recorded="(f, u) => { audioFile = f; audioPreview = u }" @update:recording="v => audioRecording = v" />
+            <AudioRecorder
+              @recorded="
+                (f, u) => {
+                  audioFile = f
+                  audioPreview = u
+                }
+              "
+              @update:recording="(v) => (audioRecording = v)"
+            />
             <template v-if="!audioRecording">
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
+                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
               </label>
               <button
                 type="button"
@@ -204,7 +215,7 @@ const handleTitleInput = (event: Event) => {
               <button
                 type="submit"
                 :disabled="!isValidTodo"
-                class="cursor-pointer rounded px-2 py-0.5 -mt-0.5 text-xs transition-colors"
+                class="-mt-0.5 cursor-pointer rounded px-2 py-0.5 text-xs transition-colors"
                 :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
               >
                 add

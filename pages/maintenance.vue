@@ -9,7 +9,9 @@ const check = async () => {
     await $fetch(`${baseUrl}/health/`)
     clearInterval(poll)
     navigateTo('/')
-  } catch { /* server still down */ }
+  } catch {
+    /* server still down */
+  }
 }
 
 const poll = setInterval(check, 30000)

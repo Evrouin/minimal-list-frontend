@@ -22,7 +22,12 @@ const pick = (color: NoteColor) => {
 
 <template>
   <div class="relative flex items-center">
-    <button type="button" class="h-5 w-5 cursor-pointer rounded-full border border-white/20" :style="{ backgroundColor: currentHex }" @click.stop="open = !open" />
+    <button
+      type="button"
+      class="h-5 w-5 cursor-pointer rounded-full border border-white/20"
+      :style="{ backgroundColor: currentHex }"
+      @click.stop="open = !open"
+    />
     <Transition name="fade">
       <div v-show="open" class="ml-1 flex items-center gap-1">
         <button
