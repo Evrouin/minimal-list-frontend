@@ -20,13 +20,50 @@ const withRetry = async <T>(fn: () => Promise<T>, retries = 2): Promise<T> => {
   throw new Error('unreachable')
 }
 
+let refreshPromise: Promise<string> | null = null
+
 export const useApiFetch = () => {
   const config = useRuntimeConfig()
   const baseUrl = (config.public.authApiBase as string).replace('/api/auth', '')
 
+  const refreshAccessToken = async (): Promise<string> => {
+    const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
+    if (!tokens?.refresh) throw new Error('no refresh token')
+
+    // If a refresh is already in progress, wait for it
+    if (refreshPromise) return refreshPromise
+
+    refreshPromise = (async () => {
+      try {
+        const res = await $fetch<{ access: string }>(
+          `${baseUrl}/api/auth/token/refresh/`,
+          { method: 'POST', body: { refresh: tokens.refresh } },
+        )
+        const newTokens = { ...tokens, access: res.access }
+        localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
+        return res.access
+      } catch (e: unknown) {
+        const refreshStatus = (e as { response?: { status?: number } }).response?.status
+        if (refreshStatus === 429) {
+          throw { statusCode: 429, message: 'too many requests. try again later.' }
+        }
+        const { clearAuth } = useAuthStore()
+        clearAuth()
+        if (window.location.pathname !== '/auth/login') {
+          navigateTo('/auth/login')
+        }
+        throw new Error('refresh failed')
+      } finally {
+        refreshPromise = null
+      }
+    })()
+
+    return refreshPromise
+  }
+
   const request = async <T>(
     url: string,
-    opts: Record<string, unknown> = {}
+    opts: Record<string, unknown> = {},
   ): Promise<T> => {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
     const headers: Record<string, string> = {}
@@ -39,7 +76,7 @@ export const useApiFetch = () => {
         $fetch<T>(`${baseUrl}${url}`, {
           ...opts,
           headers: { ...headers, ...(opts.headers as Record<string, string>) },
-        })
+        }),
       )) as T
     } catch (err: unknown) {
       const error = err as {
@@ -49,38 +86,30 @@ export const useApiFetch = () => {
       const status = error.response?.status || 500
       const data = error.response?._data as Record<string, unknown> | undefined
 
-      // extract message from DRF error responses
       let message = 'something went wrong'
       if (data) {
         if (typeof data.detail === 'string') message = data.detail
         else if (typeof data.error === 'string') message = data.error
         else if (typeof data.message === 'string') message = data.message
         else {
-          // field errors like { email: ["already exists"] }
-          const firstField = Object.entries(data).find(([, v]) =>
-            Array.isArray(v)
-          )
-          if (firstField)
-            message = `${firstField[0]}: ${(firstField[1] as string[])[0]}`
+          const firstField = Object.entries(data).find(([, v]) => Array.isArray(v))
+          if (firstField) message = `${firstField[0]}: ${(firstField[1] as string[])[0]}`
         }
       }
 
-      // auto-refresh on 401, retry once
+      // Auto-refresh on 401, retry once
       if (status === 401 && tokens?.refresh && !opts._retried) {
         try {
-          const refreshRes = await $fetch<{ access: string }>(
-            `${baseUrl}/api/auth/token/refresh/`,
-            {
-              method: 'POST',
-              body: { refresh: tokens.refresh },
-            }
-          )
-          const newTokens = { ...tokens, access: refreshRes.access }
-          localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
+          await refreshAccessToken()
           return await request<T>(url, { ...opts, _retried: true })
-        } catch {
-          // refresh failed — clear and redirect
+        } catch (refreshErr: unknown) {
+          if ((refreshErr as ApiError)?.statusCode === 429) throw refreshErr as ApiError
+          return new Promise<never>(() => {})
         }
+      }
+
+      if (status === 429) {
+        throw { statusCode: 429, message: 'too many requests. try again later.' } as ApiError
       }
 
       if (status === 503) {
