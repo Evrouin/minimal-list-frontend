@@ -17,12 +17,11 @@ const handleLogin = async () => {
     await authStore.login(form)
     navigateTo('/')
   } catch (e: unknown) {
-    const msg = (e as { message?: string })?.message || ''
-    errorMsg.value = msg.includes('verify')
-      ? 'unverified email'
-      : msg.includes('deactivated')
-        ? 'account deactivated'
-        : 'invalid email or password'
+    const msg = (e as { message?: string })?.message?.toLowerCase() || ''
+    if (msg.includes('locked')) errorMsg.value = 'account locked. check your email to unlock.'
+    else if (msg.includes('verify')) errorMsg.value = 'please verify your email first.'
+    else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated'
+    else errorMsg.value = 'invalid email or password'
   }
 }
 
