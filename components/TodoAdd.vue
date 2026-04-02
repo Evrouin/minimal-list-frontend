@@ -18,8 +18,11 @@ const hasBody = computed(
       .replace(/&nbsp;/g, '')
       .trim().length > 0
 )
+const audioFile = ref<File | null>(null)
+const audioPreview = ref('')
+const audioRecording = ref(false)
 const isValidTodo = computed(
-  () => title.value.trim().length > 0 && (hasBody.value || !!imageFile.value)
+  () => title.value.trim().length > 0 && (hasBody.value || !!imageFile.value || !!audioFile.value) && !audioRecording.value
 )
 
 const errorMsg = ref('')
@@ -41,18 +44,24 @@ const clearImage = () => {
   imagePreview.value = ''
 }
 
+const clearAudio = () => {
+  audioFile.value = null
+  audioPreview.value = ''
+}
+
 const addTodo = async () => {
   if (!isValidTodo.value || submitting.value) return
   submitting.value = true
   errorMsg.value = ''
   try {
-    if (imageFile.value) {
+    if (imageFile.value || audioFile.value) {
       const fd = new FormData()
       fd.append('title', title.value.toLowerCase())
       fd.append('body', body.value)
       fd.append('color', color.value)
       if (reminderAt.value) fd.append('reminder_at', reminderAt.value)
-      fd.append('image', imageFile.value)
+      if (imageFile.value) fd.append('image', imageFile.value)
+      if (audioFile.value) fd.append('audio', audioFile.value)
       await todoStore.addTodo(fd)
     } else {
       await todoStore.addTodo({
@@ -67,6 +76,7 @@ const addTodo = async () => {
     color.value = 'default'
     reminderAt.value = null
     clearImage()
+    clearAudio()
     expanded.value = false
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''

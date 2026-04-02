@@ -6,6 +6,7 @@ export interface Todo {
   body: string
   image?: string
   thumbnail?: string
+  audio?: string | null
   color: NoteColor
   completed: boolean
   deleted: boolean

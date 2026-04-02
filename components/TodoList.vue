@@ -284,6 +284,9 @@ const editTodo = (todo: Todo) => {
 
 const dialogImageFile = ref<File | null>(null)
 const dialogImagePreview = ref('')
+const dialogAudioFile = ref<File | null>(null)
+const dialogAudioPreview = ref('')
+const dialogAudioRecording = ref(false)
 
 const onDialogImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -298,6 +301,9 @@ const cancelDialogTodo = () => {
   dialogTodo.value = null
   dialogImageFile.value = null
   dialogImagePreview.value = ''
+  dialogAudioFile.value = null
+  dialogAudioPreview.value = ''
+  dialogExpanded.value = false
 }
 
 const saveDialogTodo = async () => {
@@ -308,14 +314,20 @@ const saveDialogTodo = async () => {
   dialogTodo.value.color = dialogColor.value
   dialogTodo.value.reminder_at = dialogReminderAt.value
   dialogTodo.value.editing = false
-  await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined)
+  await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined, dialogAudioFile.value || undefined)
   dialogTodo.value = null
   dialogImageFile.value = null
   dialogImagePreview.value = ''
+  dialogAudioFile.value = null
+  dialogAudioPreview.value = ''
+  dialogExpanded.value = false
 }
 
 const editImageFiles = ref(new Map<number, File>())
 const editImagePreviews = ref(new Map<number, string>())
+const editAudioFiles = ref(new Map<number, File>())
+const editAudioPreviews = ref(new Map<number, string>())
+const expandedAudioRecording = ref(false)
 
 const onEditImageSelect = async (todo: Todo, e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -330,10 +342,13 @@ const saveTodo = async (todo: Todo) => {
   if (!todo.title.trim()) return
   todo.editing = false
   const imageFile = editImageFiles.value.get(todo.id)
+  const audioFile = editAudioFiles.value.get(todo.id)
   editOriginals.value.delete(todo.id)
   editImageFiles.value.delete(todo.id)
   editImagePreviews.value.delete(todo.id)
-  await todoStore.updateTodo({ ...todo }, imageFile)
+  editAudioFiles.value.delete(todo.id)
+  editAudioPreviews.value.delete(todo.id)
+  await todoStore.updateTodo({ ...todo }, imageFile, audioFile)
 }
 
 const cancelEdit = (todo: Todo) => {

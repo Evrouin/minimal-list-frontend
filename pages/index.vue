@@ -49,6 +49,8 @@ const todoAddRef = ref<{
   imageFile: File | null
   imagePreview: string
   color: import('~/types/todo').NoteColor
+  reminderAt: string | null
+  expanded: boolean
   clearImage: () => void
 } | null>(null)
 const showCreateDialog = ref(false)
@@ -76,6 +78,7 @@ watch(isLg, (lg) => {
       todoAddRef.value.title = createTitle.value
       todoAddRef.value.body = createBody.value
       todoAddRef.value.color = createColor.value
+      todoAddRef.value.reminderAt = createReminderAt.value
       if (createImageFile.value) {
         todoAddRef.value.imageFile = createImageFile.value
         todoAddRef.value.imagePreview = createImagePreview.value
@@ -83,6 +86,7 @@ watch(isLg, (lg) => {
     }
     cancelCreate()
   } else if (lg && todoAddRef.value) {
+    // Mobile (or expanded) → desktop: transfer TodoAdd state to dialog if has content
     const { title, body, imageFile, imagePreview, color, reminderAt, expanded } = todoAddRef.value
     if (title || body || imageFile || expanded) {
       createTitle.value = title
@@ -119,6 +123,14 @@ const createImagePreview = ref('')
 const createColor = ref<import('~/types/todo').NoteColor>('default')
 const createReminderAt = ref<string | null>(null)
 const createExpanded = ref(false)
+const createAudioFile = ref<File | null>(null)
+const createAudioPreview = ref('')
+const createAudioRecording = ref(false)
+
+const clearCreateAudio = () => {
+  createAudioFile.value = null
+  createAudioPreview.value = ''
+}
 
 const onCreateImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -135,17 +147,18 @@ const clearCreateImage = () => {
 }
 
 const createDialogSubmit = async () => {
-  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value) || createSubmitting.value) return
+  if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value && !createAudioFile.value) || createSubmitting.value) return
   createSubmitting.value = true
   createErrorMsg.value = ''
   try {
-    if (createImageFile.value) {
+    if (createImageFile.value || createAudioFile.value) {
       const fd = new FormData()
       fd.append('title', createTitle.value.toLowerCase())
       fd.append('body', createBody.value)
       fd.append('color', createColor.value)
       if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
-      fd.append('image', createImageFile.value)
+      if (createImageFile.value) fd.append('image', createImageFile.value)
+      if (createAudioFile.value) fd.append('audio', createAudioFile.value)
       await todoStore.addTodo(fd)
     } else {
       await todoStore.addTodo({
@@ -160,6 +173,7 @@ const createDialogSubmit = async () => {
     createColor.value = 'default'
     createReminderAt.value = null
     clearCreateImage()
+    clearCreateAudio()
     createExpanded.value = false
     showCreateDialog.value = false
   } catch (e: unknown) {
@@ -179,6 +193,7 @@ const cancelCreate = () => {
   createReminderAt.value = null
   createImageFile.value = null
   createImagePreview.value = ''
+  clearCreateAudio()
 }
 const showScrollTop = ref(false)
 const onScroll = () => {

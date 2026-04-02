@@ -79,7 +79,7 @@ export const useTodoStore = defineStore('todo', () => {
     if (newTodo.reminder_at) scheduleReminder(newTodo)
   }
 
-  const updateTodo = async (updatedTodo: Todo, imageFile?: File) => {
+  const updateTodo = async (updatedTodo: Todo, imageFile?: File, audioFile?: File) => {
     const index = todos.value.findIndex((t) => t.id === updatedTodo.id)
     if (index === -1) return
     const previous = { ...todos.value[index] }
@@ -87,7 +87,7 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const { title, body, completed, pinned, color, reminder_at } = updatedTodo
       let payload: Record<string, unknown> | FormData = { title, body, completed, pinned, color, reminder_at: reminder_at ?? null }
-      if (imageFile) {
+      if (imageFile || audioFile) {
         const fd = new FormData()
         fd.append('title', title)
         fd.append('body', body)
@@ -95,7 +95,8 @@ export const useTodoStore = defineStore('todo', () => {
         fd.append('pinned', String(pinned))
         fd.append('color', color)
         if (reminder_at) fd.append('reminder_at', reminder_at)
-        fd.append('image', imageFile)
+        if (imageFile) fd.append('image', imageFile)
+        if (audioFile) fd.append('audio', audioFile)
         payload = fd
       }
       const response = await api.updateTodo(updatedTodo.id, payload)

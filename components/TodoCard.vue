@@ -125,6 +125,7 @@ const cardClasses = computed(() => [
       class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase"
       v-html="todo.body"
     />
+    <AudioPlayer v-if="!todo.editing && todo.audio" :src="todo.audio" />
     <span v-if="!todo.editing && now" class="text-xs text-white/30">
       {{ timeAgo(todo.created_at) }}
       <template v-if="todo.reminder_at">
