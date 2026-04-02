@@ -68,12 +68,15 @@ const formatTime = (s: number) => {
   <button
     type="button"
     class="cursor-pointer rounded px-2 py-0.5 transition-colors"
-    :class="loading ? 'text-white/20' : recording ? 'text-red-400' : 'text-white/30 hover:text-white/60'"
+    :class="[
+      loading ? 'text-white/20' : recording ? 'text-red-400' : 'text-white/30 hover:text-white/60',
+      recording && 'inline-flex items-center',
+    ]"
     :disabled="loading"
     @click="toggle"
   >
     <Icon v-if="loading" name="uil:spinner-alt" class="animate-spin text-xs" />
     <Icon v-else :name="recording ? 'uil:stop-circle' : 'uil:microphone'" class="text-xs" />
-    <span v-if="recording" class="ml-1 text-xs">{{ formatTime(duration) }}</span>
+    <span v-if="recording" class="ml-1 text-xs leading-none">{{ formatTime(duration) }}</span>
   </button>
 </template>
