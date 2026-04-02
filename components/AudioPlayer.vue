@@ -2,6 +2,19 @@
 const props = defineProps<{ src: string; removable?: boolean }>()
 const emit = defineEmits<{ remove: [] }>()
 
+const config = useRuntimeConfig()
+const cdnUrl = config.public.cdnUrl as string
+const fallbackUrl = config.public.cdnFallbackUrl as string
+const audioSrc = ref(props.src)
+
+watch(() => props.src, (v) => { audioSrc.value = v })
+
+const onAudioError = () => {
+  if (cdnUrl && fallbackUrl && audioSrc.value.includes(cdnUrl)) {
+    audioSrc.value = audioSrc.value.replace(cdnUrl, fallbackUrl)
+  }
+}
+
 const audio = ref<HTMLAudioElement>()
 const playing = ref(false)
 const currentTime = ref(0)
@@ -45,13 +58,14 @@ const seek = (e: MouseEvent | TouchEvent) => {
   <div class="flex items-center gap-2" @click.stop @touchstart.stop @touchend.stop>
     <audio
       ref="audio"
-      :src="props.src"
+      :src="audioSrc"
       preload="metadata"
       @timeupdate="onTimeUpdate"
       @loadedmetadata="onLoaded"
       @play="playing = true"
       @pause="playing = false"
       @ended="onEnded"
+      @error="onAudioError"
     />
     <button type="button" class="cursor-pointer text-white/60 hover:text-white" @click="toggle">
       <Icon :name="playing ? 'uil:pause' : 'uil:play'" class="text-sm" />
