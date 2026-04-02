@@ -88,6 +88,11 @@ export const useApiFetch = () => {
         return new Promise<never>(() => {})
       }
 
+      if (status >= 500) {
+        showError({ statusCode: status, message })
+        return new Promise<never>(() => {})
+      }
+
       if (status === 401) {
         const { clearAuth } = useAuthStore()
         clearAuth()
