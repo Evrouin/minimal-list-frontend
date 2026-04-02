@@ -49,6 +49,8 @@ export default defineNuxtConfig({
         process.env.AUTH_API_BASE || 'http://localhost:8000/api/auth',
       googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || '',
       maintenanceMode: process.env.NUXT_PUBLIC_MAINTENANCE_MODE === 'true',
+      cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',
+      cdnFallbackUrl: process.env.NUXT_PUBLIC_CDN_FALLBACK_URL || '',
     },
   },
 })
