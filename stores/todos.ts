@@ -31,6 +31,7 @@ export const useTodoStore = defineStore('todo', () => {
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
         : null
+      syncReminders(todos.value)
     } finally {
       loading.value = false
       initialLoad.value = false
@@ -69,9 +70,13 @@ export const useTodoStore = defineStore('todo', () => {
     })
   })
 
+  const { schedule: scheduleReminder, cancel: cancelReminder, syncAll: syncReminders } = useReminders()
+
   const addTodo = async (todo: Partial<Todo> | FormData) => {
     const response = await api.createTodo(todo)
-    todos.value.unshift({ ...response.data, editing: false })
+    const newTodo = { ...response.data, editing: false }
+    todos.value.unshift(newTodo)
+    if (newTodo.reminder_at) scheduleReminder(newTodo)
   }
 
   const updateTodo = async (updatedTodo: Todo, imageFile?: File) => {
@@ -80,8 +85,8 @@ export const useTodoStore = defineStore('todo', () => {
     const previous = { ...todos.value[index] }
     todos.value[index] = { ...updatedTodo, editing: false }
     try {
-      const { title, body, completed, pinned, color } = updatedTodo
-      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned, color }
+      const { title, body, completed, pinned, color, reminder_at } = updatedTodo
+      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned, color, reminder_at: reminder_at ?? null }
       if (imageFile) {
         const fd = new FormData()
         fd.append('title', title)
@@ -89,11 +94,14 @@ export const useTodoStore = defineStore('todo', () => {
         fd.append('completed', String(completed))
         fd.append('pinned', String(pinned))
         fd.append('color', color)
+        if (reminder_at) fd.append('reminder_at', reminder_at)
         fd.append('image', imageFile)
         payload = fd
       }
       const response = await api.updateTodo(updatedTodo.id, payload)
       todos.value[index] = { ...response.data, editing: false }
+      if (response.data.reminder_at) scheduleReminder(response.data)
+      else cancelReminder(updatedTodo.id)
     } catch {
       todos.value[index] = previous
       throw new Error('update failed')

@@ -9,6 +9,7 @@ const todoStore = useTodoStore()
 const title = ref<string>('')
 const body = ref<string>('')
 const color = ref<NoteColor>('default')
+const reminderAt = ref<string | null>(null)
 
 const hasBody = computed(
   () =>
@@ -50,6 +51,7 @@ const addTodo = async () => {
       fd.append('title', title.value.toLowerCase())
       fd.append('body', body.value)
       fd.append('color', color.value)
+      if (reminderAt.value) fd.append('reminder_at', reminderAt.value)
       fd.append('image', imageFile.value)
       await todoStore.addTodo(fd)
     } else {
@@ -57,11 +59,13 @@ const addTodo = async () => {
         title: title.value.toLowerCase(),
         body: body.value,
         color: color.value,
+        reminder_at: reminderAt.value,
       })
     }
     title.value = ''
     body.value = ''
     color.value = 'default'
+    reminderAt.value = null
     clearImage()
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
@@ -103,6 +107,7 @@ const handleTitleInput = (event: Event) => {
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
+            <ReminderPicker v-model="reminderAt" />
             <label class="cursor-pointer rounded px-2 py-0.5 mt-1 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-xs" />
               <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >

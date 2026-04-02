@@ -14,3 +14,8 @@ vi.stubGlobal('useTodoApi', () => ({
 vi.stubGlobal('useApiFetch', () => ({
   request: vi.fn(),
 }))
+vi.stubGlobal('useReminders', () => ({
+  schedule: vi.fn(),
+  cancel: vi.fn(),
+  syncAll: vi.fn(),
+}))

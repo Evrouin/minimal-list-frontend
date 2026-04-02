@@ -124,9 +124,12 @@ const cardClasses = computed(() => [
       class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase"
       v-html="todo.body"
     />
-    <span v-if="!todo.editing && now" class="text-xs text-white/30">{{
-      timeAgo(todo.created_at)
-    }}</span>
+    <span v-if="!todo.editing && now" class="flex items-center gap-1 text-xs text-white/30">
+      <span v-if="todo.reminder_at" :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
+        <Icon name="uil:bell" class="text-xs" />
+      </span>
+      {{ timeAgo(todo.created_at) }}
+    </span>
     <div v-if="todo.editing" @click.stop>
       <!-- eslint-disable vue/no-mutating-props -->
       <LazyTiptapEditor
@@ -145,6 +148,9 @@ const cardClasses = computed(() => [
         <ColorPicker v-model="todo.color" />
         <!-- eslint-enable vue/no-mutating-props -->
         <div class="flex items-center gap-1">
+          <!-- eslint-disable vue/no-mutating-props -->
+          <ReminderPicker v-model="todo.reminder_at" />
+          <!-- eslint-enable vue/no-mutating-props -->
           <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />
             <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" >

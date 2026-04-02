@@ -115,6 +115,7 @@ const createSubmitting = ref(false)
 const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
 const createColor = ref<import('~/types/todo').NoteColor>('default')
+const createReminderAt = ref<string | null>(null)
 
 const onCreateImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -140,6 +141,7 @@ const createDialogSubmit = async () => {
       fd.append('title', createTitle.value.toLowerCase())
       fd.append('body', createBody.value)
       fd.append('color', createColor.value)
+      if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
       fd.append('image', createImageFile.value)
       await todoStore.addTodo(fd)
     } else {
@@ -147,11 +149,13 @@ const createDialogSubmit = async () => {
         title: createTitle.value.toLowerCase(),
         body: createBody.value,
         color: createColor.value,
+        reminder_at: createReminderAt.value,
       })
     }
     createTitle.value = ''
     createBody.value = ''
     createColor.value = 'default'
+    createReminderAt.value = null
     clearCreateImage()
     showCreateDialog.value = false
   } catch (e: unknown) {
@@ -167,6 +171,7 @@ const cancelCreate = () => {
   createTitle.value = ''
   createBody.value = ''
   createColor.value = 'default'
+  createReminderAt.value = null
   createImageFile.value = null
   createImagePreview.value = ''
 }
@@ -300,6 +305,7 @@ const { toasts, undo: undoToast } = useUndoToast()
           <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-2">
+            <ReminderPicker v-model="createReminderAt" />
             <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-sm" />
               <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >

@@ -11,6 +11,7 @@ export interface Todo {
   deleted: boolean
   pinned: boolean
   editing: boolean
+  reminder_at?: string | null
   created_at?: string
   updated_at?: string
 }

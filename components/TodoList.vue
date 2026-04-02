@@ -35,6 +35,7 @@ const dialogBody = ref('')
 const dialogEditorRef = ref<{ focus: () => void } | null>(null)
 const dialogPinned = ref(false)
 const dialogColor = ref<import('~/types/todo').NoteColor>('default')
+const dialogReminderAt = ref<string | null>(null)
 const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
 const cardRefs = ref(new Map<number, Element>())
 
@@ -66,6 +67,7 @@ watch(isLg, (lg) => {
     dialogBody.value = todo.body
     dialogPinned.value = todo.pinned
     dialogColor.value = todo.color
+    dialogReminderAt.value = todo.reminder_at ?? null
     nextTick(() => dialogEditorRef.value?.focus())
   } else if (!lg && dialogTodo.value) {
     const todo = dialogTodo.value
@@ -250,6 +252,7 @@ const editTodo = (todo: Todo) => {
     dialogBody.value = todo.body
     dialogPinned.value = todo.pinned
     dialogColor.value = todo.color
+    dialogReminderAt.value = todo.reminder_at ?? null
     nextTick(() => dialogEditorRef.value?.focus())
   } else {
     editOriginals.value.set(todo.id, { title: todo.title, body: todo.body })
@@ -287,6 +290,7 @@ const saveDialogTodo = async () => {
   dialogTodo.value.body = dialogBody.value
   dialogTodo.value.pinned = dialogPinned.value
   dialogTodo.value.color = dialogColor.value
+  dialogTodo.value.reminder_at = dialogReminderAt.value
   dialogTodo.value.editing = false
   await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined)
   dialogTodo.value = null
@@ -579,6 +583,7 @@ defineExpose({ cancelAllEdits, isEditing })
           <div class="flex items-center justify-between">
             <ColorPicker v-model="dialogColor" />
             <div class="flex items-center gap-2">
+              <ReminderPicker v-model="dialogReminderAt" />
               <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-sm" />
                 <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
