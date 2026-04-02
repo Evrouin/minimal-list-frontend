@@ -639,7 +639,7 @@ defineExpose({ cancelAllEdits, isEditing })
               @submit="saveDialogTodo"
             />
           </div>
-          <AudioPlayer v-if="dialogAudioPreview || dialogTodo?.audio" :src="dialogAudioPreview || dialogTodo?.audio!" />
+          <AudioPlayer v-if="dialogAudioPreview || dialogTodo?.audio" :src="dialogAudioPreview || dialogTodo?.audio!" removable @remove="dialogAudioFile = null; dialogAudioPreview = ''" />
           <div class="flex items-center justify-between">
             <ColorPicker v-model="dialogColor" />
             <div class="flex items-center gap-1">
@@ -695,7 +695,7 @@ defineExpose({ cancelAllEdits, isEditing })
         <div class="flex-1 overflow-y-auto">
           <LazyTiptapEditor v-model="expandedTodo.body" placeholder="body" />
         </div>
-        <AudioPlayer v-if="expandedTodo.audio" :src="expandedTodo.audio" />
+        <AudioPlayer v-if="expandedTodo.audio" :src="expandedTodo.audio" removable @remove="expandedTodo.audio = null" />
         <div class="flex items-center justify-between">
           <ColorPicker v-model="expandedTodo.color" />
           <div class="flex items-center gap-1">

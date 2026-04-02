@@ -120,7 +120,7 @@ const handleTitleInput = (event: Event) => {
           @blur="focused = false"
         >
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" @focus="focused = true" @blur="focused = false" />
-        <AudioPlayer v-if="audioPreview" :src="audioPreview" />
+        <AudioPlayer v-if="audioPreview" :src="audioPreview" removable @remove="clearAudio" />
         <div class="flex items-center justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <ColorPicker v-else v-model="color" />
@@ -128,7 +128,6 @@ const handleTitleInput = (event: Event) => {
             <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
             <AudioRecorder @recorded="(f, u) => { audioFile = f; audioPreview = u }" @update:recording="v => audioRecording = v" />
             <template v-if="!audioRecording">
-              <button v-if="audioFile" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clearAudio">✕</button>
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
                 <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
@@ -176,7 +175,7 @@ const handleTitleInput = (event: Event) => {
         <div class="flex-1 overflow-y-auto">
           <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         </div>
-        <AudioPlayer v-if="audioPreview" :src="audioPreview" />
+        <AudioPlayer v-if="audioPreview" :src="audioPreview" removable @remove="clearAudio" />
         <div class="flex items-center justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <ColorPicker v-else v-model="color" />
@@ -186,7 +185,6 @@ const handleTitleInput = (event: Event) => {
             </template>
             <AudioRecorder @recorded="(f, u) => { audioFile = f; audioPreview = u }" @update:recording="v => audioRecording = v" />
             <template v-if="!audioRecording">
-              <button v-if="audioFile" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clearAudio">✕</button>
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
                 <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >

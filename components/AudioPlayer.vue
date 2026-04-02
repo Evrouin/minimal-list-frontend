@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const props = defineProps<{ src: string }>()
+const props = defineProps<{ src: string; removable?: boolean }>()
+const emit = defineEmits<{ remove: [] }>()
 
 const audio = ref<HTMLAudioElement>()
 const playing = ref(false)
@@ -62,5 +63,6 @@ const seek = (e: MouseEvent | TouchEvent) => {
       </div>
     </div>
     <span class="shrink-0 text-xs text-white/30">{{ formatTime(currentTime) }} / {{ formatTime(totalDuration) }}</span>
+    <button v-if="props.removable" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="emit('remove')">✕</button>
   </div>
 </template>

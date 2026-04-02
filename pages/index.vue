@@ -321,7 +321,7 @@ const { toasts, undo: undoToast } = useUndoToast()
         <div :class="createExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : 'min-h-[150px]'">
           <LazyTiptapEditor ref="createEditorRef" v-model="createBody" placeholder="body" @submit="createDialogSubmit" />
         </div>
-        <AudioPlayer v-if="createAudioPreview" :src="createAudioPreview" />
+        <AudioPlayer v-if="createAudioPreview" :src="createAudioPreview" removable @remove="clearCreateAudio" />
         <div class="flex items-center justify-between">
           <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
           <ColorPicker v-else v-model="createColor" />
@@ -329,7 +329,6 @@ const { toasts, undo: undoToast } = useUndoToast()
             <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
             <AudioRecorder @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }" @update:recording="v => createAudioRecording = v" />
             <template v-if="!createAudioRecording">
-              <button v-if="createAudioFile" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clearCreateAudio">✕</button>
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
                 <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
