@@ -62,11 +62,11 @@ const cardClasses = computed(() => [
     >
       <Icon v-if="selected" name="uil:check" class="text-white" />
     </button>
-    <img v-if="!todo.editing && (todo.thumbnail || todo.image)" :src="todo.thumbnail || todo.image" loading="lazy" class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" @click.stop="showPreview = true" />
-    <img v-if="todo.editing && (editImagePreview || todo.thumbnail || todo.image)" :src="editImagePreview || todo.thumbnail || todo.image" class="-mx-5 -mt-5 mb-1 block h-32 rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" />
+    <img v-if="!todo.editing && (todo.thumbnail || todo.image)" :src="todo.thumbnail || todo.image" loading="lazy" class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" @click.stop="showPreview = true" >
+    <img v-if="todo.editing && (editImagePreview || todo.thumbnail || todo.image)" :src="editImagePreview || todo.thumbnail || todo.image" class="-mx-5 -mt-5 mb-1 block h-32 rounded-t object-cover" style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none" >
     <ModalOverlay :show="showPreview" backdrop-class="bg-black/80" @click="showPreview = false">
       <button class="absolute top-4 right-4 cursor-pointer text-2xl text-white/60 hover:text-white" @click.stop="showPreview = false">✕</button>
-      <img :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop />
+      <img :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop >
     </ModalOverlay>
     <div class="flex w-full items-center justify-between">
       <span
@@ -82,7 +82,7 @@ const cardClasses = computed(() => [
         class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
         @keydown.enter="emit('save')"
         @click.stop
-      />
+      >
       <!-- eslint-enable vue/no-mutating-props -->
       <div class="flex items-center space-x-2" @click.stop>
         <button
@@ -147,7 +147,7 @@ const cardClasses = computed(() => [
         <div class="flex items-center gap-1">
           <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />
-            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" />
+            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" >
           </label>
           <button
             type="button"

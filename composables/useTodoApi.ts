@@ -3,7 +3,7 @@ import type { ApiResponse } from '../server/types/api'
 
 export const useTodoApi = () => {
   const { request } = useApiFetch()
-  const base = '/api/todos'
+  const base = '/api/notes'
 
   return {
     fetchTodos: (params?: string, cursor?: string) => {

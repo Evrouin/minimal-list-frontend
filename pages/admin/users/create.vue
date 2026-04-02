@@ -28,8 +28,8 @@ const handleCreate = async () => {
     await api.createUser(form)
     successMsg.value = 'user created.'
     setTimeout(() => navigateTo('/admin/users'), 800)
-  } catch (e: any) {
-    const msg = e?.message || ''
+  } catch (e: unknown) {
+    const msg = (e as Error)?.message || ''
     if (msg.includes('email')) errorMsg.value = 'email already exists'
     else if (msg.includes('username')) errorMsg.value = 'username already exists'
     else errorMsg.value = 'failed to create user.'
@@ -56,7 +56,7 @@ const handleCreate = async () => {
             type="email"
             placeholder="user@example.com"
             class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          />
+          >
         </div>
         <div>
           <label class="mb-1 block text-xs text-white/40">username</label>
@@ -65,7 +65,7 @@ const handleCreate = async () => {
             type="text"
             placeholder="username"
             class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          />
+          >
         </div>
         <div>
           <label class="mb-1 block text-xs text-white/40">password</label>
@@ -74,7 +74,7 @@ const handleCreate = async () => {
             type="password"
             placeholder="min 8 characters"
             class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          />
+          >
         </div>
       </div>
 

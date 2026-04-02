@@ -79,7 +79,7 @@ const confirmDelete = async () => {
             :src="user.avatar || user.avatar_url"
             class="h-12 w-12 rounded-full object-cover"
             @error="avatarError = true"
-          />
+          >
           <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-sm font-bold text-white/70">
             {{ (user.username || user.email)[0].toUpperCase() }}
           </div>
@@ -129,7 +129,7 @@ const confirmDelete = async () => {
                 v-model="editForm.username"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                 placeholder="username"
-              />
+              >
             </div>
             <div>
               <label class="mb-1 block text-xs text-white/40">phone</label>
@@ -137,7 +137,7 @@ const confirmDelete = async () => {
                 v-model="editForm.phone"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                 placeholder="phone"
-              />
+              >
             </div>
             <div>
               <label class="mb-1 block text-xs text-white/40">bio</label>

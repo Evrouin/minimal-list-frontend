@@ -292,7 +292,7 @@ const { toasts, undo: undoToast } = useUndoToast()
           placeholder="title"
           maxlength="100"
           class="w-full border-b border-white/20 bg-transparent pb-2 text-sm font-bold text-white lowercase placeholder-white/60 focus:outline-none"
-        />
+        >
         <div class="min-h-[150px]">
           <LazyTiptapEditor ref="createEditorRef" v-model="createBody" placeholder="body" @submit="createDialogSubmit" />
         </div>
@@ -302,7 +302,7 @@ const { toasts, undo: undoToast } = useUndoToast()
           <div class="flex items-center gap-2">
             <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-sm" />
-              <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" />
+              <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
             </label>
             <button
               type="button"

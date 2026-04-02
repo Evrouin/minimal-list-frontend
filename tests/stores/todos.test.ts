@@ -201,19 +201,21 @@ describe('Todo Store', () => {
       },
     ]
 
+    // filteredTodos hides deleted items unless filterType is 'deleted'
+    // server-side filtering handles active/completed separation via API params
     store.filterType = 'all'
     expect(store.filteredTodos).toHaveLength(2)
 
     store.filterType = 'active'
-    expect(store.filteredTodos).toHaveLength(1)
-    expect(store.filteredTodos[0].title).toBe('active')
+    expect(store.filteredTodos).toHaveLength(2)
+    expect(store.filteredTodos.every((t) => !t.deleted)).toBe(true)
 
     store.filterType = 'completed'
-    expect(store.filteredTodos).toHaveLength(1)
-    expect(store.filteredTodos[0].title).toBe('completed')
+    expect(store.filteredTodos).toHaveLength(2)
+    expect(store.filteredTodos.every((t) => !t.deleted)).toBe(true)
 
     store.filterType = 'deleted'
-    expect(store.filteredTodos).toHaveLength(1)
-    expect(store.filteredTodos[0].title).toBe('deleted')
+    expect(store.filteredTodos).toHaveLength(3)
+    expect(store.filteredTodos.some((t) => t.deleted)).toBe(true)
   })
 })

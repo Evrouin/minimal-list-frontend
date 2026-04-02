@@ -39,10 +39,10 @@ export const useAdminApi = () => {
     getTodos: (page = 1, search?: string) => {
       const params = new URLSearchParams({ page: String(page) })
       if (search) params.set('search', search)
-      return request<{ count: number; next: string | null; previous: string | null; results: AdminTodo[] }>(`${base}/todos/?${params}`)
+      return request<{ count: number; next: string | null; previous: string | null; results: AdminTodo[] }>(`${base}/notes/?${params}`)
     },
-    getTodo: (id: number) => request<AdminTodo>(`${base}/todos/${id}/`),
+    getTodo: (id: number) => request<AdminTodo>(`${base}/notes/${id}/`),
     deleteTodo: (id: number) =>
-      request(`${base}/todos/${id}/`, { method: 'DELETE' }),
+      request(`${base}/notes/${id}/`, { method: 'DELETE' }),
   }
 }

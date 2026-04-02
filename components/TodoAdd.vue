@@ -97,7 +97,7 @@ const handleTitleInput = (event: Event) => {
           maxlength="100"
           class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
           @input="handleTitleInput"
-        />
+        >
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         <div class="flex items-center justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
@@ -105,7 +105,7 @@ const handleTitleInput = (event: Event) => {
           <div class="flex items-center gap-1">
             <label class="cursor-pointer rounded px-2 py-0.5 mt-1 text-white/30 transition-colors hover:text-white/60">
               <Icon name="uil:image" class="text-xs" />
-              <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
+              <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
             </label>
             <button
               type="submit"

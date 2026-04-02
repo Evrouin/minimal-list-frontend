@@ -525,7 +525,7 @@ defineExpose({ cancelAllEdits, isEditing })
               v-model="dialogTitle"
               class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
               @keydown.enter.prevent
-            />
+            >
             <div class="flex shrink-0 items-center space-x-2">
               <button
                 class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
@@ -570,7 +570,7 @@ defineExpose({ cancelAllEdits, isEditing })
             <div class="flex items-center gap-2">
               <label class="cursor-pointer rounded p-1 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-sm" />
-                <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" />
+                <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
               </label>
               <button
                 class="cursor-pointer rounded-lg px-4 py-1.5 text-xs text-white/40 lowercase hover:text-white"

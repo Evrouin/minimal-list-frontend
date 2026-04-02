@@ -8,6 +8,17 @@ vi.mock('~/stores/todos', () => ({
   useTodoStore: () => ({ addTodo: mockAddTodo }),
 }))
 
+const mockNoteColors = {
+  default: { bg: 'bg-gray-700', hover: '' },
+  red: { bg: 'bg-red', hover: '' },
+  yellow: { bg: 'bg-yellow', hover: '' },
+  green: { bg: 'bg-green', hover: '' },
+  purple: { bg: 'bg-purple', hover: '' },
+}
+
+vi.stubGlobal('noteColors', mockNoteColors)
+vi.stubGlobal('compressImage', (file: File) => file)
+
 const TiptapStub = {
   name: 'TiptapEditor',
   props: ['modelValue', 'placeholder'],
@@ -18,7 +29,17 @@ const TiptapStub = {
 
 describe('TodoAdd', () => {
   const mountAdd = () =>
-    mount(TodoAdd, { global: { stubs: { LazyTiptapEditor: TiptapStub } } })
+    mount(TodoAdd, {
+      global: {
+        mocks: { noteColors: mockNoteColors, compressImage: (file: File) => file },
+        stubs: {
+          LazyTiptapEditor: TiptapStub,
+          ImagePreview: true,
+          ColorPicker: true,
+          Icon: true,
+        },
+      },
+    })
 
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -52,6 +73,7 @@ describe('TodoAdd', () => {
     expect(mockAddTodo).toHaveBeenCalledWith({
       title: 'test title',
       body: 'test body',
+      color: 'default',
     })
   })
 
