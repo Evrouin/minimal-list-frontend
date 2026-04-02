@@ -76,5 +76,8 @@ export const useAuthApi = () => {
 
     deleteAccount: () =>
       request(`${base}/delete-account/`, { method: 'DELETE' }),
+
+    unlockAccount: (token: string) =>
+      request<{ message: string }>(`${base}/unlock-account/${token}/`, { method: 'POST' }),
   }
 }
