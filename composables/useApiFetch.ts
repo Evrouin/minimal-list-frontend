@@ -113,13 +113,12 @@ export const useApiFetch = () => {
       }
 
       if (status === 503) {
-        window.location.href = '/maintenance'
-        return new Promise<never>(() => {})
+        navigateTo('/maintenance')
+        throw { statusCode: 503, message: 'service unavailable' } as ApiError
       }
 
       if (status >= 500) {
-        showError({ statusCode: status, message })
-        return new Promise<never>(() => {})
+        throw { statusCode: status, message } as ApiError
       }
 
       if (status === 401) {
