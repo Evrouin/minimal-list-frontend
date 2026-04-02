@@ -35,11 +35,11 @@ export const useApiFetch = () => {
 
     refreshPromise = (async () => {
       try {
-        const res = await $fetch<{ access: string }>(
+        const res = await $fetch<{ access: string; refresh?: string }>(
           `${baseUrl}/api/auth/token/refresh/`,
           { method: 'POST', body: { refresh: tokens.refresh } },
         )
-        const newTokens = { ...tokens, access: res.access }
+        const newTokens = { ...tokens, access: res.access, ...(res.refresh && { refresh: res.refresh }) }
         localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
         return res.access
       } catch (e: unknown) {
@@ -104,7 +104,7 @@ export const useApiFetch = () => {
           return await request<T>(url, { ...opts, _retried: true })
         } catch (refreshErr: unknown) {
           if ((refreshErr as ApiError)?.statusCode === 429) throw refreshErr as ApiError
-          return new Promise<never>(() => {})
+          throw { statusCode: 401, message: 'session expired' } as ApiError
         }
       }
 

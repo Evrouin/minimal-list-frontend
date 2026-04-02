@@ -9,7 +9,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const isPublic =
     publicPaths.includes(to.path) ||
     to.path.startsWith('/auth/verify-email') ||
-    to.path.startsWith('/auth/reset-password')
+    to.path.startsWith('/auth/reset-password') ||
+    to.path.startsWith('/auth/unlock-account')
 
   // Validate token by fetching profile if we have tokens but no user yet
   if (authStore.isAuthenticated && !authStore.user) {
