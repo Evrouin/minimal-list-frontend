@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core'
+import { watch } from 'vue'
 
 export default defineNuxtPlugin(() => {
   if (Capacitor.isNativePlatform()) return
@@ -29,10 +30,8 @@ export default defineNuxtPlugin(() => {
     })
   }
 
-  const interval = setInterval(check, 60_000)
-  check()
+  watch(() => todoStore.todos, check, { deep: true })
 
-  const app = useNuxtApp()
-  app.hook('app:beforeMount', () => {})
+  const interval = setInterval(check, 30_000)
   window.addEventListener('beforeunload', () => clearInterval(interval))
 })

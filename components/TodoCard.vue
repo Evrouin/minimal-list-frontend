@@ -124,11 +124,14 @@ const cardClasses = computed(() => [
       class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase"
       v-html="todo.body"
     />
-    <span v-if="!todo.editing && now" class="flex items-center gap-1 text-xs text-white/30">
-      <span v-if="todo.reminder_at" :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
-        <Icon name="uil:bell" class="text-xs" />
-      </span>
+    <span v-if="!todo.editing && now" class="text-xs text-white/30">
       {{ timeAgo(todo.created_at) }}
+      <template v-if="todo.reminder_at">
+        · <Icon name="uil:bell" class="inline text-xs" :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'" />
+        <span :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
+          {{ new Date(todo.reminder_at).getTime() <= Date.now() ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
+        </span>
+      </template>
     </span>
     <div v-if="todo.editing" @click.stop>
       <!-- eslint-disable vue/no-mutating-props -->

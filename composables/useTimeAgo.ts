@@ -9,9 +9,12 @@ export const useTimeAgo = () => {
   })
   onUnmounted(() => clearInterval(timer))
 
-  const timeAgo = (date: string | undefined) => {
+  const timeAgo = (date: string | undefined, future = false) => {
     if (!date) return ''
-    const seconds = Math.floor((now.value - new Date(date).getTime()) / 1000)
+    const diff = future
+      ? new Date(date).getTime() - now.value
+      : now.value - new Date(date).getTime()
+    const seconds = Math.max(0, Math.floor(diff / 1000))
     if (seconds < 60) return `${seconds}s`
     const minutes = Math.floor(seconds / 60)
     if (minutes < 60) return `${minutes}m`

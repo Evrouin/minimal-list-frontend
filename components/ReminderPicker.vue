@@ -32,7 +32,13 @@ const days = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa']
 const daysInMonth = computed(() => new Date(viewYear.value, viewMonth.value + 1, 0).getDate())
 const firstDayOfWeek = computed(() => new Date(viewYear.value, viewMonth.value, 1).getDay())
 
+const canGoPrev = computed(() => {
+  const today = new Date()
+  return viewYear.value > today.getFullYear() || (viewYear.value === today.getFullYear() && viewMonth.value > today.getMonth())
+})
+
 const prevMonth = () => {
+  if (!canGoPrev.value) return
   if (viewMonth.value === 0) { viewMonth.value = 11; viewYear.value-- }
   else viewMonth.value--
 }
@@ -82,26 +88,56 @@ const isOverdue = computed(() => model.value && new Date(model.value).getTime() 
 // Time combo-box state
 const showHourList = ref(false)
 const showMinuteList = ref(false)
-const hourDisplay = ref(String(selectedHour.value).padStart(2, '0'))
+const ampm = ref(selectedHour.value >= 12 ? 'PM' : 'AM')
+const displayHour = computed(() => {
+  const h = selectedHour.value % 12
+  return h === 0 ? 12 : h
+})
+const hourDisplay = ref(String(displayHour.value).padStart(2, '0'))
 const minuteDisplay = ref(String(selectedMinute.value).padStart(2, '0'))
+
+watch(selectedHour, (v) => {
+  ampm.value = v >= 12 ? 'PM' : 'AM'
+  if (!hourFocused.value) {
+    const h = v % 12
+    hourDisplay.value = String(h === 0 ? 12 : h).padStart(2, '0')
+  }
+})
+watch(selectedMinute, (v) => { if (!minuteFocused.value) minuteDisplay.value = String(v).padStart(2, '0') })
+watch(ampm, () => {
+  const h12 = parseInt(hourDisplay.value) || 12
+  selectedHour.value = to24(h12, ampm.value)
+})
+
+const to24 = (h12: number, period: string) => {
+  if (period === 'AM') return h12 === 12 ? 0 : h12
+  return h12 === 12 ? 12 : h12 + 12
+}
 
 const hourFocused = ref(false)
 const minuteFocused = ref(false)
 
-watch(selectedHour, (v) => { if (!hourFocused.value) hourDisplay.value = String(v).padStart(2, '0') })
-watch(selectedMinute, (v) => { if (!minuteFocused.value) minuteDisplay.value = String(v).padStart(2, '0') })
-
-const selectHour = (h: number) => { selectedHour.value = h; showHourList.value = false; hourFocused.value = false; hourDisplay.value = String(h).padStart(2, '0') }
+const selectHour = (h12: number) => {
+  selectedHour.value = to24(h12, ampm.value)
+  showHourList.value = false
+  hourFocused.value = false
+  hourDisplay.value = String(h12).padStart(2, '0')
+}
 const selectMinute = (m: number) => { selectedMinute.value = m; showMinuteList.value = false; minuteFocused.value = false; minuteDisplay.value = String(m).padStart(2, '0') }
-const onHourInput = () => { const n = parseInt(hourDisplay.value); if (!isNaN(n) && n >= 0 && n <= 23) selectedHour.value = n }
+const onHourInput = () => {
+  const n = parseInt(hourDisplay.value)
+  if (!isNaN(n) && n >= 1 && n <= 12) selectedHour.value = to24(n, ampm.value)
+}
 const onMinuteInput = () => { const n = parseInt(minuteDisplay.value); if (!isNaN(n) && n >= 0 && n <= 59) selectedMinute.value = n }
 const onHourFocus = () => { hourFocused.value = true; showHourList.value = true }
 const onMinuteFocus = () => { minuteFocused.value = true; showMinuteList.value = true }
 const onHourBlur = () => {
   hourFocused.value = false
   showHourList.value = false
-  selectedHour.value = Math.max(0, Math.min(23, parseInt(hourDisplay.value) || 0))
-  hourDisplay.value = String(selectedHour.value).padStart(2, '0')
+  let n = parseInt(hourDisplay.value) || 12
+  n = Math.max(1, Math.min(12, n))
+  selectedHour.value = to24(n, ampm.value)
+  hourDisplay.value = String(n).padStart(2, '0')
 }
 const onMinuteBlur = () => {
   minuteFocused.value = false
@@ -131,7 +167,7 @@ const onMinuteBlur = () => {
         <div class="w-72 rounded-lg bg-gray-700 p-4 shadow-xl" @click.stop>
           <!-- Month nav -->
           <div class="mb-3 flex items-center justify-between">
-            <button type="button" class="cursor-pointer p-1 text-white/40 hover:text-white" @click="prevMonth">
+            <button type="button" class="cursor-pointer p-1 hover:text-white" :class="canGoPrev ? 'text-white/40' : 'text-white/10 pointer-events-none'" @click="prevMonth">
               <Icon name="uil:angle-left" />
             </button>
             <span class="text-sm text-white/70">{{ months[viewMonth] }} {{ viewYear }}</span>
@@ -146,7 +182,7 @@ const onMinuteBlur = () => {
           </div>
 
           <!-- Days grid -->
-          <div class="grid grid-cols-7 gap-1 text-center text-sm">
+          <div class="grid min-h-[210px] grid-cols-7 gap-1 text-center text-sm">
             <span v-for="_ in firstDayOfWeek" :key="'e' + _" />
             <button
               v-for="day in daysInMonth"
@@ -181,14 +217,14 @@ const onMinuteBlur = () => {
               >
               <div v-if="showHourList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
-                  v-for="h in 24"
-                  :key="h - 1"
+                  v-for="h in 12"
+                  :key="h"
                   type="button"
                   class="w-full px-2 py-1 text-center text-sm text-white/60 hover:bg-gray-500 hover:text-white"
-                  :class="selectedHour === h - 1 && 'text-white bg-gray-500'"
-                  @mousedown.prevent="selectHour(h - 1)"
+                  :class="displayHour === h && 'text-white bg-gray-500'"
+                  @mousedown.prevent="selectHour(h)"
                 >
-                  {{ String(h - 1).padStart(2, '0') }}
+                  {{ String(h).padStart(2, '0') }}
                 </button>
               </div>
             </div>
@@ -217,6 +253,13 @@ const onMinuteBlur = () => {
                 </button>
               </div>
             </div>
+            <select
+              v-model="ampm"
+              class="cursor-pointer rounded bg-gray-600 px-2 py-1.5 text-sm text-white focus:outline-none"
+            >
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
           </div>
 
           <!-- Actions -->

@@ -31,6 +31,7 @@ export const useReminders = () => {
   const syncAll = async (todos: Todo[]) => {
     if (!Capacitor.isNativePlatform()) return
     const { LocalNotifications } = await import('@capacitor/local-notifications')
+    await LocalNotifications.requestPermissions()
     const pending = await LocalNotifications.getPending()
     // Cancel all existing
     if (pending.notifications.length) {
