@@ -76,6 +76,7 @@ export const useApiFetch = () => {
         $fetch<T>(`${baseUrl}${url}`, {
           ...opts,
           headers: { ...headers, ...(opts.headers as Record<string, string>) },
+          timeout: 15000,
         }),
       )) as T
     } catch (err: unknown) {

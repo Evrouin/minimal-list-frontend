@@ -17,8 +17,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     try {
       await authStore.fetchProfile()
     } catch (e) {
-      if ((e as { statusCode?: number }).statusCode === 503) return navigateTo('/maintenance')
-      authStore.logout()
+      const status = (e as { statusCode?: number }).statusCode
+      if (status === 503) return navigateTo('/maintenance')
+      if (status === 401 || status === 403) authStore.logout()
     }
   }
 
