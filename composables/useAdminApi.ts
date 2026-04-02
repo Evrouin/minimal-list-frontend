@@ -3,7 +3,7 @@ import type { Todo } from '../types'
 
 interface AdminStats {
   users: { total: number; verified: number; joined_today: number }
-  todos: { total: number; completed: number; deleted: number; active: number }
+  notes: { total: number; completed: number; deleted: number; active: number }
 }
 
 interface AdminTodo extends Todo {

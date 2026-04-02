@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
-import { googleTokenLogin } from 'vue3-google-login'
 
 const authStore = useAuthStore()
+const { signIn: googleSignIn } = useGoogleAuth()
 
 const form = reactive({
   email: '',
@@ -29,12 +29,12 @@ const handleLogin = async () => {
 const handleGoogleLogin = async () => {
   errorMsg.value = ''
   try {
-    const response = await googleTokenLogin()
-    await authStore.googleLogin(response.access_token)
+    const accessToken = await googleSignIn()
+    await authStore.googleLogin(accessToken)
     navigateTo('/')
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
-    if (msg.includes('popup') || msg.includes('closed')) return
+    if (msg.includes('popup') || msg.includes('closed') || msg.includes('cancel')) return
     errorMsg.value = msg.includes('deactivated') ? 'account deactivated' : 'google login failed'
   }
 }

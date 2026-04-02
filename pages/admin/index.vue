@@ -55,7 +55,7 @@ onMounted(async () => {
           <p class="text-xs text-white/50">joined today</p>
         </div>
         <div class="rounded-lg bg-gray-700 p-4 text-center">
-          <p class="text-2xl font-bold text-white">{{ stats.todos.total }}</p>
+          <p class="text-2xl font-bold text-white">{{ stats.notes.total }}</p>
           <p class="text-xs text-white/50">total notes</p>
         </div>
       </div>
@@ -65,15 +65,15 @@ onMounted(async () => {
         <p class="mb-3 text-xs font-bold tracking-wider text-white/50 lowercase">notes breakdown</p>
         <div class="grid grid-cols-3 gap-3 text-center">
           <div>
-            <p class="text-lg font-bold text-blue-300">{{ stats.todos.active }}</p>
+            <p class="text-lg font-bold text-blue-300">{{ stats.notes.active }}</p>
             <p class="text-xs text-white/50">active</p>
           </div>
           <div>
-            <p class="text-lg font-bold text-green-300">{{ stats.todos.completed }}</p>
+            <p class="text-lg font-bold text-green-300">{{ stats.notes.completed }}</p>
             <p class="text-xs text-white/50">completed</p>
           </div>
           <div>
-            <p class="text-lg font-bold text-red-300">{{ stats.todos.deleted }}</p>
+            <p class="text-lg font-bold text-red-300">{{ stats.notes.deleted }}</p>
             <p class="text-xs text-white/50">deleted</p>
           </div>
         </div>
