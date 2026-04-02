@@ -306,6 +306,8 @@ const cancelDialogTodo = () => {
   dialogExpanded.value = false
 }
 
+const { fetchPreviews } = useLinkPreviews()
+
 const saveDialogTodo = async () => {
   if (!dialogTodo.value || !dialogTitle.value.trim()) return
   dialogTodo.value.title = dialogTitle.value
@@ -313,6 +315,7 @@ const saveDialogTodo = async () => {
   dialogTodo.value.pinned = dialogPinned.value
   dialogTodo.value.color = dialogColor.value
   dialogTodo.value.reminder_at = dialogReminderAt.value
+  dialogTodo.value.link_previews = await fetchPreviews(dialogBody.value, dialogTodo.value.link_previews ?? [])
   dialogTodo.value.editing = false
   await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined, dialogAudioFile.value || undefined)
   dialogTodo.value = null
@@ -341,6 +344,7 @@ const onEditImageSelect = async (todo: Todo, e: Event) => {
 const saveTodo = async (todo: Todo) => {
   if (!todo.title.trim()) return
   todo.editing = false
+  todo.link_previews = await fetchPreviews(todo.body, todo.link_previews ?? [])
   const imageFile = editImageFiles.value.get(todo.id)
   const audioFile = editAudioFiles.value.get(todo.id)
   editOriginals.value.delete(todo.id)

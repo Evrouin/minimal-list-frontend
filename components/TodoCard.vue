@@ -125,6 +125,9 @@ const cardClasses = computed(() => [
       class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase"
       v-html="todo.body"
     />
+    <div v-if="!todo.editing && todo.link_previews?.length" class="flex flex-col gap-1">
+      <LinkPreviewCard v-for="lp in todo.link_previews" :key="lp.url" :preview="lp" />
+    </div>
     <AudioPlayer v-if="!todo.editing && todo.audio" :src="todo.audio" />
     <span v-if="!todo.editing && now" class="text-xs text-white/30">
       {{ timeAgo(todo.created_at) }}

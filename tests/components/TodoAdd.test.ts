@@ -75,6 +75,7 @@ describe('TodoAdd', () => {
       body: 'test body',
       color: 'default',
       reminder_at: null,
+      link_previews: [],
     })
   })
 

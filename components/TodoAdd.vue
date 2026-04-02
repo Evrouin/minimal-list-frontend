@@ -49,11 +49,14 @@ const clearAudio = () => {
   audioPreview.value = ''
 }
 
+const { fetchPreviews } = useLinkPreviews()
+
 const addTodo = async () => {
   if (!isValidTodo.value || submitting.value) return
   submitting.value = true
   errorMsg.value = ''
   try {
+    const previews = await fetchPreviews(body.value, [])
     if (imageFile.value || audioFile.value) {
       const fd = new FormData()
       fd.append('title', title.value.toLowerCase())
@@ -62,6 +65,7 @@ const addTodo = async () => {
       if (reminderAt.value) fd.append('reminder_at', reminderAt.value)
       if (imageFile.value) fd.append('image', imageFile.value)
       if (audioFile.value) fd.append('audio', audioFile.value)
+      if (previews.length) fd.append('link_previews', JSON.stringify(previews))
       await todoStore.addTodo(fd)
     } else {
       await todoStore.addTodo({
@@ -69,6 +73,7 @@ const addTodo = async () => {
         body: body.value,
         color: color.value,
         reminder_at: reminderAt.value,
+        link_previews: previews,
       })
     }
     title.value = ''

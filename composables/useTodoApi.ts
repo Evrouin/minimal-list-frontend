@@ -42,5 +42,11 @@ export const useTodoApi = () => {
         method: 'POST',
         body: { ids },
       }),
+
+    fetchLinkPreview: (url: string) =>
+      request<import('~/types/todo').LinkPreview>(`${base}/link-preview/`, {
+        method: 'POST',
+        body: { url },
+      }),
   }
 }

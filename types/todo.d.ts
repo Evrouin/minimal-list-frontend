@@ -1,5 +1,13 @@
 export type NoteColor = 'default' | 'red' | 'yellow' | 'green' | 'purple'
 
+export interface LinkPreview {
+  url: string
+  title: string
+  description: string
+  image: string
+  domain: string
+}
+
 export interface Todo {
   id: number
   title: string
@@ -13,6 +21,7 @@ export interface Todo {
   pinned: boolean
   editing: boolean
   reminder_at?: string | null
+  link_previews?: LinkPreview[]
   created_at?: string
   updated_at?: string
 }

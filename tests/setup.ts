@@ -1,4 +1,5 @@
 import { vi } from 'vitest'
+import { ref } from 'vue'
 
 // Mock Nuxt auto-imports
 vi.stubGlobal('navigateTo', vi.fn())
@@ -18,4 +19,9 @@ vi.stubGlobal('useReminders', () => ({
   schedule: vi.fn(),
   cancel: vi.fn(),
   syncAll: vi.fn(),
+}))
+vi.stubGlobal('useLinkPreviews', () => ({
+  extractUrls: vi.fn().mockReturnValue([]),
+  fetchPreviews: vi.fn().mockResolvedValue([]),
+  isLoading: ref(false),
 }))

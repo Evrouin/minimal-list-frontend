@@ -146,11 +146,14 @@ const clearCreateImage = () => {
   createImagePreview.value = ''
 }
 
+const { fetchPreviews: fetchCreatePreviews } = useLinkPreviews()
+
 const createDialogSubmit = async () => {
   if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value && !createAudioFile.value) || createSubmitting.value) return
   createSubmitting.value = true
   createErrorMsg.value = ''
   try {
+    const previews = await fetchCreatePreviews(createBody.value, [])
     if (createImageFile.value || createAudioFile.value) {
       const fd = new FormData()
       fd.append('title', createTitle.value.toLowerCase())
@@ -159,6 +162,7 @@ const createDialogSubmit = async () => {
       if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
       if (createImageFile.value) fd.append('image', createImageFile.value)
       if (createAudioFile.value) fd.append('audio', createAudioFile.value)
+      if (previews.length) fd.append('link_previews', JSON.stringify(previews))
       await todoStore.addTodo(fd)
     } else {
       await todoStore.addTodo({
@@ -166,6 +170,7 @@ const createDialogSubmit = async () => {
         body: createBody.value,
         color: createColor.value,
         reminder_at: createReminderAt.value,
+        link_previews: previews,
       })
     }
     createTitle.value = ''
