@@ -21,13 +21,9 @@ onMounted(async () => {
 
 <template>
   <AuthFormCard title="email verification" link-to="/auth/login" link-label="login">
-      <div v-if="!message" class="text-sm text-white/40">verifying...</div>
-      <div
-        v-else
-        class="rounded-lg px-3 py-2 text-sm"
-        :class="isError ? 'bg-red-500/10 text-red-300' : 'bg-green-500/10 text-green-300'"
-      >
-        {{ message }}
-      </div>
+    <div v-if="!message" class="text-sm text-white/40">verifying...</div>
+    <div v-else class="rounded-lg px-3 py-2 text-sm" :class="isError ? 'bg-red-500/10 text-red-300' : 'bg-green-500/10 text-green-300'">
+      {{ message }}
+    </div>
   </AuthFormCard>
 </template>

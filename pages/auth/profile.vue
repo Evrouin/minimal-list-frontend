@@ -48,18 +48,22 @@ const cancelCrop = () => {
 const confirmCrop = async () => {
   if (!cropper) return
   const canvas = cropper.getCroppedCanvas({ width: 256, height: 256 })
-  canvas.toBlob(async (blob) => {
-    if (!blob) return
-    const formData = new FormData()
-    formData.append('avatar', blob, 'avatar.jpg')
-    try {
-      await authStore.updateProfile(formData)
-      avatarError.value = false
-    } catch {
-      errorMsg.value = 'failed to upload avatar.'
-    }
-    cancelCrop()
-  }, 'image/jpeg', 0.9)
+  canvas.toBlob(
+    async (blob) => {
+      if (!blob) return
+      const formData = new FormData()
+      formData.append('avatar', blob, 'avatar.jpg')
+      try {
+        await authStore.updateProfile(formData)
+        avatarError.value = false
+      } catch {
+        errorMsg.value = 'failed to upload avatar.'
+      }
+      cancelCrop()
+    },
+    'image/jpeg',
+    0.9,
+  )
 }
 
 const editForm = reactive({
@@ -148,12 +152,7 @@ const handleLogout = () => {
     <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
       <PageHeader title="profile">
         <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
-        <button
-          class="cursor-pointer text-sm text-white/60 lowercase hover:text-white"
-          @click="handleLogout"
-        >
-          logout
-        </button>
+        <button class="cursor-pointer text-sm text-white/60 lowercase hover:text-white" @click="handleLogout">logout</button>
       </PageHeader>
 
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
@@ -163,11 +162,18 @@ const handleLogout = () => {
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <div class="flex items-center gap-4">
             <div class="group relative cursor-pointer" @click="avatarInput?.click()">
-              <img v-if="(user.avatar || user.avatar_url) && !avatarError" :src="user.avatar || user.avatar_url" class="h-12 w-12 rounded-full object-cover" @error="avatarError = true" />
+              <img
+                v-if="(user.avatar || user.avatar_url) && !avatarError"
+                :src="user.avatar || user.avatar_url"
+                class="h-12 w-12 rounded-full object-cover"
+                @error="avatarError = true"
+              />
               <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
                 {{ (user.username || user.email)[0].toUpperCase() }}
               </div>
-              <div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <div
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+              >
                 <Icon name="uil:camera" class="text-sm text-white" />
               </div>
             </div>
@@ -188,12 +194,7 @@ const handleLogout = () => {
             <div class="space-y-3 text-sm">
               <div class="flex items-center justify-between">
                 <p class="text-xs font-bold tracking-wider text-white/40">user details</p>
-                <button
-                  class="cursor-pointer text-xs text-blue-300 lowercase hover:text-blue-200"
-                  @click="isEditing = true"
-                >
-                  edit
-                </button>
+                <button class="cursor-pointer text-xs text-blue-300 lowercase hover:text-blue-200" @click="isEditing = true">edit</button>
               </div>
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
@@ -213,7 +214,7 @@ const handleLogout = () => {
           </template>
 
           <template v-if="isEditing">
-            <p class="mb-3 text-xs font-bold lowercase tracking-wider text-white/40">edit profile</p>
+            <p class="mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">edit profile</p>
             <div class="space-y-3">
               <div>
                 <label class="mb-1 block text-xs text-white/40">username</label>
@@ -266,7 +267,9 @@ const handleLogout = () => {
 
         <!-- password card -->
         <form class="mb-3 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
-          <p class="mb-3 text-xs font-bold lowercase tracking-wider text-white/40">{{ user.has_password ? 'change password' : 'set password' }}</p>
+          <p class="mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">
+            {{ user.has_password ? 'change password' : 'set password' }}
+          </p>
           <div class="space-y-3">
             <div v-if="user.has_password">
               <label class="mb-1 block text-xs text-white/40">current password</label>
@@ -343,7 +346,9 @@ const handleLogout = () => {
         </div>
         <div class="flex justify-end gap-2">
           <button class="cursor-pointer rounded px-3 py-1 text-xs text-white/60 hover:text-white" @click="cancelCrop">cancel</button>
-          <button class="cursor-pointer rounded bg-white/10 px-3 py-1 text-xs text-white hover:bg-white/20" @click="confirmCrop">save</button>
+          <button class="cursor-pointer rounded bg-white/10 px-3 py-1 text-xs text-white hover:bg-white/20" @click="confirmCrop">
+            save
+          </button>
         </div>
       </div>
     </ModalOverlay>

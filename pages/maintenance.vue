@@ -26,9 +26,7 @@ onUnmounted(() => clearInterval(poll))
           <Icon name="uil:wrench" class="mr-1" />
           under maintenance
         </span>
-        <span class="text-white/60 lowercase">
-          we'll be back shortly — this page checks automatically every 30 seconds.
-        </span>
+        <span class="text-white/60 lowercase">we'll be back shortly — this page checks automatically every 30 seconds.</span>
       </div>
     </div>
   </div>
