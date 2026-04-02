@@ -475,42 +475,42 @@ defineExpose({ cancelAllEdits, isEditing })
 
   <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'pointer-events-none animate-pulse' : ''">
     <!-- Multi-select bar -->
-    <div v-if="multiSelectMode" class="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-end gap-2 bg-gray-800 px-4 py-2">
+    <div v-if="multiSelectMode" class="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-end gap-1.5 bg-gray-800 px-4 py-1.5">
       <button
         v-if="allSelectedUnpinned"
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
+        class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
         title="Pin selected"
         @click="bulkPinSelected(true)"
       >
-        <Icon name="mdi:pin" class="h-4 w-4" />
+        <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
       <button
         v-if="allSelectedPinned"
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
+        class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
         title="Unpin selected"
         @click="bulkPinSelected(false)"
       >
-        <Icon name="mdi:pin" class="h-4 w-4" />
+        <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
       <button
         v-if="todoStore.filterType === 'deleted'"
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-white"
+        class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-white"
         title="Restore selected"
         @click="bulkRestoreSelected"
       >
-        <Icon name="uil:redo" class="h-4 w-4" />
+        <Icon name="uil:redo" class="h-3 w-3" />
       </button>
       <button
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"
+        class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"
         title="Delete selected"
         @click="requestBulkDelete"
       >
-        <Icon name="uil:trash" class="h-4 w-4" />
+        <Icon name="uil:trash" class="h-3 w-3" />
       </button>
-      <div class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-1.5">
-        <span class="text-sm leading-none text-white/70">{{ selectedIds.length }} selected</span>
-        <button class="flex h-5 w-5 cursor-pointer items-center justify-center text-white/60 hover:text-white" @click="exitMultiSelect">
-          <Icon name="uil:times" class="h-4 w-4" />
+      <div class="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1">
+        <span class="text-xs leading-none text-white/70">{{ selectedIds.length }} selected</span>
+        <button class="flex h-4 w-4 cursor-pointer items-center justify-center text-white/60 hover:text-white" @click="exitMultiSelect">
+          <Icon name="uil:times" class="h-3 w-3" />
         </button>
       </div>
     </div>

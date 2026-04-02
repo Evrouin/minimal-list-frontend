@@ -70,7 +70,7 @@ const cardClasses = computed(() => [
       loading="lazy"
       class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover"
       style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none"
-      @click.stop="showPreview = true"
+      @click="if (!multiSelectMode) { $event.stopPropagation(); showPreview = true }"
     />
     <img
       v-if="todo.editing && (editImagePreview || todo.thumbnail || todo.image)"
