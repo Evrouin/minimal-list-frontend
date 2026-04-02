@@ -60,7 +60,13 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const filteredTodos = computed(() => {
-    return todos.value.filter((t) => !t.deleted || filterType.value === 'deleted')
+    return todos.value.filter((t) => {
+      if (t.deleted && filterType.value !== 'deleted') return false
+      if (filterType.value === 'active' && t.completed) return false
+      if (filterType.value === 'completed' && !t.completed) return false
+      if (filterType.value === 'deleted' && !t.deleted) return false
+      return true
+    })
   })
 
   const addTodo = async (todo: Partial<Todo> | FormData) => {
