@@ -146,10 +146,12 @@ const endLongPress = () => {
   }
 }
 
+const MAX_SELECT = 50
+
 const toggleSelect = (id: number) => {
   const idx = selectedIds.value.indexOf(id)
   if (idx >= 0) selectedIds.value.splice(idx, 1)
-  else selectedIds.value.push(id)
+  else if (selectedIds.value.length < MAX_SELECT) selectedIds.value.push(id)
   multiSelectMode.value = selectedIds.value.length > 0
   if (!multiSelectMode.value) visibleCheckboxIds.value = []
 }
