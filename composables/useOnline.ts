@@ -8,7 +8,7 @@ export function useOnline() {
       return
     }
     try {
-      await $fetch(`${config.public.apiBase}/health/`, { method: 'HEAD', timeout: 3000 })
+      await $fetch(`${(config.public.authApiBase as string).replace('/api/auth', '')}/health/`, { method: 'HEAD', timeout: 3000 })
       online.value = true
     } catch {
       online.value = false
