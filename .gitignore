@@ -109,6 +109,11 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Capacitor
+android/app/build/
+android/.gradle/
+android/local.properties
+
 # OS generated files
 .DS_Store
 .DS_Store?
