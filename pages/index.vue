@@ -83,12 +83,12 @@ watch(isLg, (lg) => {
     }
     cancelCreate()
   } else if (lg && todoAddRef.value) {
-    // Mobile → desktop: transfer TodoAdd state to dialog if has content
-    const { title, body, imageFile, imagePreview, color } = todoAddRef.value
-    if (title || body || imageFile) {
+    const { title, body, imageFile, imagePreview, color, reminderAt, expanded } = todoAddRef.value
+    if (title || body || imageFile || expanded) {
       createTitle.value = title
       createBody.value = body
       createColor.value = color
+      createReminderAt.value = reminderAt
       if (imageFile) {
         createImageFile.value = imageFile
         createImagePreview.value = imagePreview
@@ -96,6 +96,8 @@ watch(isLg, (lg) => {
       todoAddRef.value.title = ''
       todoAddRef.value.body = ''
       todoAddRef.value.color = 'default'
+      todoAddRef.value.reminderAt = null
+      todoAddRef.value.expanded = false
       todoAddRef.value.clearImage()
       showCreateDialog.value = true
     }
@@ -116,6 +118,7 @@ const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
 const createColor = ref<import('~/types/todo').NoteColor>('default')
 const createReminderAt = ref<string | null>(null)
+const createExpanded = ref(false)
 
 const onCreateImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -157,6 +160,7 @@ const createDialogSubmit = async () => {
     createColor.value = 'default'
     createReminderAt.value = null
     clearCreateImage()
+    createExpanded.value = false
     showCreateDialog.value = false
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
@@ -168,6 +172,7 @@ const createDialogSubmit = async () => {
 
 const cancelCreate = () => {
   showCreateDialog.value = false
+  createExpanded.value = false
   createTitle.value = ''
   createBody.value = ''
   createColor.value = 'default'
@@ -286,8 +291,8 @@ const { toasts, undo: undoToast } = useUndoToast()
     <!-- Create dialog (lg+ screens) -->
     <ModalOverlay :show="showCreateDialog" tabindex="0" @keydown.esc="cancelCreate">
       <form
-        class="mx-4 flex w-full max-w-xl flex-col gap-4 rounded-lg p-8 shadow-xl"
-        :class="noteColors[createColor]?.bg || 'bg-gray-800'"
+        class="mx-4 flex w-full flex-col gap-4 rounded-lg p-8 shadow-xl transition-all duration-200"
+        :class="[noteColors[createColor]?.bg || 'bg-gray-800', createExpanded ? 'max-w-4xl max-h-[85vh]' : 'max-w-xl']"
         @submit.prevent="createDialogSubmit"
       >
         <ImagePreview v-if="createImagePreview" :src="createImagePreview" :padding="8" removable @remove="clearCreateImage" />
@@ -298,33 +303,45 @@ const { toasts, undo: undoToast } = useUndoToast()
           maxlength="100"
           class="w-full border-b border-white/20 bg-transparent pb-2 text-sm font-bold text-white lowercase placeholder-white/60 focus:outline-none"
         >
-        <div class="min-h-[150px]">
+        <div :class="createExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : 'min-h-[150px]'">
           <LazyTiptapEditor ref="createEditorRef" v-model="createBody" placeholder="body" @submit="createDialogSubmit" />
         </div>
+        <AudioPlayer v-if="createAudioPreview" :src="createAudioPreview" />
         <div class="flex items-center justify-between">
           <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-model="createReminderAt" />
-            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-              <Icon name="uil:image" class="text-xs" />
-              <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
-            </label>
-            <button
-              type="button"
-              class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 lowercase hover:text-white"
-              @click="cancelCreate"
-            >
-              cancel
-            </button>
-            <button
-              type="submit"
-              class="cursor-pointer rounded px-2 py-0.5 text-xs lowercase"
-              :class="createTitle.trim() && (hasCreateBody || createImageFile) ? 'text-white/60 hover:text-white' : 'text-white/20'"
-              :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile)"
-            >
-              add
-            </button>
+            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
+            <AudioRecorder @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }" @update:recording="v => createAudioRecording = v" />
+            <template v-if="!createAudioRecording">
+              <button v-if="createAudioFile" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clearCreateAudio">✕</button>
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                <Icon name="uil:image" class="text-xs" />
+                <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
+              </label>
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                @click="createExpanded = !createExpanded"
+              >
+                <Icon :name="createExpanded ? 'uil:compress-arrows' : 'uil:expand-arrows-alt'" class="text-xs" />
+              </button>
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 lowercase hover:text-white"
+                @click="cancelCreate"
+              >
+                cancel
+              </button>
+              <button
+                type="submit"
+                class="cursor-pointer rounded px-2 py-0.5 text-xs lowercase"
+                :class="createTitle.trim() && (hasCreateBody || createImageFile || createAudioFile) ? 'text-white/60 hover:text-white' : 'text-white/20'"
+                :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile && !createAudioFile)"
+              >
+                add
+              </button>
+            </template>
           </div>
         </div>
       </form>

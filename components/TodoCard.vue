@@ -25,6 +25,7 @@ const emit = defineEmits<{
   'end-long-press': []
   'set-editor-ref': [el: { focus: () => void }]
   'image-select': [e: Event]
+  'expand': []
 }>()
 
 const { now, timeAgo } = useTimeAgo()
@@ -158,6 +159,13 @@ const cardClasses = computed(() => [
             <Icon name="uil:image" class="text-xs" />
             <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" >
           </label>
+          <button
+            type="button"
+            class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+            @click="emit('expand')"
+          >
+            <Icon name="uil:expand-arrows-alt" class="text-xs" />
+          </button>
           <button
             type="button"
             class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"

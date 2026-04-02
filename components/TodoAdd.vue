@@ -67,6 +67,7 @@ const addTodo = async () => {
     color.value = 'default'
     reminderAt.value = null
     clearImage()
+    expanded.value = false
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
     errorMsg.value = msg.includes('limit')
@@ -77,7 +78,10 @@ const addTodo = async () => {
   }
 }
 
-defineExpose({ title, body, imageFile, imagePreview, color, clearImage })
+const expanded = ref(false)
+const focused = ref(false)
+
+defineExpose({ title, body, imageFile, imagePreview, color, reminderAt, audioFile, audioPreview, expanded, clearImage, clearAudio })
 
 const handleTitleInput = (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -87,7 +91,8 @@ const handleTitleInput = (event: Event) => {
 </script>
 
 <template>
-  <form @submit.prevent="addTodo">
+  <!-- Compact form -->
+  <form v-if="!expanded" @submit.prevent="addTodo">
     <div class="mb-5 flex items-center justify-center">
       <div
         class="flex w-full flex-col gap-2 rounded-lg p-5 text-xs text-white shadow-md"
@@ -101,30 +106,102 @@ const handleTitleInput = (event: Event) => {
           maxlength="100"
           class="border-b border-white/20 bg-transparent placeholder-white/60 focus:outline-none"
           @input="handleTitleInput"
+          @focus="focused = true"
+          @blur="focused = false"
         >
-        <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
+        <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" @focus="focused = true" @blur="focused = false" />
+        <AudioPlayer v-if="audioPreview" :src="audioPreview" />
         <div class="flex items-center justify-between">
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-model="reminderAt" />
-            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-              <Icon name="uil:image" class="text-xs" />
-              <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
-            </label>
-            <button
-              type="submit"
-              :disabled="!isValidTodo"
-              class="cursor-pointer rounded px-2 py-0.5 -mt-0.5 text-xs transition-colors"
-              :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
-            >
-              add
-            </button>
+            <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
+            <AudioRecorder @recorded="(f, u) => { audioFile = f; audioPreview = u }" @update:recording="v => audioRecording = v" />
+            <template v-if="!audioRecording">
+              <button v-if="audioFile" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clearAudio">✕</button>
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                <Icon name="uil:image" class="text-xs" />
+                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
+              </label>
+              <button
+                v-if="focused || title || hasBody"
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                @click="expanded = true"
+              >
+                <Icon name="uil:expand-arrows-alt" class="text-xs" />
+              </button>
+              <button
+                type="submit"
+                :disabled="!isValidTodo"
+                class="cursor-pointer rounded px-2 py-0.5 -mt-0.5 text-xs transition-colors"
+                :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
+              >
+                add
+              </button>
+            </template>
           </div>
         </div>
       </div>
     </div>
   </form>
+
+  <!-- Expanded fullscreen -->
+  <Teleport to="body">
+    <div v-if="expanded" class="fixed inset-0 z-50 flex flex-col p-3 bg-gray-800">
+      <form
+        class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
+        :class="noteColors[color]?.bg || 'bg-gray-700'"
+        @submit.prevent="addTodo"
+      >
+        <ImagePreview v-if="imagePreview" :src="imagePreview" :padding="5" removable @remove="clearImage" />
+        <input
+          v-model="title"
+          type="text"
+          placeholder="title"
+          maxlength="100"
+          class="border-b border-white/20 bg-transparent text-sm placeholder-white/60 focus:outline-none"
+          @input="handleTitleInput"
+        >
+        <div class="flex-1 overflow-y-auto">
+          <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
+        </div>
+        <AudioPlayer v-if="audioPreview" :src="audioPreview" />
+        <div class="flex items-center justify-between">
+          <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
+          <ColorPicker v-else v-model="color" />
+          <div class="flex items-center gap-1">
+            <template v-if="!audioRecording">
+              <ReminderPicker v-model="reminderAt" />
+            </template>
+            <AudioRecorder @recorded="(f, u) => { audioFile = f; audioPreview = u }" @update:recording="v => audioRecording = v" />
+            <template v-if="!audioRecording">
+              <button v-if="audioFile" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="clearAudio">✕</button>
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                <Icon name="uil:image" class="text-xs" />
+                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
+              </label>
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                @click="expanded = false"
+              >
+                <Icon name="uil:compress-arrows" class="text-xs" />
+              </button>
+              <button
+                type="submit"
+                :disabled="!isValidTodo"
+                class="cursor-pointer rounded px-2 py-0.5 -mt-0.5 text-xs transition-colors"
+                :class="isValidTodo ? 'text-white/60 hover:text-white' : 'text-white/20'"
+              >
+                add
+              </button>
+            </template>
+          </div>
+        </div>
+      </form>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped></style>

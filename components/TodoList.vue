@@ -36,6 +36,7 @@ const dialogEditorRef = ref<{ focus: () => void } | null>(null)
 const dialogPinned = ref(false)
 const dialogColor = ref<import('~/types/todo').NoteColor>('default')
 const dialogReminderAt = ref<string | null>(null)
+const dialogExpanded = ref(false)
 const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
 const cardRefs = ref(new Map<number, Element>())
 
@@ -59,7 +60,21 @@ onUnmounted(() => {
 })
 
 watch(isLg, (lg) => {
-  if (lg && filteredTodos.value.some((t) => t.editing)) {
+  if (lg && expandedEditId.value) {
+    // Mobile expanded → desktop dialog
+    const todo = expandedTodo.value
+    if (todo) {
+      todo.editing = false
+      expandedEditId.value = null
+      dialogTodo.value = todo
+      dialogTitle.value = todo.title
+      dialogBody.value = todo.body
+      dialogPinned.value = todo.pinned
+      dialogColor.value = todo.color
+      dialogReminderAt.value = todo.reminder_at ?? null
+      nextTick(() => dialogEditorRef.value?.focus())
+    }
+  } else if (lg && filteredTodos.value.some((t) => t.editing)) {
     const todo = filteredTodos.value.find((t) => t.editing)!
     todo.editing = false
     dialogTodo.value = todo
@@ -74,6 +89,7 @@ watch(isLg, (lg) => {
     todo.title = dialogTitle.value
     todo.body = dialogBody.value
     dialogTodo.value = null
+    dialogExpanded.value = false
     todo.editing = true
     nextTick(() => inlineEditorRefs.value.get(todo.id)?.focus())
   }
@@ -327,9 +343,33 @@ const cancelEdit = (todo: Todo) => {
     todo.body = orig.body
   }
   todo.editing = false
+  expandedEditId.value = null
   editOriginals.value.delete(todo.id)
   editImageFiles.value.delete(todo.id)
   editImagePreviews.value.delete(todo.id)
+  editAudioFiles.value.delete(todo.id)
+  editAudioPreviews.value.delete(todo.id)
+}
+
+const expandedEditId = ref<number | null>(null)
+const expandedTodo = computed(() => expandedEditId.value ? todoStore.todos.find((t) => t.id === expandedEditId.value) : null)
+
+const expandEdit = (todo: Todo) => {
+  expandedEditId.value = todo.id
+}
+
+const saveExpandedEdit = async () => {
+  if (!expandedTodo.value) return
+  const todo = expandedTodo.value
+  expandedEditId.value = null
+  await saveTodo(todo)
+}
+
+const cancelExpandedEdit = () => {
+  if (!expandedTodo.value) return
+  const todo = expandedTodo.value
+  expandedEditId.value = null
+  cancelEdit(todo)
 }
 
 const toggleCompletion = async (todo: Todo) => {
@@ -479,6 +519,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @restore="restoreTodo(todo)"
             @save="saveTodo(todo)"
             @cancel="cancelEdit(todo)"
+            @expand="expandEdit(todo)"
             @toggle-select="toggleSelect(todo.id)"
             @start-hover="startHover(todo.id)"
             @end-hover="endHover(todo.id)"
@@ -515,6 +556,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @restore="restoreTodo(todo)"
             @save="saveTodo(todo)"
             @cancel="cancelEdit(todo)"
+            @expand="expandEdit(todo)"
             @toggle-select="toggleSelect(todo.id)"
             @start-hover="startHover(todo.id)"
             @end-hover="endHover(todo.id)"
@@ -531,8 +573,8 @@ defineExpose({ cancelAllEdits, isEditing })
   <!-- Edit dialog (lg+ screens) -->
   <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="cancelDialogTodo">
         <div
-          class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg p-6 shadow-xl"
-          :class="noteColors[dialogColor]?.bg || 'bg-gray-800'"
+          class="mx-4 flex w-full flex-col gap-3 rounded-lg p-6 shadow-xl transition-all duration-200"
+          :class="[noteColors[dialogColor]?.bg || 'bg-gray-800', dialogExpanded ? 'max-w-4xl max-h-[85vh]' : 'max-w-xl']"
         >
           <ImagePreview v-if="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image" :src="dialogImagePreview || dialogTodo.thumbnail || dialogTodo.image!" :padding="6" />
           <div class="flex w-full items-center justify-between">
@@ -574,24 +616,36 @@ defineExpose({ cancelAllEdits, isEditing })
               </button>
             </div>
           </div>
-          <LazyTiptapEditor
-            ref="dialogEditorRef"
-            v-model="dialogBody"
-            placeholder="body"
-            @submit="saveDialogTodo"
-          />
+          <div :class="dialogExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : ''">
+            <LazyTiptapEditor
+              ref="dialogEditorRef"
+              v-model="dialogBody"
+              placeholder="body"
+              @submit="saveDialogTodo"
+            />
+          </div>
+          <AudioPlayer v-if="dialogAudioPreview || dialogTodo?.audio" :src="dialogAudioPreview || dialogTodo?.audio!" />
           <div class="flex items-center justify-between">
             <ColorPicker v-model="dialogColor" />
             <div class="flex items-center gap-1">
-              <ReminderPicker v-model="dialogReminderAt" />
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-                <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
-              </label>
-              <button
-                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white"
-                @click="cancelDialogTodo"
-              >
+              <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" />
+              <AudioRecorder @recorded="(f, u) => { dialogAudioFile = f; dialogAudioPreview = u }" @update:recording="v => dialogAudioRecording = v" />
+              <template v-if="!dialogAudioRecording">
+                <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                  <Icon name="uil:image" class="text-xs" />
+                  <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
+                </label>
+                <button
+                  type="button"
+                  class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                  @click="dialogExpanded = !dialogExpanded"
+                >
+                  <Icon :name="dialogExpanded ? 'uil:compress-arrows' : 'uil:expand-arrows-alt'" class="text-xs" />
+                </button>
+                <button
+                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white"
+                  @click="cancelDialogTodo"
+                >
                 cancel
               </button>
               <button
@@ -600,10 +654,71 @@ defineExpose({ cancelAllEdits, isEditing })
               >
                 save
               </button>
+              </template>
             </div>
           </div>
         </div>
   </ModalOverlay>
+
+  <!-- Expanded inline edit (mobile) -->
+  <Teleport to="body">
+    <div v-if="expandedTodo" class="fixed inset-0 z-50 flex flex-col p-3 bg-gray-800">
+      <div
+        class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
+        :class="noteColors[expandedTodo.color]?.bg || 'bg-gray-700'"
+      >
+        <!-- eslint-disable vue/no-mutating-props -->
+        <ImagePreview
+          v-if="editImagePreviews.get(expandedTodo.id) || expandedTodo.thumbnail || expandedTodo.image"
+          :src="editImagePreviews.get(expandedTodo.id) || expandedTodo.thumbnail || expandedTodo.image!"
+          :padding="5"
+        />
+        <input
+          v-model="expandedTodo.title"
+          class="border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
+        >
+        <div class="flex-1 overflow-y-auto">
+          <LazyTiptapEditor v-model="expandedTodo.body" placeholder="body" />
+        </div>
+        <AudioPlayer v-if="expandedTodo.audio" :src="expandedTodo.audio" />
+        <div class="flex items-center justify-between">
+          <ColorPicker v-model="expandedTodo.color" />
+          <div class="flex items-center gap-1">
+            <ReminderPicker v-if="!expandedAudioRecording" v-model="expandedTodo.reminder_at" />
+            <AudioRecorder @recorded="(f, u) => { if (expandedTodo) { editAudioFiles.set(expandedTodo.id, f); editAudioPreviews.set(expandedTodo.id, u) } }" @update:recording="v => expandedAudioRecording = v" />
+            <template v-if="!expandedAudioRecording">
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                <Icon name="uil:image" class="text-xs" />
+                <input type="file" accept="image/*" class="hidden" @change="(e: Event) => expandedTodo && onEditImageSelect(expandedTodo, e)" >
+              </label>
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                @click="expandedEditId = null"
+              >
+                <Icon name="uil:compress-arrows" class="text-xs" />
+              </button>
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"
+                @click="cancelExpandedEdit"
+              >
+                cancel
+              </button>
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+                @click="saveExpandedEdit"
+              >
+                save
+              </button>
+            </template>
+          </div>
+        </div>
+        <!-- eslint-enable vue/no-mutating-props -->
+      </div>
+    </div>
+  </Teleport>
 
   <ConfirmDialog
     v-model="showDeleteDialog"
