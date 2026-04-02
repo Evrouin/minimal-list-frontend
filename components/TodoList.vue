@@ -4,6 +4,8 @@ import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
 
+const { tap } = useHaptics()
+
 const todoStore = useTodoStore()
 const { filteredTodos, pinnedTodos, unpinnedTodos, loading } =
   storeToRefs(todoStore)
@@ -112,6 +114,7 @@ let longPressTimer: ReturnType<typeof setTimeout> | null = null
 const startLongPress = (id: number) => {
   if (isTodoEditing(id)) return
   longPressTimer = setTimeout(() => {
+    tap()
     if (!multiSelectMode.value && !visibleCheckboxIds.value.includes(id)) {
       visibleCheckboxIds.value.push(id)
     }
@@ -172,6 +175,7 @@ const confirmBulkDelete = () => {
   const ids = bulkDeleteIds.value
   const count = ids.length
   exitMultiSelect()
+  tap()
   const snapshot = todoStore.bulkDelete(ids)
   bulkDeleteIds.value = []
   showToast(
@@ -186,6 +190,7 @@ const bulkRestoreSelected = () => {
   const ids = [...selectedIds.value]
   const count = ids.length
   exitMultiSelect()
+  tap()
   const snapshot = todoStore.bulkRestore(ids)
   showToast(
     `${count} note${count > 1 ? 's' : ''} restored`,
@@ -198,6 +203,7 @@ const bulkPinSelected = (pinned: boolean) => {
   const ids = [...selectedIds.value]
   const count = ids.length
   exitMultiSelect()
+  tap()
   const snapshot = todoStore.bulkPin(ids, pinned)
   showToast(
     `${count} note${count > 1 ? 's' : ''} ${pinned ? 'pinned' : 'unpinned'}`,
@@ -324,15 +330,18 @@ const cancelEdit = (todo: Todo) => {
 
 const toggleCompletion = async (todo: Todo) => {
   endHover(todo.id)
+  tap()
   await todoStore.toggleTodoCompletion(todo.id).catch(() => {})
 }
 const togglePin = async (todo: Todo) => {
   endHover(todo.id)
+  tap()
   await todoStore.togglePin(todo.id).catch(() => {})
 }
 
 const dialogToggleCompletion = async () => {
   if (!dialogTodo.value) return
+  tap()
   await todoStore.toggleTodoCompletion(dialogTodo.value.id)
   dialogTodo.value = null
 }
@@ -355,6 +364,7 @@ const confirmDelete = () => {
   showDeleteDialog.value = false
   const todo = todoToDelete.value
   const isPermanent = todo.deleted
+  tap()
   const snapshot = todoStore.deleteTodo(todo.id, isPermanent)
   todoToDelete.value = null
   showToast(
@@ -367,6 +377,7 @@ const confirmDelete = () => {
 }
 
 const restoreTodo = (todo: Todo) => {
+  tap()
   const snapshot = todoStore.restoreTodo(todo.id)
   showToast(
     'note restored',
