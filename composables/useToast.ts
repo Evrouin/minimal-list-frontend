@@ -16,7 +16,7 @@ export function useUndoToast() {
     const id = nextId++
     const timer = setTimeout(() => {
       dismiss(id, true)
-    }, 400)
+    }, 800)
     toasts.value.push({ id, message, timer, onUndo, onCommit })
   }
 
