@@ -71,6 +71,7 @@ watch(isLg, (lg) => {
       dialogPinned.value = todo.pinned
       dialogColor.value = todo.color
       dialogReminderAt.value = todo.reminder_at ?? null
+      dialogOriginalAudio.value = todo.audio ?? null
       nextTick(() => dialogEditorRef.value?.focus())
     }
   } else if (lg && filteredTodos.value.some((t) => t.editing)) {
@@ -82,6 +83,7 @@ watch(isLg, (lg) => {
     dialogPinned.value = todo.pinned
     dialogColor.value = todo.color
     dialogReminderAt.value = todo.reminder_at ?? null
+    dialogOriginalAudio.value = todo.audio ?? null
     nextTick(() => dialogEditorRef.value?.focus())
   } else if (!lg && dialogTodo.value) {
     const todo = dialogTodo.value
@@ -227,7 +229,7 @@ const bulkPinSelected = (pinned: boolean) => {
 }
 
 // Edit
-const editOriginals = ref(new Map<number, { title: string; body: string }>())
+const editOriginals = ref(new Map<number, { title: string; body: string; audio: string | null | undefined }>())
 
 const handleCardClick = (todo: Todo) => {
   if (todo.editing) return
@@ -269,9 +271,10 @@ const editTodo = (todo: Todo) => {
     dialogPinned.value = todo.pinned
     dialogColor.value = todo.color
     dialogReminderAt.value = todo.reminder_at ?? null
+    dialogOriginalAudio.value = todo.audio ?? null
     nextTick(() => dialogEditorRef.value?.focus())
   } else {
-    editOriginals.value.set(todo.id, { title: todo.title, body: todo.body })
+    editOriginals.value.set(todo.id, { title: todo.title, body: todo.body, audio: todo.audio ?? null })
     todo.editing = true
     nextTick(() => {
       inlineEditorRefs.value.get(todo.id)?.focus()
@@ -287,6 +290,7 @@ const dialogImagePreview = ref('')
 const dialogAudioFile = ref<File | null>(null)
 const dialogAudioPreview = ref('')
 const dialogAudioRecording = ref(false)
+const dialogOriginalAudio = ref<string | null | undefined>(null)
 
 const onDialogImageSelect = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -298,11 +302,13 @@ const onDialogImageSelect = async (e: Event) => {
 }
 
 const cancelDialogTodo = () => {
+  if (dialogTodo.value) dialogTodo.value.audio = dialogOriginalAudio.value
   dialogTodo.value = null
   dialogImageFile.value = null
   dialogImagePreview.value = ''
   dialogAudioFile.value = null
   dialogAudioPreview.value = ''
+  dialogOriginalAudio.value = null
   dialogExpanded.value = false
 }
 
@@ -360,6 +366,7 @@ const cancelEdit = (todo: Todo) => {
   if (orig) {
     todo.title = orig.title
     todo.body = orig.body
+    todo.audio = orig.audio
   }
   todo.editing = false
   expandedEditId.value = null
@@ -537,6 +544,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @save="saveTodo(todo)"
             @cancel="cancelEdit(todo)"
             @expand="expandEdit(todo)"
+            @remove-audio="todo.audio = null"
             @toggle-select="toggleSelect(todo.id)"
             @start-hover="startHover(todo.id)"
             @end-hover="endHover(todo.id)"
@@ -578,6 +586,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @save="saveTodo(todo)"
             @cancel="cancelEdit(todo)"
             @expand="expandEdit(todo)"
+            @remove-audio="todo.audio = null"
             @toggle-select="toggleSelect(todo.id)"
             @start-hover="startHover(todo.id)"
             @end-hover="endHover(todo.id)"
@@ -636,7 +645,7 @@ defineExpose({ cancelAllEdits, isEditing })
         v-if="dialogAudioPreview || dialogTodo?.audio"
         :src="dialogAudioPreview || dialogTodo?.audio!"
         removable
-        @remove="dialogAudioFile = null; dialogAudioPreview = ''"
+        @remove="dialogAudioFile = null; dialogAudioPreview = ''; if (dialogTodo) dialogTodo.audio = null"
       />
       <div class="flex items-center justify-between">
         <ColorPicker v-model="dialogColor" />

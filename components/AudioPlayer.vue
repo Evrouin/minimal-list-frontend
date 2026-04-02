@@ -42,7 +42,7 @@ const seek = (e: MouseEvent | TouchEvent) => {
 </script>
 
 <template>
-  <div class="flex items-center gap-2" @click.stop>
+  <div class="flex items-center gap-2" @click.stop @touchstart.stop @touchend.stop>
     <audio
       ref="audio"
       :src="props.src"

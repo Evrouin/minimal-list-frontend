@@ -26,6 +26,7 @@ const emit = defineEmits<{
   'set-editor-ref': [el: { focus: () => void }]
   'image-select': [e: Event]
   'expand': []
+  'remove-audio': []
 }>()
 
 const { now, timeAgo } = useTimeAgo()
@@ -161,6 +162,7 @@ const cardClasses = computed(() => [
         @submit="emit('save')"
       />
       <!-- eslint-enable vue/no-mutating-props -->
+      <AudioPlayer v-if="todo.audio" :src="todo.audio" removable @remove="emit('remove-audio')" />
       <div class="mt-1 flex items-center justify-between">
         <!-- eslint-disable vue/no-mutating-props -->
         <ColorPicker v-model="todo.color" />

@@ -85,8 +85,8 @@ export const useTodoStore = defineStore('todo', () => {
     const previous = { ...todos.value[index] }
     todos.value[index] = { ...updatedTodo, editing: false }
     try {
-      const { title, body, completed, pinned, color, reminder_at, link_previews } = updatedTodo
-      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned, color, reminder_at: reminder_at ?? null, link_previews: link_previews ?? [] }
+      const { title, body, completed, pinned, color, reminder_at, link_previews, audio } = updatedTodo
+      let payload: Record<string, unknown> | FormData = { title, body, completed, pinned, color, reminder_at: reminder_at ?? null, link_previews: link_previews ?? [], audio: audio ?? null }
       if (imageFile || audioFile) {
         const fd = new FormData()
         fd.append('title', title)
