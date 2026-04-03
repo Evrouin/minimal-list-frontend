@@ -54,6 +54,7 @@ export default defineNuxtConfig({
     },
   },
   ssr: false,
+  spaLoadingTemplate: true,
   routeRules: {
     '/**': {
       headers: {
