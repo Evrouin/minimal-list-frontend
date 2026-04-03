@@ -27,6 +27,7 @@ const emit = defineEmits<{
   'image-select': [e: Event]
   'expand': []
   'remove-audio': []
+  'audio-interact': [value: boolean]
 }>()
 
 const { now, timeAgo } = useTimeAgo()
@@ -53,9 +54,9 @@ const cardClasses = computed(() => [
     @click="emit('click')"
     @mouseenter="!todo.editing && emit('start-hover')"
     @mouseleave="!todo.editing && emit('end-hover')"
-    @touchstart.passive="!todo.editing && emit('start-long-press')"
-    @touchend="emit('end-long-press')"
-    @touchmove="emit('end-long-press')"
+    @touchstart="!todo.editing && emit('start-long-press')"
+    @touchend="(e: TouchEvent) => { if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press') }"
+    @touchmove="(e: TouchEvent) => { if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press') }"
   >
     <button
       v-if="multiSelectMode || showCheckbox"
@@ -137,7 +138,7 @@ const cardClasses = computed(() => [
     <div v-if="!todo.editing && todo.link_previews?.length" class="flex flex-col gap-1">
       <LinkPreviewCard v-for="lp in todo.link_previews" :key="lp.url" :preview="lp" />
     </div>
-    <AudioPlayer v-if="!todo.editing && todo.audio" :src="todo.audio" />
+    <AudioPlayer v-if="!todo.editing && todo.audio" :src="todo.audio" @audio-interact="(v: boolean) => emit('audio-interact', v)" />
     <span v-if="!todo.editing && now" class="text-xs text-white/30">
       {{ timeAgo(todo.created_at) }}
       <template v-if="todo.reminder_at">

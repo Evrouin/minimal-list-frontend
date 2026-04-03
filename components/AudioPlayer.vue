@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ src: string; removable?: boolean }>()
-const emit = defineEmits<{ remove: [] }>()
+const emit = defineEmits<{ remove: []; 'audio-interact': [value: boolean] }>()
 
 const config = useRuntimeConfig()
 const cdnUrl = config.public.cdnUrl as string
@@ -20,10 +20,14 @@ const playing = ref(false)
 const currentTime = ref(0)
 const totalDuration = ref(0)
 
-const toggle = () => {
+const toggle = async () => {
   if (!audio.value) return
-  if (playing.value) audio.value.pause()
-  else audio.value.play()
+  try {
+    if (playing.value) audio.value.pause()
+    else await audio.value.play()
+  } catch {
+    // Source not available — fallback may be loading
+  }
 }
 
 const onTimeUpdate = () => {
@@ -55,7 +59,7 @@ const seek = (e: MouseEvent | TouchEvent) => {
 </script>
 
 <template>
-  <div class="flex items-center gap-2" @click.stop @touchstart.stop @touchend.stop>
+  <div data-audio-player class="audio-player flex items-center gap-2" @click.stop @touchstart.stop="emit('audio-interact', true)" @touchend.stop="setTimeout(() => emit('audio-interact', false), 600)" @touchmove.stop>
     <audio
       ref="audio"
       :src="audioSrc"
@@ -67,7 +71,7 @@ const seek = (e: MouseEvent | TouchEvent) => {
       @ended="onEnded"
       @error="onAudioError"
     />
-    <button type="button" class="cursor-pointer text-white/60 hover:text-white" @click="toggle">
+    <button type="button" class="cursor-pointer text-white/60 hover:text-white" @click.stop.prevent="toggle">
       <Icon :name="playing ? 'uil:pause' : 'uil:play'" class="text-sm" />
     </button>
     <div class="flex flex-1 cursor-pointer items-center gap-2" @click="seek" @touchstart.passive="seek">

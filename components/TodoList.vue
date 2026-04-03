@@ -128,10 +128,13 @@ const endHover = (id: number) => {
   }
 }
 
+const audioInteracting = ref(false)
+
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 const startLongPress = (id: number) => {
-  if (isTodoEditing(id)) return
+  if (isTodoEditing(id) || audioInteracting.value) return
   longPressTimer = setTimeout(() => {
+    if (audioInteracting.value) return
     tap()
     if (!multiSelectMode.value && !visibleCheckboxIds.value.includes(id)) {
       visibleCheckboxIds.value.push(id)
@@ -547,6 +550,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @cancel="cancelEdit(todo)"
             @expand="expandEdit(todo)"
             @remove-audio="todo.audio = null"
+            @audio-interact="(v: boolean) => audioInteracting = v"
             @toggle-select="toggleSelect(todo.id)"
             @start-hover="startHover(todo.id)"
             @end-hover="endHover(todo.id)"
@@ -589,6 +593,7 @@ defineExpose({ cancelAllEdits, isEditing })
             @cancel="cancelEdit(todo)"
             @expand="expandEdit(todo)"
             @remove-audio="todo.audio = null"
+            @audio-interact="(v: boolean) => audioInteracting = v"
             @toggle-select="toggleSelect(todo.id)"
             @start-hover="startHover(todo.id)"
             @end-hover="endHover(todo.id)"
