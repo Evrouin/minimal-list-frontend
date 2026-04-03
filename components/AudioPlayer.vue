@@ -38,6 +38,7 @@ const onLoaded = () => {
 }
 const onEnded = () => {
   playing.value = false
+  emit('audio-interact', false)
   currentTime.value = 0
 }
 
@@ -59,15 +60,15 @@ const seek = (e: MouseEvent | TouchEvent) => {
 </script>
 
 <template>
-  <div data-audio-player class="audio-player flex items-center gap-2" @click.stop @touchstart.stop="emit('audio-interact', true)" @touchend.stop="setTimeout(() => emit('audio-interact', false), 600)" @touchmove.stop>
+  <div data-audio-player class="audio-player flex items-center gap-2" @click.stop @mouseenter.stop @mouseleave.stop @touchstart.stop="emit('audio-interact', true)" @touchend.stop="!playing && emit('audio-interact', false)" @touchmove.stop>
     <audio
       ref="audio"
       :src="audioSrc"
       preload="metadata"
       @timeupdate="onTimeUpdate"
       @loadedmetadata="onLoaded"
-      @play="playing = true"
-      @pause="playing = false"
+      @play="playing = true; emit('audio-interact', true)"
+      @pause="playing = false; emit('audio-interact', false)"
       @ended="onEnded"
       @error="onAudioError"
     />

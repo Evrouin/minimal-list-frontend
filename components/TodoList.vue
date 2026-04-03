@@ -105,11 +105,11 @@ const hasCheckbox = (id: string) => visibleCheckboxIds.value.includes(id)
 const isTodoEditing = (id: string) => filteredTodos.value.find((t) => t.uuid === id)?.editing
 
 const startHover = (id: string) => {
-  if (multiSelectMode.value || isTodoEditing(id)) return
+  if (multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
   hoverTimers.set(
     id,
     setTimeout(() => {
-      if (!visibleCheckboxIds.value.includes(id)) visibleCheckboxIds.value.push(id)
+      if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value) visibleCheckboxIds.value.push(id)
     }, 800),
   )
 }
@@ -149,6 +149,7 @@ const endLongPress = () => {
 const MAX_SELECT = 50
 
 const toggleSelect = (id: string) => {
+  if (audioInteracting.value) return
   const idx = selectedIds.value.indexOf(id)
   if (idx >= 0) selectedIds.value.splice(idx, 1)
   else if (selectedIds.value.length < MAX_SELECT) selectedIds.value.push(id)
