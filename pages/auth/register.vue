@@ -2,6 +2,7 @@
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
+const { signIn: googleSignIn } = useGoogleAuth()
 
 const form = reactive({
   email: '',
@@ -33,6 +34,20 @@ const handleRegister = async () => {
     successMsg.value = (res.message?.toLowerCase() || 'registered successfully') + '. check your email to verify your account.'
   } catch {
     errorMsg.value = 'registration failed. try again.'
+  }
+}
+
+const handleGoogleSignUp = async () => {
+  errorMsg.value = ''
+  try {
+    const accessToken = await googleSignIn()
+    await authStore.googleLogin(accessToken)
+    navigateTo('/')
+  } catch (e: unknown) {
+    const msg = (e as { message?: string })?.message?.toLowerCase() || ''
+    if (msg.includes('popup') || msg.includes('closed') || msg.includes('cancel')) return
+    if (msg.includes('deactivated')) errorMsg.value = 'account deactivated. please contact support.'
+    else errorMsg.value = 'google sign up failed'
   }
 }
 </script>
@@ -84,6 +99,21 @@ const handleRegister = async () => {
         class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
       >
         {{ authStore.loading ? 'registering...' : 'register' }}
+      </button>
+
+      <div class="my-4 flex items-center gap-3">
+        <div class="h-px flex-1 bg-white/10" />
+        <span class="text-xs text-white/30 lowercase">or</span>
+        <div class="h-px flex-1 bg-white/10" />
+      </div>
+
+      <button
+        type="button"
+        class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500"
+        @click="handleGoogleSignUp"
+      >
+        <Icon name="logos:google-icon" />
+        sign up with google
       </button>
     </form>
   </AuthFormCard>
