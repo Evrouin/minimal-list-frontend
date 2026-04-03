@@ -67,6 +67,21 @@ export default defineNuxtConfig({
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     },
+    '/_fonts/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    },
+    '/favicon.png': {
+      headers: {
+        'Cache-Control': 'public, max-age=604800',
+      },
+    },
+    '/favicon.ico': {
+      headers: {
+        'Cache-Control': 'public, max-age=604800',
+      },
+    },
   },
   runtimeConfig: {
     public: {
