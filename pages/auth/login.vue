@@ -26,11 +26,11 @@ const handleLogin = async () => {
   } catch (e: unknown) {
     const msg = (e as { message?: string })?.message?.toLowerCase() || ''
     if (msg.includes('locked')) errorMsg.value = 'account locked. check your email to unlock.'
+    else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated. please contact support.'
     else if (msg.includes('verify')) {
       errorMsg.value = 'please verify your email first.'
       showResend.value = true
     }
-    else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated'
     else errorMsg.value = 'invalid email or password'
   }
 }
@@ -54,9 +54,11 @@ const handleGoogleLogin = async () => {
     await authStore.googleLogin(accessToken)
     navigateTo('/')
   } catch (e: unknown) {
-    const msg = (e as Error)?.message || ''
+    const msg = (e as { message?: string })?.message?.toLowerCase() || ''
     if (msg.includes('popup') || msg.includes('closed') || msg.includes('cancel')) return
-    errorMsg.value = msg.includes('deactivated') ? 'account deactivated' : 'google login failed'
+    if (msg.includes('locked')) errorMsg.value = 'account locked. check your email to unlock.'
+    else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated. please contact support.'
+    else errorMsg.value = 'google login failed'
   }
 }
 </script>
