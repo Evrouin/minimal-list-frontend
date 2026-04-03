@@ -10,14 +10,14 @@ export default defineNuxtConfig({
     head: {
       title: 'minimal list',
       meta: [
-        { name: 'description', content: 'a minimalist note-taking app with rich text editing, voice recording and reminders' },
+        { name: 'description', content: 'a minimalist space for your notes and recordings. built to keep you focused.' },
         { name: 'theme-color', content: '#1f2937' },
-        { property: 'og:title', content: 'Minimal List' },
+        { property: 'og:title', content: 'minimal list' },
         { property: 'og:description', content: 'a minimalist note-taking app with rich text editing, voice recording and reminders' },
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://minimal-list.evrouin.com' },
         { name: 'twitter:card', content: 'summary' },
-        { name: 'twitter:title', content: 'Minimal List' },
+        { name: 'twitter:title', content: 'minimal list' },
         { name: 'twitter:description', content: 'a minimalist note-taking app with rich text editing, voice recording and reminders' },
       ],
       link: [

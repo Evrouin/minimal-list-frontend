@@ -53,9 +53,9 @@ const handleGoogleSignUp = async () => {
 </script>
 
 <template>
-  <AuthFormCard title="minimal list" link-to="/auth/login" link-label="login">
+  <AuthFormCard title="register" link-to="/auth/login" link-label="already have an account?">
     <form @submit.prevent="handleRegister">
-      <div class="space-y-4">
+      <div class="space-y-5">
         <div>
           <label class="mb-1 block text-xs text-white/40">email</label>
           <input
@@ -67,9 +67,7 @@ const handleGoogleSignUp = async () => {
         </div>
       </div>
 
-      <p class="mt-5 mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">password</p>
-
-      <div class="space-y-4">
+      <div class="mt-4 space-y-4">
         <div>
           <label class="mb-1 block text-xs text-white/40">password</label>
           <input

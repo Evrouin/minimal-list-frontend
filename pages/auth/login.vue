@@ -64,9 +64,9 @@ const handleGoogleLogin = async () => {
 </script>
 
 <template>
-  <AuthFormCard title="minimal list" link-to="/auth/register" link-label="register">
+  <AuthFormCard title="login" link-to="/auth/register" link-label="create an account">
     <form @submit.prevent="handleLogin">
-      <div class="space-y-4">
+      <div class="space-y-5">
         <div>
           <label class="mb-1 block text-xs text-white/40">email</label>
           <input
@@ -136,7 +136,7 @@ const handleGoogleLogin = async () => {
     </form>
 
     <div class="mt-4 flex justify-center">
-      <NuxtLink to="/auth/forgot-password" class="text-sm text-white/60 lowercase hover:text-white">forgot password?</NuxtLink>
+      <NuxtLink to="/auth/forgot-password" class="text-xs text-white/40 lowercase hover:text-white/60">forgot password?</NuxtLink>
     </div>
   </AuthFormCard>
 </template>

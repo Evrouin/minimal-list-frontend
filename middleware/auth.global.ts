@@ -27,6 +27,14 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/auth/login')
   }
 
+  // On native app, skip landing page — go straight to login
+  if (to.path === '/' && !authStore.isAuthenticated) {
+    try {
+      const { Capacitor } = await import('@capacitor/core')
+      if (Capacitor.isNativePlatform()) return navigateTo('/auth/login')
+    } catch {}
+  }
+
   if (to.path === '/auth/login' && authStore.isAuthenticated) {
     return navigateTo('/')
   }

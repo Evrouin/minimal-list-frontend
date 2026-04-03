@@ -233,11 +233,15 @@ const { toasts, undo: undoToast } = useUndoToast()
   <!-- Landing page for unauthenticated users -->
   <div v-if="!isLoggedIn" class="flex min-h-screen flex-col bg-gray-800">
     <nav class="flex items-center justify-between px-6 py-4">
-      <span class="text-lg font-bold text-white lowercase">minimal list</span>
+      <div class="flex items-center gap-2">
+        <img src="~/assets/logo.png" alt="minimal list" class="h-7 w-7" >
+        <span class="text-lg font-bold text-white lowercase">minimal list</span>
+      </div>
     </nav>
-    <div class="flex flex-1 flex-col items-center justify-center px-6 text-center">
-      <h1 class="mb-4 text-3xl font-bold text-white lowercase sm:text-4xl">notes, simplified.</h1>
-      <p class="mb-8 max-w-md text-sm leading-relaxed text-white/40">a minimalist note-taking app with rich text editing, voice recording, reminders, and a dark theme that stays out of your way.</p>
+    <div class="flex flex-1 flex-col items-center justify-center px-6 pt-10 text-center sm:pt-0">
+      <h1 class="mb-4 text-2xl font-bold text-white lowercase sm:text-4xl">notes, simplified.</h1>
+      <p class="mb-8 max-w-xs text-xs leading-relaxed text-white/40 sm:max-w-md sm:text-sm">a minimalist space for your notes and recordings. built to keep you focused.</p>
+      <p class="mb-6 text-xs tracking-widest text-white/20">write. record. remember.</p>
       <div class="flex gap-3">
         <NuxtLink to="/auth/register" class="rounded-lg bg-gray-600 px-6 py-2.5 text-xs font-medium text-white lowercase transition-colors hover:bg-gray-500">get started</NuxtLink>
         <NuxtLink to="/auth/login" class="rounded-lg border border-white/10 px-6 py-2.5 text-xs text-white/60 lowercase transition-colors hover:border-white/20 hover:text-white">login</NuxtLink>
