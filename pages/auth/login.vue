@@ -10,18 +10,40 @@ const form = reactive({
 })
 const errorMsg = ref('')
 const showPassword = ref(false)
+const showResend = ref(false)
+const resendCooldown = ref(false)
+const resendMsg = ref('')
+
+const api = useAuthApi()
 
 const handleLogin = async () => {
   errorMsg.value = ''
+  showResend.value = false
+  resendMsg.value = ''
   try {
     await authStore.login(form)
     navigateTo('/')
   } catch (e: unknown) {
     const msg = (e as { message?: string })?.message?.toLowerCase() || ''
     if (msg.includes('locked')) errorMsg.value = 'account locked. check your email to unlock.'
-    else if (msg.includes('verify')) errorMsg.value = 'please verify your email first.'
+    else if (msg.includes('verify')) {
+      errorMsg.value = 'please verify your email first.'
+      showResend.value = true
+    }
     else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated'
     else errorMsg.value = 'invalid email or password'
+  }
+}
+
+const resendVerification = async () => {
+  if (resendCooldown.value || !form.email) return
+  try {
+    await api.resendVerification(form.email)
+    resendMsg.value = 'verification email sent — check your inbox.'
+    resendCooldown.value = true
+    setTimeout(() => { resendCooldown.value = false }, 60000)
+  } catch {
+    resendMsg.value = 'failed to send. try again later.'
   }
 }
 
@@ -73,7 +95,19 @@ const handleGoogleLogin = async () => {
         </div>
       </div>
 
-      <div v-if="errorMsg" class="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ errorMsg }}</div>
+      <div v-if="errorMsg" class="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+        {{ errorMsg }}
+        <button
+          v-if="showResend"
+          type="button"
+          :disabled="resendCooldown"
+          class="ml-1 cursor-pointer underline hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+          @click="resendVerification"
+        >
+          {{ resendCooldown ? 'sent' : 'resend' }}
+        </button>
+      </div>
+      <div v-if="resendMsg" class="mt-2 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-300">{{ resendMsg }}</div>
 
       <button
         type="submit"

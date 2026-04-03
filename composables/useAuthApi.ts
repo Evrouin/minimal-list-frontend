@@ -22,6 +22,12 @@ export const useAuthApi = () => {
         body: payload,
       }),
 
+    resendVerification: (email: string) =>
+      request<{ message: string }>(`${base}/resend-verification/`, {
+        method: 'POST',
+        body: { email },
+      }),
+
     googleLogin: (token: string) =>
       request<{ tokens: AuthTokens; user: User }>(`${base}/login/google/`, {
         method: 'POST',
