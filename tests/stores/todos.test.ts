@@ -30,7 +30,7 @@ describe('Todo Store', () => {
     mockApi.fetchTodos.mockResolvedValue({
       data: [
         {
-          id: 1,
+          uuid: "test-uuid-1",
           title: 'test',
           body: 'body',
           completed: false,
@@ -56,7 +56,7 @@ describe('Todo Store', () => {
 
   it('should add a todo via API', async () => {
     const newTodo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'new',
       body: 'body',
       completed: false,
@@ -75,7 +75,7 @@ describe('Todo Store', () => {
 
   it('should optimistically update and call API', async () => {
     const todo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'original',
       body: 'body',
       completed: false,
@@ -93,7 +93,7 @@ describe('Todo Store', () => {
 
   it('should rollback on update failure', async () => {
     const todo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'original',
       body: 'body',
       completed: false,
@@ -111,7 +111,7 @@ describe('Todo Store', () => {
 
   it('should toggle todo completion', async () => {
     const todo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'test',
       body: 'body',
       completed: false,
@@ -121,13 +121,13 @@ describe('Todo Store', () => {
     mockApi.updateTodo.mockResolvedValue({ data: { ...todo, completed: true } })
     const store = useTodoStore()
     store.todos = [todo]
-    await store.toggleTodoCompletion(1)
+    await store.toggleTodoCompletion("test-uuid-1")
     expect(store.todos[0].completed).toBe(true)
   })
 
   it('should soft delete (optimistic)', () => {
     const todo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'test',
       body: 'body',
       completed: false,
@@ -136,13 +136,13 @@ describe('Todo Store', () => {
     }
     const store = useTodoStore()
     store.todos = [todo]
-    store.deleteTodo(1, false)
+    store.deleteTodo("test-uuid-1", false)
     expect(store.todos[0].deleted).toBe(true)
   })
 
   it('should permanently delete (optimistic)', () => {
     const todo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'test',
       body: 'body',
       completed: false,
@@ -151,13 +151,13 @@ describe('Todo Store', () => {
     }
     const store = useTodoStore()
     store.todos = [todo]
-    store.deleteTodo(1, true)
+    store.deleteTodo("test-uuid-1", true)
     expect(store.todos).toHaveLength(0)
   })
 
   it('should rollback on delete', () => {
     const todo = {
-      id: 1,
+      uuid: "test-uuid-1",
       title: 'test',
       body: 'body',
       completed: false,
@@ -166,7 +166,7 @@ describe('Todo Store', () => {
     }
     const store = useTodoStore()
     store.todos = [todo]
-    const snapshot = store.deleteTodo(1, false)
+    const snapshot = store.deleteTodo("test-uuid-1", false)
     expect(store.todos[0].deleted).toBe(true)
     store.deleteTodoRollback(snapshot)
     expect(store.todos[0].deleted).toBe(false)
@@ -176,7 +176,7 @@ describe('Todo Store', () => {
     const store = useTodoStore()
     store.todos = [
       {
-        id: 1,
+        uuid: "test-uuid-1",
         title: 'active',
         body: '',
         completed: false,
@@ -184,7 +184,7 @@ describe('Todo Store', () => {
         editing: false,
       },
       {
-        id: 2,
+        uuid: "test-uuid-2",
         title: 'completed',
         body: '',
         completed: true,
@@ -192,7 +192,7 @@ describe('Todo Store', () => {
         editing: false,
       },
       {
-        id: 3,
+        uuid: "test-uuid-3",
         title: 'deleted',
         body: '',
         completed: false,
@@ -201,7 +201,6 @@ describe('Todo Store', () => {
       },
     ]
 
-    // filteredTodos filters by status client-side
     store.filterType = 'all'
     expect(store.filteredTodos).toHaveLength(2)
 

@@ -16,7 +16,7 @@ const editForm = reactive({ username: '', phone: '', bio: '' })
 
 onMounted(async () => {
   try {
-    user.value = await api.getUser(Number(route.params.id))
+    user.value = await api.getUser(route.params.id as string)
     if (user.value) {
       editForm.username = user.value.username
       editForm.phone = user.value.phone
@@ -31,7 +31,7 @@ const save = async () => {
   errorMsg.value = ''
   successMsg.value = ''
   try {
-    user.value = await api.updateUser(Number(route.params.id), editForm)
+    user.value = await api.updateUser(route.params.id as string, editForm)
     successMsg.value = 'user updated.'
     isEditing.value = false
   } catch {
@@ -43,7 +43,7 @@ const deleting = ref(false)
 
 const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', value: boolean) => {
   try {
-    user.value = await api.updateUser(Number(route.params.id), { [field]: value })
+    user.value = await api.updateUser(route.params.id as string, { [field]: value })
   } catch {
     errorMsg.value = `failed to update ${field.replace('is_', '')}`
   }
@@ -52,7 +52,7 @@ const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', 
 const confirmDelete = async () => {
   deleting.value = true
   try {
-    await api.deleteUser(Number(route.params.id))
+    await api.deleteUser(route.params.id as string)
     navigateTo('/admin/users')
   } catch {
     errorMsg.value = 'failed to delete user'

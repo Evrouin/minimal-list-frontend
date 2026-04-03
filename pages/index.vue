@@ -75,7 +75,6 @@ onMounted(() => {
 })
 watch(isLg, (lg) => {
   if (!lg && showCreateDialog.value) {
-    // Desktop → mobile: transfer dialog state to TodoAdd
     if (todoAddRef.value) {
       todoAddRef.value.title = createTitle.value
       todoAddRef.value.body = createBody.value
@@ -88,7 +87,6 @@ watch(isLg, (lg) => {
     }
     cancelCreate()
   } else if (lg && todoAddRef.value) {
-    // Mobile (or expanded) → desktop: transfer TodoAdd state to dialog if has content
     const { title, body, imageFile, imagePreview, color, reminderAt, expanded } = todoAddRef.value
     if (title || body || imageFile || expanded) {
       createTitle.value = title

@@ -1,7 +1,6 @@
 import { vi } from 'vitest'
 import { ref } from 'vue'
 
-// Mock Nuxt auto-imports
 vi.stubGlobal('navigateTo', vi.fn())
 vi.stubGlobal('useRuntimeConfig', () => ({
   public: { authApiBase: 'http://localhost:8000/api/auth', googleClientId: '' },

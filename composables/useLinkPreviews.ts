@@ -18,7 +18,6 @@ export const useLinkPreviews = () => {
     const existingUrls = new Set(existing.map((p) => p.url))
     const newUrls = urls.filter((u) => !existingUrls.has(u) && !failed.has(u) && !fetching.value.has(u))
 
-    // Remove stale previews
     const updated = existing.filter((p) => urls.includes(p.url))
 
     const results = await Promise.allSettled(

@@ -12,7 +12,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     to.path.startsWith('/auth/reset-password') ||
     to.path.startsWith('/auth/unlock-account')
 
-  // Validate token by fetching profile if we have tokens but no user yet
   if (authStore.isAuthenticated && !authStore.user) {
     try {
       await authStore.fetchProfile()
@@ -27,7 +26,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/auth/login')
   }
 
-  // On native app, skip landing page — go straight to login
   if (to.path === '/' && !authStore.isAuthenticated) {
     try {
       const { Capacitor } = await import('@capacitor/core')

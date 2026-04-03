@@ -30,7 +30,6 @@ export const useApiFetch = () => {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
     if (!tokens?.refresh) throw new Error('no refresh token')
 
-    // If a refresh is already in progress, wait for it
     if (refreshPromise) return refreshPromise
 
     refreshPromise = (async () => {
@@ -98,7 +97,6 @@ export const useApiFetch = () => {
         }
       }
 
-      // Auto-refresh on 401, retry once
       if (status === 401 && tokens?.refresh && !opts._retried) {
         try {
           await refreshAccessToken()

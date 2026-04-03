@@ -24,7 +24,7 @@ export const useAdminApi = () => {
       if (search) params.set('search', search)
       return request<{ count: number; next: string | null; previous: string | null; results: User[] }>(`${base}/users/?${params}`)
     },
-    getUser: (id: number) => request<User>(`${base}/users/${id}/`),
+    getUser: (id: string) => request<User>(`${base}/users/${id}/`),
     createUser: (data: {
       email: string
       username: string
@@ -32,17 +32,17 @@ export const useAdminApi = () => {
       is_superuser?: boolean
       is_verified?: boolean
     }) => request<User>(`${base}/users/`, { method: 'POST', body: data }),
-    updateUser: (id: number, data: Partial<User>) =>
+    updateUser: (id: string, data: Partial<User>) =>
       request<User>(`${base}/users/${id}/`, { method: 'PATCH', body: data }),
-    deleteUser: (id: number) =>
+    deleteUser: (id: string) =>
       request(`${base}/users/${id}/`, { method: 'DELETE' }),
     getTodos: (page = 1, search?: string) => {
       const params = new URLSearchParams({ page: String(page) })
       if (search) params.set('search', search)
       return request<{ count: number; next: string | null; previous: string | null; results: AdminTodo[] }>(`${base}/notes/?${params}`)
     },
-    getTodo: (id: number) => request<AdminTodo>(`${base}/notes/${id}/`),
-    deleteTodo: (id: number) =>
+    getTodo: (id: string) => request<AdminTodo>(`${base}/notes/${id}/`),
+    deleteTodo: (id: string) =>
       request(`${base}/notes/${id}/`, { method: 'DELETE' }),
   }
 }

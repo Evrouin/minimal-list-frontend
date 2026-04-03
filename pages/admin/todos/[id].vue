@@ -11,7 +11,7 @@ const loadError = ref('')
 
 onMounted(async () => {
   try {
-    todo.value = await api.getTodo(Number(route.params.id))
+    todo.value = await api.getTodo(route.params.id as string)
   } catch {
     loadError.value = 'failed to load note'
   }
@@ -22,7 +22,7 @@ const deleting = ref(false)
 const confirmDelete = async () => {
   deleting.value = true
   try {
-    await api.deleteTodo(Number(route.params.id))
+    await api.deleteTodo(route.params.id as string)
     navigateTo('/admin/todos')
   } catch {
     loadError.value = 'failed to delete note'

@@ -27,7 +27,6 @@ const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 6))
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
 
-// Dialog edit state (lg+ screens)
 const dialogTodo = ref<Todo | null>(null)
 const dialogTitle = ref('')
 const dialogBody = ref('')
@@ -36,8 +35,8 @@ const dialogPinned = ref(false)
 const dialogColor = ref<import('~/types/todo').NoteColor>('default')
 const dialogReminderAt = ref<string | null>(null)
 const dialogExpanded = ref(false)
-const inlineEditorRefs = ref(new Map<number, { focus: () => void }>())
-const cardRefs = ref(new Map<number, Element>())
+const inlineEditorRefs = ref(new Map<string, { focus: () => void }>())
+const cardRefs = ref(new Map<string, Element>())
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
@@ -60,7 +59,6 @@ onUnmounted(() => {
 
 watch(isLg, (lg) => {
   if (lg && expandedEditId.value) {
-    // Mobile expanded → desktop dialog
     const todo = expandedTodo.value
     if (todo) {
       todo.editing = false
@@ -92,22 +90,21 @@ watch(isLg, (lg) => {
     dialogTodo.value = null
     dialogExpanded.value = false
     todo.editing = true
-    nextTick(() => inlineEditorRefs.value.get(todo.id)?.focus())
+    nextTick(() => inlineEditorRefs.value.get(todo.uuid)?.focus())
   }
 })
 
-// Multi-select (arrays for reactivity)
 const multiSelectMode = ref(false)
-const selectedIds = ref<number[]>([])
-const visibleCheckboxIds = ref<number[]>([])
-const hoverTimers = new Map<number, ReturnType<typeof setTimeout>>()
+const selectedIds = ref<string[]>([])
+const visibleCheckboxIds = ref<string[]>([])
+const hoverTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
-const isSelected = (id: number) => selectedIds.value.includes(id)
-const hasCheckbox = (id: number) => visibleCheckboxIds.value.includes(id)
+const isSelected = (id: string) => selectedIds.value.includes(id)
+const hasCheckbox = (id: string) => visibleCheckboxIds.value.includes(id)
 
-const isTodoEditing = (id: number) => filteredTodos.value.find((t) => t.id === id)?.editing
+const isTodoEditing = (id: string) => filteredTodos.value.find((t) => t.uuid === id)?.editing
 
-const startHover = (id: number) => {
+const startHover = (id: string) => {
   if (multiSelectMode.value || isTodoEditing(id)) return
   hoverTimers.set(
     id,
@@ -117,7 +114,7 @@ const startHover = (id: number) => {
   )
 }
 
-const endHover = (id: number) => {
+const endHover = (id: string) => {
   const t = hoverTimers.get(id)
   if (t) {
     clearTimeout(t)
@@ -131,7 +128,7 @@ const endHover = (id: number) => {
 const audioInteracting = ref(false)
 
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
-const startLongPress = (id: number) => {
+const startLongPress = (id: string) => {
   if (isTodoEditing(id) || audioInteracting.value) return
   longPressTimer = setTimeout(() => {
     if (audioInteracting.value) return
@@ -151,7 +148,7 @@ const endLongPress = () => {
 
 const MAX_SELECT = 50
 
-const toggleSelect = (id: number) => {
+const toggleSelect = (id: string) => {
   const idx = selectedIds.value.indexOf(id)
   if (idx >= 0) selectedIds.value.splice(idx, 1)
   else if (selectedIds.value.length < MAX_SELECT) selectedIds.value.push(id)
@@ -166,22 +163,22 @@ const exitMultiSelect = () => {
 }
 
 const allSelectedPinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
+  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.uuid))
   return sel.length > 0 && sel.every((t) => t.pinned)
 })
 const allSelectedUnpinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
+  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.uuid))
   return sel.length > 0 && sel.every((t) => !t.pinned)
 })
 const allSelectedDeleted = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.id))
+  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.uuid))
   return sel.length > 0 && sel.every((t) => t.deleted)
 })
 
 const { show: showToast, flushAll } = useUndoToast()
 
 const showBulkDeleteDialog = ref(false)
-const bulkDeleteIds = ref<number[]>([])
+const bulkDeleteIds = ref<string[]>([])
 
 const requestBulkDelete = () => {
   bulkDeleteIds.value = [...selectedIds.value]
@@ -233,41 +230,39 @@ const bulkPinSelected = (pinned: boolean) => {
   )
 }
 
-// Edit
-const editOriginals = ref(new Map<number, { title: string; body: string; audio: string | null | undefined }>())
+const editOriginals = ref(new Map<string, { title: string; body: string; audio: string | null | undefined }>())
 
 const handleCardClick = (todo: Todo) => {
   if (todo.editing) return
-  if (multiSelectMode.value) toggleSelect(todo.id)
+  if (multiSelectMode.value) toggleSelect(todo.uuid)
   else editTodo(todo)
 }
 
 const cancelAllEdits = () => {
   const current = filteredTodos.value.find((t) => t.editing)
   if (current) {
-    const orig = editOriginals.value.get(current.id)
+    const orig = editOriginals.value.get(current.uuid)
     if (orig) {
       current.title = orig.title
       current.body = orig.body
     }
     current.editing = false
-    editOriginals.value.delete(current.id)
+    editOriginals.value.delete(current.uuid)
   }
 }
 
 const editTodo = (todo: Todo) => {
   endLongPress()
-  endHover(todo.id)
-  // cancel any other inline edit
-  const current = filteredTodos.value.find((t) => t.editing && t.id !== todo.id)
+  endHover(todo.uuid)
+  const current = filteredTodos.value.find((t) => t.editing && t.uuid !== todo.uuid)
   if (current) {
-    const orig = editOriginals.value.get(current.id)
+    const orig = editOriginals.value.get(current.uuid)
     if (orig) {
       current.title = orig.title
       current.body = orig.body
     }
     current.editing = false
-    editOriginals.value.delete(current.id)
+    editOriginals.value.delete(current.uuid)
   }
   if (isLg.value) {
     dialogTodo.value = todo
@@ -279,12 +274,12 @@ const editTodo = (todo: Todo) => {
     dialogOriginalAudio.value = todo.audio ?? null
     nextTick(() => dialogEditorRef.value?.focus())
   } else {
-    editOriginals.value.set(todo.id, { title: todo.title, body: todo.body, audio: todo.audio ?? null })
+    editOriginals.value.set(todo.uuid, { title: todo.title, body: todo.body, audio: todo.audio ?? null })
     todo.editing = true
     nextTick(() => {
-      inlineEditorRefs.value.get(todo.id)?.focus()
+      inlineEditorRefs.value.get(todo.uuid)?.focus()
       setTimeout(() => {
-        cardRefs.value.get(todo.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        cardRefs.value.get(todo.uuid)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }, 220)
     })
   }
@@ -337,18 +332,18 @@ const saveDialogTodo = async () => {
   dialogExpanded.value = false
 }
 
-const editImageFiles = ref(new Map<number, File>())
-const editImagePreviews = ref(new Map<number, string>())
-const editAudioFiles = ref(new Map<number, File>())
-const editAudioPreviews = ref(new Map<number, string>())
+const editImageFiles = ref(new Map<string, File>())
+const editImagePreviews = ref(new Map<string, string>())
+const editAudioFiles = ref(new Map<string, File>())
+const editAudioPreviews = ref(new Map<string, string>())
 const expandedAudioRecording = ref(false)
 
 const onEditImageSelect = async (todo: Todo, e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (file) {
     const compressed = await compressImage(file)
-    editImageFiles.value.set(todo.id, compressed)
-    editImagePreviews.value.set(todo.id, URL.createObjectURL(compressed))
+    editImageFiles.value.set(todo.uuid, compressed)
+    editImagePreviews.value.set(todo.uuid, URL.createObjectURL(compressed))
   }
 }
 
@@ -356,18 +351,18 @@ const saveTodo = async (todo: Todo) => {
   if (!todo.title.trim()) return
   todo.editing = false
   todo.link_previews = await fetchPreviews(todo.body, todo.link_previews ?? [])
-  const imageFile = editImageFiles.value.get(todo.id)
-  const audioFile = editAudioFiles.value.get(todo.id)
-  editOriginals.value.delete(todo.id)
-  editImageFiles.value.delete(todo.id)
-  editImagePreviews.value.delete(todo.id)
-  editAudioFiles.value.delete(todo.id)
-  editAudioPreviews.value.delete(todo.id)
+  const imageFile = editImageFiles.value.get(todo.uuid)
+  const audioFile = editAudioFiles.value.get(todo.uuid)
+  editOriginals.value.delete(todo.uuid)
+  editImageFiles.value.delete(todo.uuid)
+  editImagePreviews.value.delete(todo.uuid)
+  editAudioFiles.value.delete(todo.uuid)
+  editAudioPreviews.value.delete(todo.uuid)
   await todoStore.updateTodo({ ...todo }, imageFile, audioFile)
 }
 
 const cancelEdit = (todo: Todo) => {
-  const orig = editOriginals.value.get(todo.id)
+  const orig = editOriginals.value.get(todo.uuid)
   if (orig) {
     todo.title = orig.title
     todo.body = orig.body
@@ -375,18 +370,18 @@ const cancelEdit = (todo: Todo) => {
   }
   todo.editing = false
   expandedEditId.value = null
-  editOriginals.value.delete(todo.id)
-  editImageFiles.value.delete(todo.id)
-  editImagePreviews.value.delete(todo.id)
-  editAudioFiles.value.delete(todo.id)
-  editAudioPreviews.value.delete(todo.id)
+  editOriginals.value.delete(todo.uuid)
+  editImageFiles.value.delete(todo.uuid)
+  editImagePreviews.value.delete(todo.uuid)
+  editAudioFiles.value.delete(todo.uuid)
+  editAudioPreviews.value.delete(todo.uuid)
 }
 
-const expandedEditId = ref<number | null>(null)
-const expandedTodo = computed(() => (expandedEditId.value ? todoStore.todos.find((t) => t.id === expandedEditId.value) : null))
+const expandedEditId = ref<string | null>(null)
+const expandedTodo = computed(() => (expandedEditId.value ? todoStore.todos.find((t) => t.uuid === expandedEditId.value) : null))
 
 const expandEdit = (todo: Todo) => {
-  expandedEditId.value = todo.id
+  expandedEditId.value = todo.uuid
 }
 
 const saveExpandedEdit = async () => {
@@ -404,20 +399,20 @@ const cancelExpandedEdit = () => {
 }
 
 const toggleCompletion = async (todo: Todo) => {
-  endHover(todo.id)
+  endHover(todo.uuid)
   tap()
-  await todoStore.toggleTodoCompletion(todo.id).catch(() => {})
+  await todoStore.toggleTodoCompletion(todo.uuid).catch(() => {})
 }
 const togglePin = async (todo: Todo) => {
-  endHover(todo.id)
+  endHover(todo.uuid)
   tap()
-  await todoStore.togglePin(todo.id).catch(() => {})
+  await todoStore.togglePin(todo.uuid).catch(() => {})
 }
 
 const dialogToggleCompletion = async () => {
   if (!dialogTodo.value) return
   tap()
-  await todoStore.toggleTodoCompletion(dialogTodo.value.id)
+  await todoStore.toggleTodoCompletion(dialogTodo.value.uuid)
   dialogTodo.value = null
 }
 const dialogTogglePin = () => {
@@ -440,11 +435,11 @@ const confirmDelete = () => {
   const todo = todoToDelete.value
   const isPermanent = todo.deleted
   tap()
-  const snapshot = todoStore.deleteTodo(todo.id, isPermanent)
+  const snapshot = todoStore.deleteTodo(todo.uuid, isPermanent)
   todoToDelete.value = null
   showToast(
     isPermanent ? 'note permanently deleted' : 'note deleted',
-    () => todoStore.deleteTodoCommit(todo.id),
+    () => todoStore.deleteTodoCommit(todo.uuid),
     () => {
       todoStore.deleteTodoRollback(snapshot)
     },
@@ -453,17 +448,17 @@ const confirmDelete = () => {
 
 const restoreTodo = (todo: Todo) => {
   tap()
-  const snapshot = todoStore.restoreTodo(todo.id)
+  const snapshot = todoStore.restoreTodo(todo.uuid)
   showToast(
     'note restored',
-    () => todoStore.restoreTodoCommit(todo.id),
+    () => todoStore.restoreTodoCommit(todo.uuid),
     () => {
       todoStore.restoreTodoRollback(snapshot)
     },
   )
 }
 
-const setEditorRef = (id: number, el: { focus: () => void }) => {
+const setEditorRef = (id: string, el: { focus: () => void }) => {
   inlineEditorRefs.value.set(id, el)
 }
 const isEditing = computed(() => filteredTodos.value.some((t) => t.editing))
@@ -526,10 +521,10 @@ defineExpose({ cancelAllEdits, isEditing })
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
         <div
           v-for="todo in pinnedTodos"
-          :key="todo.id"
+          :key="todo.uuid"
           :ref="
             (el) => {
-              if (el) cardRefs.set(todo.id, el as Element)
+              if (el) cardRefs.set(todo.uuid, el as Element)
             }
           "
           class="mb-5 inline-block w-full break-inside-avoid"
@@ -537,10 +532,10 @@ defineExpose({ cancelAllEdits, isEditing })
           <TodoCard
             :todo="todo"
             :pinned="true"
-            :selected="isSelected(todo.id)"
-            :show-checkbox="hasCheckbox(todo.id)"
+            :selected="isSelected(todo.uuid)"
+            :show-checkbox="hasCheckbox(todo.uuid)"
             :multi-select-mode="multiSelectMode"
-            :edit-image-preview="editImagePreviews.get(todo.id)"
+            :edit-image-preview="editImagePreviews.get(todo.uuid)"
             @click="handleCardClick(todo)"
             @toggle-pin="togglePin(todo)"
             @request-delete="requestDelete(todo)"
@@ -551,12 +546,12 @@ defineExpose({ cancelAllEdits, isEditing })
             @expand="expandEdit(todo)"
             @remove-audio="todo.audio = null"
             @audio-interact="(v: boolean) => audioInteracting = v"
-            @toggle-select="toggleSelect(todo.id)"
-            @start-hover="startHover(todo.id)"
-            @end-hover="endHover(todo.id)"
-            @start-long-press="startLongPress(todo.id)"
+            @toggle-select="toggleSelect(todo.uuid)"
+            @start-hover="startHover(todo.uuid)"
+            @end-hover="endHover(todo.uuid)"
+            @start-long-press="startLongPress(todo.uuid)"
             @end-long-press="endLongPress()"
-            @set-editor-ref="(el) => setEditorRef(todo.id, el)"
+            @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
             @image-select="(e: Event) => onEditImageSelect(todo, e)"
           />
         </div>
@@ -569,10 +564,10 @@ defineExpose({ cancelAllEdits, isEditing })
       <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
         <div
           v-for="todo in unpinnedTodos"
-          :key="todo.id"
+          :key="todo.uuid"
           :ref="
             (el) => {
-              if (el) cardRefs.set(todo.id, el as Element)
+              if (el) cardRefs.set(todo.uuid, el as Element)
             }
           "
           class="mb-5 inline-block w-full break-inside-avoid"
@@ -580,10 +575,10 @@ defineExpose({ cancelAllEdits, isEditing })
           <TodoCard
             :todo="todo"
             :pinned="false"
-            :selected="isSelected(todo.id)"
-            :show-checkbox="hasCheckbox(todo.id)"
+            :selected="isSelected(todo.uuid)"
+            :show-checkbox="hasCheckbox(todo.uuid)"
             :multi-select-mode="multiSelectMode"
-            :edit-image-preview="editImagePreviews.get(todo.id)"
+            :edit-image-preview="editImagePreviews.get(todo.uuid)"
             @click="handleCardClick(todo)"
             @toggle-pin="togglePin(todo)"
             @request-delete="requestDelete(todo)"
@@ -594,12 +589,12 @@ defineExpose({ cancelAllEdits, isEditing })
             @expand="expandEdit(todo)"
             @remove-audio="todo.audio = null"
             @audio-interact="(v: boolean) => audioInteracting = v"
-            @toggle-select="toggleSelect(todo.id)"
-            @start-hover="startHover(todo.id)"
-            @end-hover="endHover(todo.id)"
-            @start-long-press="startLongPress(todo.id)"
+            @toggle-select="toggleSelect(todo.uuid)"
+            @start-hover="startHover(todo.uuid)"
+            @end-hover="endHover(todo.uuid)"
+            @start-long-press="startLongPress(todo.uuid)"
             @end-long-press="endLongPress()"
-            @set-editor-ref="(el) => setEditorRef(todo.id, el)"
+            @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
             @image-select="(e: Event) => onEditImageSelect(todo, e)"
           />
         </div>
@@ -700,8 +695,8 @@ defineExpose({ cancelAllEdits, isEditing })
       >
         <!-- eslint-disable vue/no-mutating-props -->
         <ImagePreview
-          v-if="editImagePreviews.get(expandedTodo.id) || expandedTodo.thumbnail || expandedTodo.image"
-          :src="editImagePreviews.get(expandedTodo.id) || expandedTodo.thumbnail || expandedTodo.image!"
+          v-if="editImagePreviews.get(expandedTodo.uuid) || expandedTodo.thumbnail || expandedTodo.image"
+          :src="editImagePreviews.get(expandedTodo.uuid) || expandedTodo.thumbnail || expandedTodo.image!"
           :padding="5"
         />
         <input
@@ -720,8 +715,8 @@ defineExpose({ cancelAllEdits, isEditing })
               @recorded="
                 (f, u) => {
                   if (expandedTodo) {
-                    editAudioFiles.set(expandedTodo.id, f)
-                    editAudioPreviews.set(expandedTodo.id, u)
+                    editAudioFiles.set(expandedTodo.uuid, f)
+                    editAudioPreviews.set(expandedTodo.uuid, u)
                   }
                 }
               "

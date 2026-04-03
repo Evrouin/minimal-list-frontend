@@ -9,7 +9,7 @@ export interface LinkPreview {
 }
 
 export interface Todo {
-  id: number
+  uuid: string
   title: string
   body: string
   image?: string

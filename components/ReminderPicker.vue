@@ -89,7 +89,6 @@ const clear = () => {
 const hasReminder = computed(() => !!model.value)
 const isOverdue = computed(() => model.value && new Date(model.value).getTime() <= Date.now())
 
-// Time combo-box state
 const showHourList = ref(false)
 const showMinuteList = ref(false)
 const ampm = ref(selectedHour.value >= 12 ? 'PM' : 'AM')

@@ -1,6 +1,14 @@
 import { Capacitor } from '@capacitor/core'
 import type { Todo } from '~/types'
 
+const uuidToInt = (uuid: string) => {
+  let hash = 0
+  for (let i = 0; i < uuid.length; i++) {
+    hash = ((hash << 5) - hash + uuid.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash)
+}
+
 export const useReminders = () => {
   const schedule = async (todo: Todo) => {
     if (!todo.reminder_at) return
@@ -11,7 +19,7 @@ export const useReminders = () => {
       await LocalNotifications.schedule({
         notifications: [
           {
-            id: todo.id,
+            id: uuidToInt(todo.uuid),
             title: todo.title,
             body: todo.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
             schedule: { at: new Date(todo.reminder_at) },
@@ -21,10 +29,10 @@ export const useReminders = () => {
     }
   }
 
-  const cancel = async (todoId: number) => {
+  const cancel = async (todoUuid: string) => {
     if (Capacitor.isNativePlatform()) {
       const { LocalNotifications } = await import('@capacitor/local-notifications')
-      await LocalNotifications.cancel({ notifications: [{ id: todoId }] })
+      await LocalNotifications.cancel({ notifications: [{ id: uuidToInt(todoUuid) }] })
     }
   }
 
@@ -33,17 +41,15 @@ export const useReminders = () => {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
     await LocalNotifications.requestPermissions()
     const pending = await LocalNotifications.getPending()
-    // Cancel all existing
     if (pending.notifications.length) {
       await LocalNotifications.cancel({ notifications: pending.notifications })
     }
-    // Reschedule future reminders
     const now = Date.now()
     const upcoming = todos.filter((t) => t.reminder_at && new Date(t.reminder_at).getTime() > now && !t.deleted)
     if (upcoming.length) {
       await LocalNotifications.schedule({
         notifications: upcoming.map((t) => ({
-          id: t.id,
+          id: uuidToInt(t.uuid),
           title: t.title,
           body: t.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
           schedule: { at: new Date(t.reminder_at!) },

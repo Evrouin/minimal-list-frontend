@@ -87,8 +87,8 @@ const confirmDelete = async () => {
   if (!userToDelete.value) return
   deleting.value = true
   try {
-    await api.deleteUser(userToDelete.value.id)
-    users.value = users.value.filter((u) => u.id !== userToDelete.value!.id)
+    await api.deleteUser(userToDelete.value.uuid)
+    users.value = users.value.filter((u) => u.uuid !== userToDelete.value!.uuid)
     totalCount.value--
     showDeleteDialog.value = false
   } catch {
@@ -121,9 +121,9 @@ const confirmDelete = async () => {
       <div class="flex min-h-[520px] flex-col gap-3 md:hidden">
         <div
           v-for="u in sortedUsers"
-          :key="u.id"
+          :key="u.uuid"
           class="cursor-pointer rounded-lg bg-gray-700 p-4 transition-colors hover:bg-gray-600"
-          @click="navigateTo(`/admin/users/${u.id}`)"
+          @click="navigateTo(`/admin/users/${u.uuid}`)"
         >
           <div class="mb-2 flex items-start justify-between">
             <div class="min-w-0 flex-1">
@@ -183,9 +183,9 @@ const confirmDelete = async () => {
           <tbody>
             <tr
               v-for="u in sortedUsers"
-              :key="u.id"
+              :key="u.uuid"
               class="cursor-pointer border-t border-white/5 transition-colors hover:bg-white/5"
-              @click="navigateTo(`/admin/users/${u.id}`)"
+              @click="navigateTo(`/admin/users/${u.uuid}`)"
             >
               <td class="w-64 truncate px-4 py-3">{{ u.email }}</td>
               <td class="px-4 py-3 text-white/70">{{ u.username || '—' }}</td>

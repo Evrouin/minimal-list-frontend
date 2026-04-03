@@ -80,7 +80,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const updateTodo = async (updatedTodo: Todo, imageFile?: File, audioFile?: File) => {
-    const index = todos.value.findIndex((t) => t.id === updatedTodo.id)
+    const index = todos.value.findIndex((t) => t.uuid === updatedTodo.uuid)
     if (index === -1) return
     const previous = { ...todos.value[index] }
     todos.value[index] = { ...updatedTodo, editing: false }
@@ -100,98 +100,97 @@ export const useTodoStore = defineStore('todo', () => {
         if (link_previews?.length) fd.append('link_previews', JSON.stringify(link_previews))
         payload = fd
       }
-      const response = await api.updateTodo(updatedTodo.id, payload)
+      const response = await api.updateTodo(updatedTodo.uuid, payload)
       todos.value[index] = { ...response.data, editing: false }
       if (response.data.reminder_at) scheduleReminder(response.data)
-      else cancelReminder(updatedTodo.id)
+      else cancelReminder(updatedTodo.uuid)
     } catch {
       todos.value[index] = previous
       throw new Error('update failed')
     }
   }
 
-  const toggleTodoCompletion = async (id: number) => {
-    const todo = todos.value.find((t) => t.id === id)
+  const toggleTodoCompletion = async (id: string) => {
+    const todo = todos.value.find((t) => t.uuid === id)
     if (todo) {
       await updateTodo({ ...todo, completed: !todo.completed })
     }
   }
 
-  const togglePin = async (id: number) => {
-    const todo = todos.value.find((t) => t.id === id)
+  const togglePin = async (id: string) => {
+    const todo = todos.value.find((t) => t.uuid === id)
     if (todo) {
       await updateTodo({ ...todo, pinned: !todo.pinned })
     }
   }
 
-  // Bulk actions split into apply (optimistic) / commit (API) / rollback
-  const bulkDeleteApply = (ids: number[]) => {
+  const bulkDeleteApply = (ids: string[]) => {
     const snapshot = [...todos.value]
     todos.value = todos.value
-      .filter((t) => !(ids.includes(t.id) && t.deleted))
-      .map((t) => (ids.includes(t.id) ? { ...t, deleted: true } : t))
+      .filter((t) => !(ids.includes(t.uuid) && t.deleted))
+      .map((t) => (ids.includes(t.uuid) ? { ...t, deleted: true } : t))
     return snapshot
   }
-  const bulkDeleteCommit = async (ids: number[]) => {
+  const bulkDeleteCommit = async (ids: string[]) => {
     await api.bulkDelete(ids)
   }
   const bulkDeleteRollback = (snapshot: Todo[]) => {
     todos.value = snapshot
   }
 
-  const bulkPinApply = (ids: number[], pinned: boolean) => {
+  const bulkPinApply = (ids: string[], pinned: boolean) => {
     const snapshot = [...todos.value]
     todos.value = todos.value.map((t) =>
-      ids.includes(t.id) ? { ...t, pinned } : t
+      ids.includes(t.uuid) ? { ...t, pinned } : t
     )
     return snapshot
   }
-  const bulkPinCommit = async (ids: number[], pinned: boolean) => {
+  const bulkPinCommit = async (ids: string[], pinned: boolean) => {
     await api.bulkPin(ids, pinned)
   }
   const bulkPinRollback = (snapshot: Todo[]) => {
     todos.value = snapshot
   }
 
-  const deleteTodoApply = (id: number, isPermanentDelete: boolean) => {
+  const deleteTodoApply = (id: string, isPermanentDelete: boolean) => {
     const snapshot = [...todos.value]
     if (isPermanentDelete) {
-      todos.value = todos.value.filter((t) => t.id !== id)
+      todos.value = todos.value.filter((t) => t.uuid !== id)
     } else {
-      const index = todos.value.findIndex((t) => t.id === id)
+      const index = todos.value.findIndex((t) => t.uuid === id)
       if (index !== -1)
         todos.value[index] = { ...todos.value[index], deleted: true }
     }
     return snapshot
   }
-  const deleteTodoCommit = async (id: number) => {
+  const deleteTodoCommit = async (id: string) => {
     await api.deleteTodo(id)
   }
   const deleteTodoRollback = (snapshot: Todo[]) => {
     todos.value = snapshot
   }
 
-  const restoreTodoApply = (id: number) => {
+  const restoreTodoApply = (id: string) => {
     const snapshot = [...todos.value]
-    const index = todos.value.findIndex((t) => t.id === id)
+    const index = todos.value.findIndex((t) => t.uuid === id)
     if (index !== -1) todos.value[index] = { ...todos.value[index], deleted: false }
     return snapshot
   }
-  const restoreTodoCommit = async (id: number) => {
+  const restoreTodoCommit = async (id: string) => {
     await api.updateTodo(id, { deleted: false })
   }
   const restoreTodoRollback = (snapshot: Todo[]) => {
     todos.value = snapshot
   }
 
-  const bulkRestoreApply = (ids: number[]) => {
+  const bulkRestoreApply = (ids: string[]) => {
     const snapshot = [...todos.value]
     todos.value = todos.value.map((t) =>
-      ids.includes(t.id) ? { ...t, deleted: false } : t
+      ids.includes(t.uuid) ? { ...t, deleted: false } : t
     )
     return snapshot
   }
-  const bulkRestoreCommit = async (ids: number[]) => {
+  const bulkRestoreCommit = async (ids: string[]) => {
     await api.bulkRestore(ids)
   }
   const bulkRestoreRollback = (snapshot: Todo[]) => {

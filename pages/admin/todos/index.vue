@@ -86,8 +86,8 @@ const confirmDelete = async () => {
   if (!todoToDelete.value) return
   deleting.value = true
   try {
-    await api.deleteTodo(todoToDelete.value.id)
-    todos.value = todos.value.filter((t) => t.id !== todoToDelete.value!.id)
+    await api.deleteTodo(todoToDelete.value.uuid)
+    todos.value = todos.value.filter((t) => t.uuid !== todoToDelete.value!.uuid)
     totalCount.value--
     showDeleteDialog.value = false
   } catch {
@@ -119,9 +119,9 @@ const confirmDelete = async () => {
       <div class="flex min-h-[520px] flex-col gap-3 md:hidden">
         <div
           v-for="todo in sortedTodos"
-          :key="todo.id"
+          :key="todo.uuid"
           class="cursor-pointer rounded-lg bg-gray-700 p-4 transition-colors hover:bg-gray-600"
-          @click="navigateTo(`/admin/todos/${todo.id}`)"
+          @click="navigateTo(`/admin/todos/${todo.uuid}`)"
         >
           <div class="mb-2 flex items-start justify-between">
             <div class="min-w-0 flex-1">
@@ -169,9 +169,9 @@ const confirmDelete = async () => {
           <tbody>
             <tr
               v-for="todo in sortedTodos"
-              :key="todo.id"
+              :key="todo.uuid"
               class="cursor-pointer border-t border-white/5 transition-colors hover:bg-white/5"
-              @click="navigateTo(`/admin/todos/${todo.id}`)"
+              @click="navigateTo(`/admin/todos/${todo.uuid}`)"
             >
               <td class="max-w-64 truncate px-4 py-3 lowercase">{{ todo.title }}</td>
               <td class="max-w-48 truncate px-4 py-3 text-white/70">{{ todo.user_email }}</td>

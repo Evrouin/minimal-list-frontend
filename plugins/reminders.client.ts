@@ -17,10 +17,10 @@ export default defineNuxtPlugin(() => {
       if (
         todo.reminder_at &&
         !todo.deleted &&
-        !firedIds.has(todo.id) &&
+        !firedIds.has(todo.uuid) &&
         new Date(todo.reminder_at).getTime() <= now
       ) {
-        firedIds.add(todo.id)
+        firedIds.add(todo.uuid)
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(todo.title, {
             body: todo.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
