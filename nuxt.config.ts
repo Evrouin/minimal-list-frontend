@@ -24,6 +24,10 @@ export default defineNuxtConfig({
         { rel: 'canonical', href: 'https://minimal-list.evrouin.com' },
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
       ],
+      script: [
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-JHQMQRX3QT', async: true },
+        { innerHTML: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-JHQMQRX3QT')" },
+      ],
     },
   },
   modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/eslint', '@pinia/nuxt', '@nuxt/fonts'],
