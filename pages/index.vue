@@ -29,7 +29,7 @@ watch(scrolledDown, () => {
 const handleFilter = async (filter: (typeof filterOptions)[number]) => {
   await flushAll()
   await todoStore.changeFilter(filter)
-  scrollContainer.value?.scrollTo({ top: 0 })
+  window.scrollTo({ top: 0 })
   scrolledDown.value = false
   lastScrollTop = 0
   router.replace({ query: { filter } })
@@ -41,9 +41,13 @@ onMounted(() => {
     todoStore.changeFilter(saved as (typeof filterOptions)[number])
   }
   todoStore.loadTodos()
+  window.addEventListener('scroll', onScroll)
 })
 
-const scrollContainer = ref<HTMLElement | null>(null)
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
+
 const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean } | null>(null)
 const todoAddRef = ref<{
   title: string
@@ -203,10 +207,8 @@ const cancelCreate = () => {
 }
 const showScrollTop = ref(false)
 const onScroll = () => {
-  const el = scrollContainer.value
-  if (!el) return
-  const top = el.scrollTop
-  const scrollable = el.scrollHeight > el.clientHeight * 1.5
+  const top = window.scrollY
+  const scrollable = document.documentElement.scrollHeight > window.innerHeight * 1.5
   if (!scrollLock && scrollable && Math.abs(top - lastScrollTop) > 30) {
     scrolledDown.value = top > lastScrollTop && top > 150
     lastScrollTop = top
@@ -216,12 +218,12 @@ const onScroll = () => {
   }
   showScrollTop.value = top > 1000
   if (!todoStore.hasMore || todoStore.loadingMore) return
-  if (el.scrollTop > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
     todoStore.loadMore()
   }
 }
 const scrollToTop = () => {
-  scrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const { toasts, undo: undoToast } = useUndoToast()
@@ -285,7 +287,7 @@ const { toasts, undo: undoToast } = useUndoToast()
   </div>
 
   <!-- Notes app for authenticated users -->
-  <div v-else class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10">
+  <div v-else class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-10">
     <Transition name="slide">
       <div v-if="!online" class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase">
         you're offline — changes won't sync
@@ -330,9 +332,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       </div>
     </Transition>
     <div
-      ref="scrollContainer"
-      class="scrollbar-hidden w-full max-w-lg overflow-y-auto px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
-      @scroll="onScroll"
+      class="w-full max-w-lg px-4 pb-10 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
     >
       <TodoList ref="todoListRef" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
