@@ -30,7 +30,7 @@ const handleRegister = async () => {
 
   try {
     const res = (await authStore.register(form)) as { message?: string }
-    successMsg.value = res.message?.toLowerCase() || 'registration successful.'
+    successMsg.value = (res.message?.toLowerCase() || 'registered successfully') + '. check your email to verify your account.'
   } catch {
     errorMsg.value = 'registration failed. try again.'
   }
