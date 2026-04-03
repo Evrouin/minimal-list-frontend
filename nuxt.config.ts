@@ -25,6 +25,7 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
       ],
       script: [
+        { src: 'https://cdn.consentmanager.net/delivery/autoblocking/399eb40b22089.js', 'data-cmp-ab': '1', 'data-cmp-host': 'a.delivery.consentmanager.net', 'data-cmp-cdn': 'cdn.consentmanager.net', 'data-cmp-codesrc': '16' },
         { src: 'https://www.googletagmanager.com/gtag/js?id=G-JHQMQRX3QT', async: true },
         { innerHTML: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-JHQMQRX3QT')" },
       ],
