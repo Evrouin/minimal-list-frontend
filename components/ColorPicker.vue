@@ -27,6 +27,7 @@ const pick = (color: NoteColor) => {
       class="h-5 w-5 cursor-pointer rounded-full border border-white/20"
       :style="{ backgroundColor: currentHex }"
       @click.stop="open = !open"
+      @mousedown.prevent
     />
     <Transition name="fade">
       <div v-show="open" class="ml-1 flex items-center gap-1">
@@ -38,6 +39,7 @@ const pick = (color: NoteColor) => {
           :class="model === c.name ? 'border-white' : 'border-white/20'"
           :style="{ backgroundColor: c.hex }"
           @click.stop="pick(c.name)"
+          @mousedown.prevent
         />
       </div>
     </Transition>

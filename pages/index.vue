@@ -60,6 +60,13 @@ const todoAddRef = ref<{
   clearImage: () => void
 } | null>(null)
 const showCreateDialog = ref(false)
+const showMobileAdd = ref(false)
+const mobileAddTitleRef = ref<HTMLInputElement>()
+const mobileAddEditorRef = ref<{ focus: () => void } | null>(null)
+
+watch(showMobileAdd, (val) => {
+  if (val) nextTick(() => mobileAddTitleRef.value?.focus())
+})
 const createTitle = ref('')
 const createBody = ref('')
 const createEditorRef = ref<{ focus: () => void } | null>(null)
@@ -205,6 +212,20 @@ const cancelCreate = () => {
   createImagePreview.value = ''
   clearCreateAudio()
 }
+
+const mobileAddSubmit = () => createDialogSubmit().then(() => { showMobileAdd.value = false })
+
+const cancelMobileAdd = () => {
+  showMobileAdd.value = false
+  createTitle.value = ''
+  createBody.value = ''
+  createColor.value = 'default'
+  createReminderAt.value = null
+  createImageFile.value = null
+  createImagePreview.value = ''
+  clearCreateAudio()
+}
+
 const showScrollTop = ref(false)
 const onScroll = () => {
   const top = window.scrollY
@@ -311,12 +332,7 @@ const { toasts, undo: undoToast } = useUndoToast()
           </NuxtLink>
         </div>
       </PageHeader>
-      <!-- Inline form on mobile -->
-      <Transition name="slide-up">
-        <div v-if="!mobileHidden" class="lg:hidden" @click="todoListRef?.cancelAllEdits()">
-          <TodoAdd ref="todoAddRef" />
-        </div>
-      </Transition>
+      <!-- Mobile add button is now a FAB -->
     </div>
     <Transition name="slide-up">
       <div v-if="!mobileHidden" class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
@@ -354,17 +370,94 @@ const { toasts, undo: undoToast } = useUndoToast()
       </TransitionGroup>
     </div>
 
-    <!-- Scroll to top -->
+    <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 lg:hidden">
+      <button
+        class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
+        @click="showMobileAdd = true"
+      >
+        <Icon name="uil:plus" class="h-5 w-5" />
+      </button>
+      <Transition name="fade">
+        <button
+          v-if="showScrollTop"
+          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
+          @click="scrollToTop"
+        >
+          <Icon name="uil:arrow-up" class="h-5 w-5" />
+        </button>
+      </Transition>
+    </div>
+
+    <!-- Scroll to top (desktop) -->
     <Transition name="fade">
       <button
         v-if="showScrollTop"
-        class="fixed right-6 bottom-6 z-40 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
-        title="Back to top"
+        class="fixed right-6 bottom-6 z-40 hidden h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white lg:flex"
         @click="scrollToTop"
       >
         <Icon name="uil:arrow-up" class="h-5 w-5" />
       </button>
     </Transition>
+
+    <!-- Mobile add dialog -->
+    <Teleport to="body">
+      <div v-if="showMobileAdd" class="fixed inset-0 z-50 flex flex-col bg-gray-800 p-3">
+        <div class="mb-3 px-2">
+          <span class="text-lg font-bold text-white lowercase">minimal list</span>
+        </div>
+        <form
+          class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
+          :class="noteColors[createColor]?.bg || 'bg-gray-700'"
+          @submit.prevent="mobileAddSubmit"
+          @click.self="mobileAddEditorRef?.focus()"
+        >
+          <input
+            ref="mobileAddTitleRef"
+            v-model="createTitle"
+            type="text"
+            placeholder="title"
+            maxlength="100"
+            class="border-b border-white/20 bg-transparent text-sm placeholder-white/60 focus:outline-none"
+            @input="(e) => { (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.toLowerCase(); createTitle = (e.target as HTMLInputElement).value }"
+          >
+          <div class="flex-1 overflow-y-auto" @click="mobileAddEditorRef?.focus()">
+            <LazyTiptapEditor ref="mobileAddEditorRef" v-model="createBody" placeholder="body" />
+          </div>
+          <AudioPlayer v-if="createAudioPreview" :src="createAudioPreview" removable @remove="clearCreateAudio" />
+          <div class="flex items-center justify-between">
+            <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
+            <ColorPicker v-else v-model="createColor" />
+            <div class="flex items-center gap-1">
+              <ReminderPicker v-model="createReminderAt" />
+              <AudioRecorder @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }" @update:recording="(v) => (createAudioRecording = v)" />
+              <template v-if="!createAudioRecording">
+                <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
+                  <Icon name="uil:image" class="text-xs" />
+                  <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
+                </label>
+                <button
+                  type="button"
+                  class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"
+                  @mousedown.prevent
+                  @click="cancelMobileAdd"
+                >
+                  cancel
+                </button>
+                <button
+                  type="submit"
+                  class="cursor-pointer rounded px-2 py-0.5 text-xs"
+                  :class="createTitle.trim() && (hasCreateBody || createImageFile || createAudioFile) ? 'text-white/60 hover:text-white' : 'text-white/20'"
+                  :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile && !createAudioFile)"
+                  @mousedown.prevent
+                >
+                  add
+                </button>
+              </template>
+            </div>
+          </div>
+        </form>
+      </div>
+    </Teleport>
 
     <!-- Create dialog (lg+ screens) -->
     <ModalOverlay :show="showCreateDialog" tabindex="0" @keydown.esc="cancelCreate">

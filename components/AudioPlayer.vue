@@ -72,7 +72,7 @@ const seek = (e: MouseEvent | TouchEvent) => {
       @ended="onEnded"
       @error="onAudioError"
     />
-    <button type="button" class="cursor-pointer text-white/60 hover:text-white" @click.stop.prevent="toggle">
+    <button type="button" class="cursor-pointer text-white/60 hover:text-white" @mousedown.prevent @click.stop.prevent="toggle">
       <Icon :name="playing ? 'uil:pause' : 'uil:play'" class="text-sm" />
     </button>
     <div class="flex flex-1 cursor-pointer items-center gap-2" @click="seek" @touchstart.passive="seek">
@@ -81,7 +81,7 @@ const seek = (e: MouseEvent | TouchEvent) => {
       </div>
     </div>
     <span class="shrink-0 text-xs text-white/30">{{ formatTime(currentTime) }} / {{ formatTime(totalDuration) }}</span>
-    <button v-if="props.removable" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @click="emit('remove')">
+    <button v-if="props.removable" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @mousedown.prevent @click="emit('remove')">
       ✕
     </button>
   </div>

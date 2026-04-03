@@ -83,6 +83,7 @@ const formatTime = (s: number) => {
       recording && 'inline-flex items-center',
     ]"
     :disabled="loading"
+    @mousedown.prevent
     @click="toggle"
   >
     <Icon v-if="loading" name="uil:spinner-alt" class="animate-spin text-xs" />
