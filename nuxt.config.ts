@@ -6,6 +6,26 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   devtools: { enabled: true },
+  app: {
+    head: {
+      title: 'minimal list',
+      meta: [
+        { name: 'description', content: 'a minimalist note-taking app with rich text editing, voice recording and reminders' },
+        { name: 'theme-color', content: '#1f2937' },
+        { property: 'og:title', content: 'Minimal List' },
+        { property: 'og:description', content: 'a minimalist note-taking app with rich text editing, voice recording and reminders' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://minimal-list.evrouin.com' },
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: 'Minimal List' },
+        { name: 'twitter:description', content: 'a minimalist note-taking app with rich text editing, voice recording and reminders' },
+      ],
+      link: [
+        { rel: 'canonical', href: 'https://minimal-list.evrouin.com' },
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
+      ],
+    },
+  },
   modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/eslint', '@pinia/nuxt', '@nuxt/fonts'],
   icon: {
     clientBundle: {
