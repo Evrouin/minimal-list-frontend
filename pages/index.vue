@@ -2,8 +2,10 @@
 import { useTodoStore } from '~/stores/todos'
 import { useAuthStore } from '~/stores/auth'
 
-const todoStore = useTodoStore()
 const authStore = useAuthStore()
+const isLoggedIn = computed(() => authStore.isAuthenticated)
+
+const todoStore = useTodoStore()
 const route = useRoute()
 const router = useRouter()
 const { online } = useOnline()
@@ -228,7 +230,60 @@ const { toasts, undo: undoToast } = useUndoToast()
 </script>
 
 <template>
-  <div class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10">
+  <!-- Landing page for unauthenticated users -->
+  <div v-if="!isLoggedIn" class="flex min-h-screen flex-col bg-gray-800">
+    <nav class="flex items-center justify-between px-6 py-4">
+      <span class="text-lg font-bold text-white lowercase">minimal list</span>
+    </nav>
+    <div class="flex flex-1 flex-col items-center justify-center px-6 text-center">
+      <h1 class="mb-4 text-3xl font-bold text-white lowercase sm:text-4xl">notes, simplified.</h1>
+      <p class="mb-8 max-w-md text-sm leading-relaxed text-white/40">a minimalist note-taking app with rich text editing, voice recording, reminders, and a dark theme that stays out of your way.</p>
+      <div class="flex gap-3">
+        <NuxtLink to="/auth/register" class="rounded-lg bg-gray-600 px-6 py-2.5 text-xs font-medium text-white lowercase transition-colors hover:bg-gray-500">get started</NuxtLink>
+        <NuxtLink to="/auth/login" class="rounded-lg border border-white/10 px-6 py-2.5 text-xs text-white/60 lowercase transition-colors hover:border-white/20 hover:text-white">login</NuxtLink>
+      </div>
+    </div>
+    <div class="px-6 pb-20 pt-8">
+      <div class="mx-auto grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-lg bg-gray-700 p-5">
+          <Icon name="uil:edit" class="mb-2 text-lg text-white/40" />
+          <p class="text-xs font-medium text-white">rich text editing</p>
+          <p class="mt-1 text-xs text-white/30">bold, lists, task lists, and more with a full editor.</p>
+        </div>
+        <div class="rounded-lg bg-gray-700 p-5">
+          <Icon name="uil:microphone" class="mb-2 text-lg text-white/40" />
+          <p class="text-xs font-medium text-white">voice notes</p>
+          <p class="mt-1 text-xs text-white/30">record audio directly in your notes with playback.</p>
+        </div>
+        <div class="rounded-lg bg-gray-700 p-5">
+          <Icon name="uil:bell" class="mb-2 text-lg text-white/40" />
+          <p class="text-xs font-medium text-white">reminders</p>
+          <p class="mt-1 text-xs text-white/30">set date and time reminders with notifications.</p>
+        </div>
+        <div class="rounded-lg bg-gray-700 p-5">
+          <Icon name="uil:link" class="mb-2 text-lg text-white/40" />
+          <p class="text-xs font-medium text-white">link previews</p>
+          <p class="mt-1 text-xs text-white/30">paste a url and see a preview card automatically.</p>
+        </div>
+        <div class="rounded-lg bg-gray-700 p-5">
+          <Icon name="uil:image" class="mb-2 text-lg text-white/40" />
+          <p class="text-xs font-medium text-white">images & colors</p>
+          <p class="mt-1 text-xs text-white/30">attach images and color-code your notes.</p>
+        </div>
+        <div class="rounded-lg bg-gray-700 p-5">
+          <Icon name="uil:mobile-android" class="mb-2 text-lg text-white/40" />
+          <p class="text-xs font-medium text-white">android app</p>
+          <p class="mt-1 text-xs text-white/30">native android app with haptics and notifications.</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 pb-6 text-center">
+      <p class="text-xs text-white/20">built by evrouin</p>
+    </div>
+  </div>
+
+  <!-- Notes app for authenticated users -->
+  <div v-else class="flex h-screen w-screen flex-col items-center bg-gray-800 pt-10">
     <Transition name="slide">
       <div v-if="!online" class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase">
         you're offline — changes won't sync

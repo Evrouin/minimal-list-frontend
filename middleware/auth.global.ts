@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const authStore = useAuthStore()
-  const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/maintenance']
+  const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/maintenance']
   const isPublic =
     publicPaths.includes(to.path) ||
     to.path.startsWith('/auth/verify-email') ||
