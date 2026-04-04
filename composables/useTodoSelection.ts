@@ -34,8 +34,10 @@ export function useTodoSelection(options: UseTodoSelectionOptions) {
     if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
   }
 
+  const isTouchDevice = () => 'ontouchstart' in window
+
   const startHover = (id: string) => {
-    if (isDragging.value || multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
+    if (isTouchDevice() || isDragging.value || multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
     hoverTimers.set(id, setTimeout(() => {
       if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value && !isDragging.value) visibleCheckboxIds.value.push(id)
     }, 800))
@@ -78,6 +80,7 @@ export function useTodoSelection(options: UseTodoSelectionOptions) {
 
   const endLongPress = () => {
     if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+    if (!multiSelectMode.value) visibleCheckboxIds.value = []
   }
 
   const allSelectedPinned = computed(() => {
