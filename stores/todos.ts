@@ -13,6 +13,10 @@ export const useTodoStore = defineStore('todo', () => {
   const api = useTodoApi()
   const pendingReorder = ref<string[] | null>(null)
   const pendingReorderKey = 'todo-order-pending'
+  const refreshing = ref(false)
+
+  type FilterKey = (typeof filterOptions)[number]
+  const cache = new Map<FilterKey, { todos: Todo[], cursor: string | null }>()
 
   const hasMore = computed(() => !!nextCursor.value)
 
@@ -39,11 +43,19 @@ export const useTodoStore = defineStore('todo', () => {
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
         : null
+      cache.set(filterType.value, { todos: [...todos.value], cursor: nextCursor.value })
       syncReminders(todos.value)
     } finally {
       loading.value = false
       initialLoad.value = false
     }
+  }
+
+  const refreshTodos = async () => {
+    refreshing.value = true
+    cache.delete(filterType.value)
+    await loadTodos()
+    refreshing.value = false
   }
 
   const loadMore = async () => {
@@ -57,6 +69,7 @@ export const useTodoStore = defineStore('todo', () => {
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
         : null
+      cache.set(filterType.value, { todos: [...todos.value], cursor: nextCursor.value })
     } finally {
       loadingMore.value = false
     }
@@ -64,8 +77,17 @@ export const useTodoStore = defineStore('todo', () => {
 
   const changeFilter = async (type: (typeof filterOptions)[number]) => {
     if (filterType.value === type) return
+    const cached = cache.get(type)
+    if (cached) {
+      todos.value = [...cached.todos]
+      nextCursor.value = cached.cursor
+      filterType.value = type
+      console.log(`[cache hit] ${type}: ${cached.todos.length} todos, filtered: ${filteredTodos.value.length}`)
+      return
+    }
     filterType.value = type
     await loadTodos()
+    console.log(`[cache miss] ${type}: ${todos.value.length} todos, filtered: ${filteredTodos.value.length}`)
   }
 
   const filteredTodos = computed(() => {
@@ -89,6 +111,7 @@ export const useTodoStore = defineStore('todo', () => {
       })
     }
     todos.value.unshift(newTodo)
+    invalidateOtherCaches()
     if (newTodo.reminder_at) scheduleReminder(newTodo)
   }
 
@@ -117,6 +140,7 @@ export const useTodoStore = defineStore('todo', () => {
       }
       const response = await api.updateTodo(updatedTodo.uuid, payload)
       todos.value[index] = { ...response.data, editing: false }
+      invalidateOtherCaches()
       if (response.data.reminder_at) scheduleReminder(response.data)
       else cancelReminder(updatedTodo.uuid)
     } catch {
@@ -144,6 +168,7 @@ export const useTodoStore = defineStore('todo', () => {
     todos.value = todos.value
       .filter((t) => !(ids.includes(t.uuid) && t.deleted))
       .map((t) => (ids.includes(t.uuid) ? { ...t, deleted: true } : t))
+    invalidateOtherCaches()
     return snapshot
   }
   const bulkDeleteCommit = async (ids: string[]) => {
@@ -158,6 +183,7 @@ export const useTodoStore = defineStore('todo', () => {
     todos.value = todos.value.map((t) =>
       ids.includes(t.uuid) ? { ...t, pinned } : t
     )
+    invalidateOtherCaches()
     return snapshot
   }
   const bulkPinCommit = async (ids: string[], pinned: boolean) => {
@@ -176,6 +202,7 @@ export const useTodoStore = defineStore('todo', () => {
       if (index !== -1)
         todos.value[index] = { ...todos.value[index], deleted: true }
     }
+    invalidateOtherCaches()
     return snapshot
   }
   const deleteTodoCommit = async (id: string) => {
@@ -189,6 +216,7 @@ export const useTodoStore = defineStore('todo', () => {
     const snapshot = [...todos.value]
     const index = todos.value.findIndex((t) => t.uuid === id)
     if (index !== -1) todos.value[index] = { ...todos.value[index], deleted: false }
+    invalidateOtherCaches()
     return snapshot
   }
   const restoreTodoCommit = async (id: string) => {
@@ -203,6 +231,7 @@ export const useTodoStore = defineStore('todo', () => {
     todos.value = todos.value.map((t) =>
       ids.includes(t.uuid) ? { ...t, deleted: false } : t
     )
+    invalidateOtherCaches()
     return snapshot
   }
   const bulkRestoreCommit = async (ids: string[]) => {
@@ -279,6 +308,12 @@ export const useTodoStore = defineStore('todo', () => {
     savePendingOrder(null)
   }
 
+  const invalidateOtherCaches = () => {
+    for (const key of cache.keys()) {
+      if (key !== filterType.value) cache.delete(key)
+    }
+  }
+
   const pinnedTodos = computed(() =>
     filteredTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
   )
@@ -300,6 +335,8 @@ export const useTodoStore = defineStore('todo', () => {
     loadTodos,
     loadMore,
     changeFilter,
+    refreshTodos,
+    refreshing,
     addTodo,
     updateTodo,
     toggleTodoCompletion,

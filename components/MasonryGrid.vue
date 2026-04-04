@@ -181,8 +181,12 @@ watch(() => props.items.length, (len, oldLen) => {
       if (!grid || !containerRef.value) { initGrid(); return }
       const liveEls = new Set(containerRef.value.querySelectorAll(':scope > .muuri-item'))
       const stale = grid.getItems().filter((i: any) => !liveEls.has(i.getElement()))
-      if (stale.length) grid.remove(stale, { removeElements: false })
-      refreshLayout()
+      if (stale.length >= (grid.getItems().length || 1)) {
+        initGrid()
+      } else {
+        if (stale.length) grid.remove(stale, { removeElements: false })
+        refreshLayout()
+      }
     })
     return
   }
