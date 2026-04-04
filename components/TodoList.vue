@@ -67,13 +67,16 @@ const {
   tap,
 })
 
-const { reorderKey, createSortables, destroySortables } = useSortableReorder({
+const { reorderKey, handleReorder, createSortables, destroySortables } = useSortableReorder({
   pinnedListRef,
   unpinnedListRef,
   isDragging,
   onChoose: () => hideHoverCheckboxes(),
   onDragStart: () => { hideHoverCheckboxes(); clearHoverTimers(); cancelLongPress() },
 })
+
+const onPinnedReorder = (uuid: string, newIndex: number) => handleReorder('pinned', uuid, newIndex)
+const onUnpinnedReorder = (uuid: string, newIndex: number) => handleReorder('unpinned', uuid, newIndex)
 
 const { show: showToast, flushAll } = useUndoToast()
 
@@ -88,8 +91,15 @@ const {
 
 // --- Event handlers ---
 
+const onDragStart = () => {
+  isDragging.value = true
+  hideHoverCheckboxes()
+  clearHoverTimers()
+  cancelLongPress()
+}
+
 const handleCardClick = (todo: Todo) => {
-  if (todo.editing) return
+  if (todo.editing || isDragging.value) return
   if (multiSelectMode.value) toggleSelect(todo.uuid)
   else editTodo(todo)
 }
@@ -148,12 +158,10 @@ const restoreTodo = (todo: Todo) => {
 onMounted(() => {
   updateIsLg()
   window.addEventListener('resize', debouncedResize)
-  nextTick(() => createSortables())
 })
 onUnmounted(() => {
   window.removeEventListener('resize', debouncedResize)
   if (resizeTimer) clearTimeout(resizeTimer)
-  destroySortables()
   flushAll()
 })
 
@@ -212,13 +220,10 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
-      <MasonryGrid ref="pinnedListRef" :key="'pinned-' + reorderKey" :items="pinnedTodos" key-field="uuid">
+      <MasonryGrid ref="pinnedListRef" :key="'pinned-' + reorderKey" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="isDragging = false">
         <template #default="{ item: todo }">
-          <div
-            :data-uuid="todo.uuid"
-            :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as Element) }"
-          >
             <TodoCard
+              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
               :todo="todo"
               :pinned="true"
               :selected="isSelected(todo.uuid)"
@@ -243,7 +248,6 @@ defineExpose({ cancelAllEdits, isEditing })
               @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
               @image-select="(e: Event) => onEditImageSelect(todo, e)"
             />
-          </div>
         </template>
       </MasonryGrid>
     </div>
@@ -251,13 +255,10 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
       <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
-      <MasonryGrid ref="unpinnedListRef" :key="'unpinned-' + reorderKey" :items="unpinnedTodos" key-field="uuid">
+      <MasonryGrid ref="unpinnedListRef" :key="'unpinned-' + reorderKey" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="isDragging = false">
         <template #default="{ item: todo }">
-          <div
-            :data-uuid="todo.uuid"
-            :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as Element) }"
-          >
             <TodoCard
+              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
               :todo="todo"
               :pinned="false"
               :selected="isSelected(todo.uuid)"
@@ -282,7 +283,6 @@ defineExpose({ cancelAllEdits, isEditing })
               @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
               @image-select="(e: Event) => onEditImageSelect(todo, e)"
             />
-          </div>
         </template>
       </MasonryGrid>
     </div>
