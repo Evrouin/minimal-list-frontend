@@ -9,6 +9,7 @@ interface UseTodoEditingOptions {
   cardRefs: Ref<Map<string, Element>>
   endLongPress: () => void
   endHover: (id: string) => void
+  onEditEnd?: () => void
 }
 
 export function useTodoEditing(options: UseTodoEditingOptions) {
@@ -105,6 +106,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     editAudioFiles.value.delete(todo.uuid)
     editAudioPreviews.value.delete(todo.uuid)
     await todoStore.updateTodo({ ...todo }, imageFile, audioFile)
+    options.onEditEnd?.()
   }
 
   const cancelEdit = (todo: Todo) => {
@@ -117,6 +119,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     editImagePreviews.value.delete(todo.uuid)
     editAudioFiles.value.delete(todo.uuid)
     editAudioPreviews.value.delete(todo.uuid)
+    options.onEditEnd?.()
   }
 
   const onDialogImageSelect = async (e: Event) => {

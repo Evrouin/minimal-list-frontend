@@ -23,6 +23,7 @@ const cardRefs = ref(new Map<string, Element>())
 const pinnedListRef = ref<any>(null)
 const unpinnedListRef = ref<any>(null)
 const isDragging = ref(false)
+const gridKey = ref(0)
 const showDeleteDialog = ref(false)
 const todoToDelete = ref<Todo | null>(null)
 
@@ -51,6 +52,15 @@ const {
   cardRefs,
   endLongPress: () => endLongPress(),
   endHover: (id: string) => endHover(id),
+  onEditEnd: () => {
+    const scrollY = window.scrollY
+    gridKey.value++
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY)
+      setTimeout(() => window.scrollTo(0, scrollY), 100)
+      setTimeout(() => window.scrollTo(0, scrollY), 500)
+    })
+  },
 })
 
 const {
@@ -226,7 +236,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p v-if="pinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">pinned</p>
-      <MasonryGrid ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
+      <MasonryGrid :key="'pinned-' + gridKey" ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
@@ -261,7 +271,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
       <p v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">others</p>
-      <MasonryGrid ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
+      <MasonryGrid :key="'unpinned-' + gridKey" ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"

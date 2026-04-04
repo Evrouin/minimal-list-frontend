@@ -228,7 +228,7 @@ watch(() => props.items.length, (len, oldLen) => {
   })
 }, { flush: 'post' })
 
-defineExpose({ containerRef, refreshLayout, ready })
+defineExpose({ containerRef, refreshLayout, reinit: initGrid, ready })
 </script>
 
 <template>
