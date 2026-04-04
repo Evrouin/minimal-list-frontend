@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import Sortable from 'sortablejs'
 import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
@@ -37,12 +38,173 @@ const dialogReminderAt = ref<string | null>(null)
 const dialogExpanded = ref(false)
 const inlineEditorRefs = ref(new Map<string, { focus: () => void }>())
 const cardRefs = ref(new Map<string, Element>())
+const pinnedListRef = ref<any>(null)
+const unpinnedListRef = ref<any>(null)
+const isDragging = ref(false)
+const reorderKey = ref(0)
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
 const updateIsLg = () => {
   isLg.value = window.innerWidth >= 1024
 }
+
+const getMovedNoteUuid = (event: any) => {
+  const item = event.item as HTMLElement
+  return item.dataset.uuid || item.querySelector('[data-uuid]')?.getAttribute('data-uuid')
+}
+
+const handleSortEnd = async (section: 'pinned' | 'unpinned', event: any) => {
+  const movedUuid = getMovedNoteUuid(event)
+  if (!movedUuid) return
+
+  const sectionTodos = section === 'pinned' ? pinnedTodos.value : unpinnedTodos.value
+
+  const container = (section === 'pinned' ? pinnedListRef : unpinnedListRef).value?.containerRef as HTMLElement | undefined
+  if (!container) return
+
+  const colEls = Array.from(container.children) as HTMLElement[]
+
+  const colUuids = colEls.map((col) =>
+    Array.from(col.querySelectorAll<HTMLElement>('[data-uuid]')).map((el) => el.dataset.uuid!),
+  )
+
+  let movedCol = -1
+  let movedRow = -1
+  for (let c = 0; c < colUuids.length; c++) {
+    const r = colUuids[c].indexOf(movedUuid)
+    if (r >= 0) { movedCol = c; movedRow = r; break }
+  }
+  if (movedCol < 0) return
+
+  const remaining = sectionTodos.filter((t) => t.uuid !== movedUuid)
+
+  let newPosition: number
+  if (movedRow > 0) {
+    const aboveUuid = colUuids[movedCol][movedRow - 1]
+    const aboveIdx = remaining.findIndex((t) => t.uuid === aboveUuid)
+    newPosition = aboveIdx >= 0 ? aboveIdx + 2 : 1
+  } else {
+    if (movedRow + 1 < colUuids[movedCol].length) {
+      const belowUuid = colUuids[movedCol][movedRow + 1]
+      const belowIdx = remaining.findIndex((t) => t.uuid === belowUuid)
+      newPosition = belowIdx >= 0 ? belowIdx + 1 : 1
+    } else {
+      newPosition = 1
+    }
+  }
+
+  newPosition = Math.max(1, Math.min(newPosition, sectionTodos.length))
+
+  const snapshot = todoStore.reorderTodosBySection(section, [movedUuid])
+  try {
+    const isPinned = section === 'pinned'
+    await todoStore.bulkReorderCommit(movedUuid, newPosition, isPinned)
+    reorderKey.value++
+  } catch {
+    todoStore.reorderRollback(snapshot)
+  }
+}
+
+const hideHoverCheckboxes = () => {
+  visibleCheckboxIds.value = []
+}
+
+const pinnedSorters: Sortable[] = []
+const unpinnedSorters: Sortable[] = []
+
+const sortableOptions = (section: 'pinned' | 'unpinned'): Sortable.Options => ({
+  animation: 150,
+  ghostClass: 'opacity-50',
+  group: `notes-${section}`,
+  scroll: true,
+  scrollSensitivity: 100,
+  bubbleScroll: true,
+  delay: 200,
+  delayOnTouchOnly: true,
+  touchStartThreshold: 5,
+  filter: 'input, textarea, button, select, a, .no-drag, .audio-player',
+  preventOnFilter: false,
+  onChoose: hideHoverCheckboxes,
+  onStart: () => {
+    isDragging.value = true
+    hideHoverCheckboxes()
+    clearHoverTimers()
+    cancelLongPress()
+  },
+  onEnd: (evt) => {
+    isDragging.value = false
+    hideHoverCheckboxes()
+    if (evt.from === evt.to) {
+      const movedUuid = getMovedNoteUuid(evt)
+      if (movedUuid) handleSortEnd(section, evt)
+    }
+  },
+  onAdd: (evt) => {
+    isDragging.value = false
+    hideHoverCheckboxes()
+    const movedUuid = getMovedNoteUuid(evt)
+    if (movedUuid) handleSortEnd(section, evt)
+  },
+})
+
+const createSortables = () => {
+  destroySortables()
+  const pinnedEl = pinnedListRef.value?.containerRef as HTMLElement | undefined
+  if (pinnedEl) {
+    const cols = pinnedEl.querySelectorAll<HTMLElement>(':scope > div')
+    cols.forEach((col) => {
+      pinnedSorters.push(Sortable.create(col, sortableOptions('pinned')))
+    })
+    if (cols.length === 0) {
+      pinnedSorters.push(Sortable.create(pinnedEl, sortableOptions('pinned')))
+    }
+  }
+  const unpinnedEl = unpinnedListRef.value?.containerRef as HTMLElement | undefined
+  if (unpinnedEl) {
+    const cols = unpinnedEl.querySelectorAll<HTMLElement>(':scope > div')
+    cols.forEach((col) => {
+      unpinnedSorters.push(Sortable.create(col, sortableOptions('unpinned')))
+    })
+    if (cols.length === 0) {
+      unpinnedSorters.push(Sortable.create(unpinnedEl, sortableOptions('unpinned')))
+    }
+  }
+}
+
+const destroySortables = () => {
+  pinnedSorters.forEach((s) => s.destroy())
+  pinnedSorters.length = 0
+  unpinnedSorters.forEach((s) => s.destroy())
+  unpinnedSorters.length = 0
+}
+
+const clearHoverTimers = () => {
+  for (const t of hoverTimers.values()) {
+    clearTimeout(t)
+  }
+  hoverTimers.clear()
+}
+
+const cancelLongPress = () => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+watch([pinnedListRef, unpinnedListRef], () => {
+  destroySortables()
+  nextTick(() => createSortables())
+})
+
+watch([pinnedTodos, unpinnedTodos], () => {
+  nextTick(() => {
+    destroySortables()
+    createSortables()
+  })
+}, { deep: false })
+
 const debouncedResize = () => {
   if (resizeTimer) clearTimeout(resizeTimer)
   resizeTimer = setTimeout(updateIsLg, 150)
@@ -50,10 +212,12 @@ const debouncedResize = () => {
 onMounted(() => {
   updateIsLg()
   window.addEventListener('resize', debouncedResize)
+  nextTick(() => createSortables())
 })
 onUnmounted(() => {
   window.removeEventListener('resize', debouncedResize)
   if (resizeTimer) clearTimeout(resizeTimer)
+  destroySortables()
   flushAll()
 })
 
@@ -105,11 +269,11 @@ const hasCheckbox = (id: string) => visibleCheckboxIds.value.includes(id)
 const isTodoEditing = (id: string) => filteredTodos.value.find((t) => t.uuid === id)?.editing
 
 const startHover = (id: string) => {
-  if (multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
+  if (isDragging.value || multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
   hoverTimers.set(
     id,
     setTimeout(() => {
-      if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value) visibleCheckboxIds.value.push(id)
+      if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value && !isDragging.value) visibleCheckboxIds.value.push(id)
     }, 800),
   )
 }
@@ -129,9 +293,9 @@ const audioInteracting = ref(false)
 
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 const startLongPress = (id: string) => {
-  if (isTodoEditing(id) || audioInteracting.value) return
+  if (isDragging.value || isTodoEditing(id) || audioInteracting.value) return
   longPressTimer = setTimeout(() => {
-    if (audioInteracting.value) return
+    if (audioInteracting.value || isDragging.value) return
     tap()
     if (!multiSelectMode.value && !visibleCheckboxIds.value.includes(id)) {
       visibleCheckboxIds.value.push(id)
@@ -519,87 +683,79 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
-      <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div
-          v-for="todo in pinnedTodos"
-          :key="todo.uuid"
-          :ref="
-            (el) => {
-              if (el) cardRefs.set(todo.uuid, el as Element)
-            }
-          "
-          class="mb-5 inline-block w-full break-inside-avoid"
-        >
-          <TodoCard
-            :todo="todo"
-            :pinned="true"
-            :selected="isSelected(todo.uuid)"
-            :show-checkbox="hasCheckbox(todo.uuid)"
-            :multi-select-mode="multiSelectMode"
-            :edit-image-preview="editImagePreviews.get(todo.uuid)"
-            @click="handleCardClick(todo)"
-            @toggle-pin="togglePin(todo)"
-            @request-delete="requestDelete(todo)"
-            @toggle-completion="toggleCompletion(todo)"
-            @restore="restoreTodo(todo)"
-            @save="saveTodo(todo)"
-            @cancel="cancelEdit(todo)"
-            @expand="expandEdit(todo)"
-            @remove-audio="todo.audio = null"
-            @audio-interact="(v: boolean) => audioInteracting = v"
-            @toggle-select="toggleSelect(todo.uuid)"
-            @start-hover="startHover(todo.uuid)"
-            @end-hover="endHover(todo.uuid)"
-            @start-long-press="startLongPress(todo.uuid)"
-            @end-long-press="endLongPress()"
-            @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
-            @image-select="(e: Event) => onEditImageSelect(todo, e)"
-          />
-        </div>
-      </div>
+      <MasonryGrid ref="pinnedListRef" :key="'pinned-' + reorderKey" :items="pinnedTodos" key-field="uuid">
+        <template #default="{ item: todo }">
+          <div
+            :data-uuid="todo.uuid"
+            :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as Element) }"
+          >
+            <TodoCard
+              :todo="todo"
+              :pinned="true"
+              :selected="isSelected(todo.uuid)"
+              :show-checkbox="hasCheckbox(todo.uuid)"
+              :multi-select-mode="multiSelectMode"
+              :edit-image-preview="editImagePreviews.get(todo.uuid)"
+              @click="handleCardClick(todo)"
+              @toggle-pin="togglePin(todo)"
+              @request-delete="requestDelete(todo)"
+              @toggle-completion="toggleCompletion(todo)"
+              @restore="restoreTodo(todo)"
+              @save="saveTodo(todo)"
+              @cancel="cancelEdit(todo)"
+              @expand="expandEdit(todo)"
+              @remove-audio="todo.audio = null"
+              @audio-interact="(v: boolean) => audioInteracting = v"
+              @toggle-select="toggleSelect(todo.uuid)"
+              @start-hover="startHover(todo.uuid)"
+              @end-hover="endHover(todo.uuid)"
+              @start-long-press="startLongPress(todo.uuid)"
+              @end-long-press="endLongPress()"
+              @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
+              @image-select="(e: Event) => onEditImageSelect(todo, e)"
+            />
+          </div>
+        </template>
+      </MasonryGrid>
     </div>
 
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
       <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
-      <div class="columns-1 gap-5 lg:columns-2 xl:columns-3">
-        <div
-          v-for="todo in unpinnedTodos"
-          :key="todo.uuid"
-          :ref="
-            (el) => {
-              if (el) cardRefs.set(todo.uuid, el as Element)
-            }
-          "
-          class="mb-5 inline-block w-full break-inside-avoid"
-        >
-          <TodoCard
-            :todo="todo"
-            :pinned="false"
-            :selected="isSelected(todo.uuid)"
-            :show-checkbox="hasCheckbox(todo.uuid)"
-            :multi-select-mode="multiSelectMode"
-            :edit-image-preview="editImagePreviews.get(todo.uuid)"
-            @click="handleCardClick(todo)"
-            @toggle-pin="togglePin(todo)"
-            @request-delete="requestDelete(todo)"
-            @toggle-completion="toggleCompletion(todo)"
-            @restore="restoreTodo(todo)"
-            @save="saveTodo(todo)"
-            @cancel="cancelEdit(todo)"
-            @expand="expandEdit(todo)"
-            @remove-audio="todo.audio = null"
-            @audio-interact="(v: boolean) => audioInteracting = v"
-            @toggle-select="toggleSelect(todo.uuid)"
-            @start-hover="startHover(todo.uuid)"
-            @end-hover="endHover(todo.uuid)"
-            @start-long-press="startLongPress(todo.uuid)"
-            @end-long-press="endLongPress()"
-            @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
-            @image-select="(e: Event) => onEditImageSelect(todo, e)"
-          />
-        </div>
-      </div>
+      <MasonryGrid ref="unpinnedListRef" :key="'unpinned-' + reorderKey" :items="unpinnedTodos" key-field="uuid">
+        <template #default="{ item: todo }">
+          <div
+            :data-uuid="todo.uuid"
+            :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as Element) }"
+          >
+            <TodoCard
+              :todo="todo"
+              :pinned="false"
+              :selected="isSelected(todo.uuid)"
+              :show-checkbox="hasCheckbox(todo.uuid)"
+              :multi-select-mode="multiSelectMode"
+              :edit-image-preview="editImagePreviews.get(todo.uuid)"
+              @click="handleCardClick(todo)"
+              @toggle-pin="togglePin(todo)"
+              @request-delete="requestDelete(todo)"
+              @toggle-completion="toggleCompletion(todo)"
+              @restore="restoreTodo(todo)"
+              @save="saveTodo(todo)"
+              @cancel="cancelEdit(todo)"
+              @expand="expandEdit(todo)"
+              @remove-audio="todo.audio = null"
+              @audio-interact="(v: boolean) => audioInteracting = v"
+              @toggle-select="toggleSelect(todo.uuid)"
+              @start-hover="startHover(todo.uuid)"
+              @end-hover="endHover(todo.uuid)"
+              @start-long-press="startLongPress(todo.uuid)"
+              @end-long-press="endLongPress()"
+              @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
+              @image-select="(e: Event) => onEditImageSelect(todo, e)"
+            />
+          </div>
+        </template>
+      </MasonryGrid>
     </div>
   </div>
 

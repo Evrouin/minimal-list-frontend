@@ -43,6 +43,13 @@ export const useTodoApi = () => {
         body: { ids },
       }),
 
+    bulkReorder: (uuid: string, newPosition: number, pinned: boolean) => {
+      return request<{ success: boolean }>(`${base}/bulk-reorder/`, {
+        method: 'POST',
+        body: { uuid, new_position: newPosition, pinned },
+      })
+    },
+
     fetchLinkPreview: (url: string) =>
       request<import('~/types/todo').LinkPreview>(`${base}/link-preview/`, {
         method: 'POST',

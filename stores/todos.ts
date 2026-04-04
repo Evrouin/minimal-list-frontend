@@ -11,6 +11,8 @@ export const useTodoStore = defineStore('todo', () => {
   const filterType = ref<'all' | 'active' | 'completed' | 'deleted'>('all')
   const filterOptions = ['all', 'active', 'completed', 'deleted'] as const
   const api = useTodoApi()
+  const pendingReorder = ref<string[] | null>(null)
+  const pendingReorderKey = 'todo-order-pending'
 
   const hasMore = computed(() => !!nextCursor.value)
 
@@ -28,6 +30,12 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const response = await api.fetchTodos(filterParams.value)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
+      const pendingOrder = loadPendingOrder()
+      if (pendingOrder && pendingOrder.every((uuid) => todos.value.some((t) => t.uuid === uuid))) {
+        applyOrderToTodos(pendingOrder)
+      } else {
+        savePendingOrder(null)
+      }
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
         : null
@@ -199,11 +207,78 @@ export const useTodoStore = defineStore('todo', () => {
     todos.value = snapshot
   }
 
+  const savePendingOrder = (order: string[] | null) => {
+    pendingReorder.value = order
+    if (process.client) {
+      if (order && order.length) {
+        window.localStorage.setItem(pendingReorderKey, JSON.stringify(order))
+      } else {
+        window.localStorage.removeItem(pendingReorderKey)
+      }
+    }
+  }
+
+  const loadPendingOrder = (): string[] | null => {
+    if (!process.client) return null
+    const raw = window.localStorage.getItem(pendingReorderKey)
+    if (!raw) return null
+    try {
+      return JSON.parse(raw) as string[]
+    } catch {
+      return null
+    }
+  }
+
+  const applyOrderToTodos = (order: string[]) => {
+    const orderMap = new Map(order.map((uuid, index) => [uuid, index]))
+    todos.value.sort((a, b) => {
+      const ai = orderMap.has(a.uuid) ? orderMap.get(a.uuid)! : Infinity
+      const bi = orderMap.has(b.uuid) ? orderMap.get(b.uuid)! : Infinity
+      return ai - bi || 0
+    })
+  }
+
+  const reorderTodosBySection = (section: 'pinned' | 'unpinned', movedUuids: string[]) => {
+    const snapshot = [...todos.value]
+    return snapshot
+  }
+
+  const bulkReorderCommit = async (uuid: string, newPosition: number, pinned: boolean) => {
+    try {
+      const response = await api.bulkReorder(uuid, newPosition, pinned)
+      if (!response.success) throw new Error('bulk reorder failed')
+
+      // Mirror backend logic: reorder within section, then reassign order_ids
+      const active = todos.value.filter((t) => !t.deleted)
+      const pinnedNotes = active.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
+      const unpinnedNotes = active.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
+
+      const section = pinned ? pinnedNotes : unpinnedNotes
+      const idx = section.findIndex((t) => t.uuid === uuid)
+      if (idx >= 0) {
+        const [moved] = section.splice(idx, 1)
+        section.splice(Math.max(0, Math.min(newPosition - 1, section.length)), 0, moved)
+      }
+
+      const combined = [...pinnedNotes, ...unpinnedNotes]
+      combined.forEach((t, i) => { t.order_id = combined.length - i })
+
+      savePendingOrder(null)
+    } catch (e) {
+      throw e
+    }
+  }
+
+  const reorderRollback = (snapshot: Todo[]) => {
+    todos.value = snapshot
+    savePendingOrder(null)
+  }
+
   const pinnedTodos = computed(() =>
-    filteredTodos.value.filter((t) => t.pinned)
+    filteredTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
   )
   const unpinnedTodos = computed(() =>
-    filteredTodos.value.filter((t) => !t.pinned)
+    filteredTodos.value.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
   )
 
   return {
@@ -239,5 +314,8 @@ export const useTodoStore = defineStore('todo', () => {
     bulkRestore: bulkRestoreApply,
     bulkRestoreCommit,
     bulkRestoreRollback,
+    reorderTodosBySection,
+    bulkReorderCommit,
+    reorderRollback,
   }
 })

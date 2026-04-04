@@ -50,7 +50,7 @@ const cardClasses = computed(() => [
 <template>
   <div
     :class="[...cardClasses, selected && 'ring-2 ring-blue-400']"
-    class="relative cursor-pointer"
+    class="todo-card relative cursor-pointer"
     @click="emit('click')"
     @mouseenter="!todo.editing && emit('start-hover')"
     @mouseleave="!todo.editing && emit('end-hover')"
