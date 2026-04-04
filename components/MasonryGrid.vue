@@ -143,11 +143,22 @@ onUnmounted(() => {
 })
 
 watch(() => props.items.length, (len, oldLen) => {
-  if (!len) return
+  if (!len) { destroyGrid(); return }
   const prevLen = oldLen ?? 0
 
-  if (prevLen === 0 || len <= prevLen) {
+  if (prevLen === 0) {
     nextTick(() => nextTick(() => initGrid()))
+    return
+  }
+
+  if (len <= prevLen) {
+    nextTick(() => {
+      if (!grid || !containerRef.value) { initGrid(); return }
+      const liveEls = new Set(containerRef.value.querySelectorAll(':scope > .muuri-item'))
+      const stale = grid.getItems().filter((i: any) => !liveEls.has(i.getElement()))
+      if (stale.length) grid.remove(stale, { removeElements: false })
+      refreshLayout()
+    })
     return
   }
 
