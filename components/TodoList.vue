@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
@@ -28,7 +28,7 @@ const todoToDelete = ref<Todo | null>(null)
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
-const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
+const updateIsLg = () => { isLg.value = window.innerWidth >= 768 }
 const debouncedResize = () => {
   if (resizeTimer) clearTimeout(resizeTimer)
   resizeTimer = setTimeout(updateIsLg, 150)
@@ -154,6 +154,17 @@ const restoreTodo = (todo: Todo) => {
 }
 
 // --- Lifecycle ---
+
+const refreshGridLayout = () => {
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      pinnedListRef.value?.refreshLayout()
+      unpinnedListRef.value?.refreshLayout()
+    })
+  })
+}
+
+watch(() => filteredTodos.value.map((t) => t.editing), () => refreshGridLayout(), { deep: true })
 
 onMounted(() => {
   updateIsLg()
