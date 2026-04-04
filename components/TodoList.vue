@@ -91,15 +91,23 @@ const {
 
 // --- Event handlers ---
 
+const wasDragging = ref(false)
+
 const onDragStart = () => {
   isDragging.value = true
+  wasDragging.value = true
   hideHoverCheckboxes()
   clearHoverTimers()
   cancelLongPress()
 }
 
+const onDragEnd = () => {
+  isDragging.value = false
+}
+
 const handleCardClick = (todo: Todo) => {
-  if (todo.editing || isDragging.value) return
+  if (todo.editing) return
+  if (wasDragging.value) { wasDragging.value = false; return }
   if (multiSelectMode.value) toggleSelect(todo.uuid)
   else editTodo(todo)
 }
@@ -231,7 +239,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
-      <MasonryGrid ref="pinnedListRef" :key="'pinned-' + reorderKey" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="isDragging = false">
+      <MasonryGrid ref="pinnedListRef" :key="'pinned-' + reorderKey" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
@@ -266,7 +274,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
       <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
-      <MasonryGrid ref="unpinnedListRef" :key="'unpinned-' + reorderKey" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="isDragging = false">
+      <MasonryGrid ref="unpinnedListRef" :key="'unpinned-' + reorderKey" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"

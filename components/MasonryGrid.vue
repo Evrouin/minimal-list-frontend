@@ -45,13 +45,14 @@ const initGrid = () => {
       sortDuringScroll: true,
       smoothStop: true,
     },
-    layout: { fillGaps: false, horizontal: false, rounding: false },
-    layoutOnResize: 150,
+    dragSortHeuristics: { sortInterval: 70 },
+    layout: { fillGaps: false, horizontal: false, rounding: true },
+    layoutOnResize: 200,
     dragPlaceholder: {
       enabled: true,
       createElement: (item: any) => {
-        const el = item.getElement().cloneNode(true) as HTMLElement
-        el.style.opacity = '0.3'
+        const el = document.createElement('div')
+        el.style.cssText = `width:100%;height:${item.getElement().offsetHeight}px;border-radius:0.5rem;background:rgba(255,255,255,0.05);`
         return el
       },
     },
@@ -79,22 +80,60 @@ const refreshLayout = () => {
   nextTick(() => { grid?.refreshItems(); grid?.layout() })
 }
 
+const refreshAfterRender = () => {
+  refreshLayout()
+  setTimeout(() => refreshLayout(), 100)
+  setTimeout(() => refreshLayout(), 500)
+  containerRef.value?.querySelectorAll('img').forEach((img) => {
+    if (!img.complete) img.addEventListener('load', () => refreshLayout(), { once: true })
+  })
+}
+
 let resizeListener: (() => void) | null = null
 onMounted(() => {
   updateColumns()
   resizeListener = () => { updateColumns(); refreshLayout() }
   window.addEventListener('resize', resizeListener)
-  nextTick(() => initGrid())
+  nextTick(() => {
+    initGrid()
+    refreshAfterRender()
+  })
 })
 onUnmounted(() => {
   if (resizeListener) window.removeEventListener('resize', resizeListener)
   destroyGrid()
 })
 
-// Sync items without full re-init to preserve drag state
-watch(() => props.items.length, () => {
+watch(() => props.items.length, (newLen, oldLen) => {
   if (skipNextSync) { skipNextSync = false; return }
-  nextTick(() => initGrid())
+  nextTick(() => {
+    if (!grid || !containerRef.value) {
+      initGrid()
+      refreshAfterRender()
+      return
+    }
+
+    const currentEls = new Set(grid.getItems().map((i: any) => i.getElement()))
+    const domEls = Array.from(containerRef.value.querySelectorAll(':scope > .muuri-item')) as HTMLElement[]
+
+    const newEls = domEls.filter((el) => !currentEls.has(el))
+    if (newEls.length > 0) {
+      // Disable transition so new items don't animate from top-left
+      newEls.forEach((el) => el.style.transition = 'none')
+      grid.add(newEls, { layout: false })
+      requestAnimationFrame(() => {
+        newEls.forEach((el) => el.style.transition = '')
+      })
+    }
+
+    const domSet = new Set(domEls)
+    const removed = grid.getItems().filter((i: any) => !domSet.has(i.getElement()))
+    if (removed.length > 0) {
+      grid.remove(removed, { layout: false, removeElements: false })
+    }
+
+    refreshAfterRender()
+  })
 })
 
 defineExpose({ containerRef, refreshLayout })
@@ -123,7 +162,7 @@ defineExpose({ containerRef, refreshLayout })
 }
 .muuri-item {
   position: absolute;
-  z-index: 1;
+  z-index: auto;
   transition: transform 0.3s ease;
 }
 .muuri-item.muuri-item-dragging {
