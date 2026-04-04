@@ -250,6 +250,9 @@ const scrollToTop = () => {
 }
 
 const { toasts, undo: undoToast } = useUndoToast()
+
+const headerRef = ref<HTMLElement>()
+const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePullToRefresh(headerRef, () => todoStore.refreshTodos())
 </script>
 
 <template>
@@ -316,7 +319,14 @@ const { toasts, undo: undoToast } = useUndoToast()
         you're offline — changes won't sync
       </div>
     </Transition>
-    <div class="w-full max-w-lg px-4 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+    <Transition name="slide">
+      <div v-if="pulling || pullRefreshing" class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase">
+        <span v-if="pullRefreshing">refreshing...</span>
+        <span v-else-if="pullDistance >= threshold">release to refresh</span>
+        <span v-else>pull to refresh</span>
+      </div>
+    </Transition>
+    <div ref="headerRef" class="w-full max-w-lg px-4 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
       <PageHeader title="minimal list">
         <div class="flex shrink-0 items-center">
           <button
