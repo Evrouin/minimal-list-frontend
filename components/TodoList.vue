@@ -225,7 +225,7 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
-      <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
+      <p v-if="pinnedListRef?.ready" class="mb-3 text-xs text-white/40 lowercase">pinned</p>
       <MasonryGrid ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
@@ -260,7 +260,7 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
-      <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
+      <p v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready" class="mb-3 text-xs text-white/40 lowercase">others</p>
       <MasonryGrid ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard

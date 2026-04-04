@@ -16,8 +16,10 @@ const emit = defineEmits<{
 
 const wrapperRef = ref<HTMLElement>()
 const containerRef = ref<HTMLElement>()
+const ready = ref(false)
 let grid: Muuri | null = null
 let resizeObserver: ResizeObserver | null = null
+let fadeObserver: IntersectionObserver | null = null
 let columnCount = 1
 
 const getColumnCount = () => {
@@ -57,7 +59,11 @@ const initGrid = () => {
   if (items.length === 0) return
 
   applyItemWidths()
-  resizeObserver = new ResizeObserver(() => refreshLayout())
+  let resizeTimer2: ReturnType<typeof setTimeout> | null = null
+  resizeObserver = new ResizeObserver(() => {
+    if (resizeTimer2) clearTimeout(resizeTimer2)
+    resizeTimer2 = setTimeout(refreshLayout, 50)
+  })
 
   grid = new Muuri(containerRef.value, {
     items: '.muuri-item',
@@ -72,6 +78,8 @@ const initGrid = () => {
     },
     dragSortHeuristics: { sortInterval: 70 },
     layout: { fillGaps: false, horizontal: false, rounding: true },
+    showDuration: 0,
+    hideDuration: 0,
     dragPlaceholder: {
       enabled: true,
       createElement: (item: any) => {
@@ -81,6 +89,8 @@ const initGrid = () => {
       },
     },
   })
+
+  grid.on('layoutEnd', () => { ready.value = true })
 
   grid.on('dragStart', () => emit('dragStart'))
   grid.on('dragEnd', (item: any) => {
@@ -95,12 +105,27 @@ const initGrid = () => {
   containerRef.value.querySelectorAll('.muuri-item').forEach((el) => {
     const content = el.querySelector('.muuri-item-content')
     if (content) resizeObserver!.observe(content)
+    el.querySelectorAll('img').forEach((img) => {
+      if (!img.complete) img.addEventListener('load', refreshLayout, { once: true })
+    })
   })
+
+  fadeObserver = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        (e.target as HTMLElement).classList.add('muuri-item-visible')
+        fadeObserver?.unobserve(e.target)
+      }
+    })
+  }, { threshold: 0.05 })
+  containerRef.value.querySelectorAll('.muuri-item').forEach((el) => fadeObserver!.observe(el))
 }
 
 const destroyGrid = () => {
   resizeObserver?.disconnect()
   resizeObserver = null
+  fadeObserver?.disconnect()
+  fadeObserver = null
   if (grid) {
     grid.destroy()
     grid = null
@@ -186,6 +211,10 @@ watch(() => props.items.length, (len, oldLen) => {
       newEls.forEach((el) => {
         const content = el.querySelector('.muuri-item-content')
         if (content) resizeObserver?.observe(content)
+        fadeObserver?.observe(el)
+        el.querySelectorAll('img').forEach((img) => {
+          if (!img.complete) img.addEventListener('load', refreshLayout, { once: true })
+        })
       })
       requestAnimationFrame(() => {
         newEls.forEach((el) => { el.style.transition = '' })
@@ -195,11 +224,11 @@ watch(() => props.items.length, (len, oldLen) => {
   })
 }, { flush: 'post' })
 
-defineExpose({ containerRef, refreshLayout })
+defineExpose({ containerRef, refreshLayout, ready })
 </script>
 
 <template>
-  <div ref="wrapperRef">
+  <div ref="wrapperRef" :style="{ visibility: ready ? 'visible' : 'hidden' }">
     <div ref="containerRef" class="muuri-grid">
       <div
         v-for="(item, idx) in items"
@@ -224,6 +253,14 @@ defineExpose({ containerRef, refreshLayout })
   margin: 10px;
   z-index: auto;
   transition: transform 0.3s ease;
+  opacity: 0;
+}
+.muuri-item.muuri-item-visible {
+  animation: muuri-fade-in 0.5s ease forwards;
+}
+@keyframes muuri-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .muuri-item.muuri-item-dragging {
   z-index: 3;
