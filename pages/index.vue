@@ -49,6 +49,7 @@ onUnmounted(() => {
 })
 
 const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean } | null>(null)
+const todoListKey = ref(0)
 const todoAddRef = ref<{
   title: string
   body: string
@@ -193,6 +194,7 @@ const createDialogSubmit = async () => {
     clearCreateAudio()
     createExpanded.value = false
     showCreateDialog.value = false
+    todoListKey.value++
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
     createErrorMsg.value = msg.includes('limit') ? 'note limit reached' : 'failed to add note'
@@ -350,7 +352,7 @@ const { toasts, undo: undoToast } = useUndoToast()
     <div
       class="w-full max-w-lg px-4 pb-10 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl"
     >
-      <TodoList ref="todoListRef" />
+      <TodoList ref="todoListRef" :key="todoListKey" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
         <span class="text-sm text-white/40">loading...</span>
       </div>

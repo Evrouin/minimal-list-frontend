@@ -146,13 +146,19 @@ watch(() => props.items.length, (len, oldLen) => {
   if (!len) return
   const prevLen = oldLen ?? 0
 
-  if (prevLen === 0 || len < prevLen) {
+  if (prevLen === 0 || len <= prevLen) {
     nextTick(() => nextTick(() => initGrid()))
     return
   }
 
   nextTick(() => {
     if (!grid || !containerRef.value) { initGrid(); return }
+
+    const firstMuuriEl = grid.getItems()[0]?.getElement()
+    if (firstMuuriEl && !containerRef.value.contains(firstMuuriEl)) {
+      initGrid()
+      return
+    }
 
     const w = getItemWidth()
     const currentEls = new Set(grid.getItems().map((i: any) => i.getElement()))
@@ -164,7 +170,8 @@ watch(() => props.items.length, (len, oldLen) => {
         el.style.width = w + 'px'
         el.style.transition = 'none'
       })
-      grid.add(newEls, { layout: false })
+      const firstNewIdx = domEls.indexOf(newEls[0])
+      grid.add(newEls, { index: firstNewIdx, layout: false })
       newEls.forEach((el) => {
         const content = el.querySelector('.muuri-item-content')
         if (content) resizeObserver?.observe(content)
