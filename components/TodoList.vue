@@ -42,7 +42,7 @@ const {
   dialogAudioFile, dialogAudioPreview, dialogAudioRecording, dialogOriginalAudio,
   onDialogImageSelect, cancelDialogTodo, saveDialogTodo, dialogToggleCompletion, dialogTogglePin,
   inlineEditorRefs, editImagePreviews, editAudioFiles, editAudioPreviews, expandedAudioRecording,
-  expandedEditId, expandedTodo, audioInteracting,
+  expandedEditId, expandedTodo, expandedTitleRef, expandedEditorRef, audioInteracting,
   editTodo, saveTodo, cancelEdit, cancelAllEdits, onEditImageSelect,
   expandEdit, saveExpandedEdit, cancelExpandedEdit, setEditorRef,
   isEditing,
@@ -380,10 +380,14 @@ defineExpose({ cancelAllEdits, isEditing })
 
   <!-- Expanded inline edit (mobile) -->
   <Teleport to="body">
-    <div v-if="expandedTodo" class="fixed inset-0 z-50 flex flex-col bg-gray-800 p-3">
+    <div v-if="expandedTodo" class="fixed inset-x-0 top-0 z-50 flex flex-col bg-gray-800 p-3" style="height: 100dvh">
+      <div class="mb-3 px-2">
+        <span class="text-lg font-bold text-white lowercase">minimal list</span>
+      </div>
       <div
         class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
         :class="noteColors[expandedTodo.color]?.bg || 'bg-gray-700'"
+        @click.self="expandedEditorRef?.focus()"
       >
         <!-- eslint-disable vue/no-mutating-props -->
         <ImagePreview
@@ -392,11 +396,12 @@ defineExpose({ cancelAllEdits, isEditing })
           :padding="5"
         />
         <input
+          ref="expandedTitleRef"
           v-model="expandedTodo.title"
           class="border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
         />
-        <div class="flex-1 overflow-y-auto">
-          <LazyTiptapEditor v-model="expandedTodo.body" placeholder="body" />
+        <div class="flex-1 overflow-y-auto" @click="expandedEditorRef?.focus()">
+          <LazyTiptapEditor ref="expandedEditorRef" v-model="expandedTodo.body" placeholder="body" />
         </div>
         <AudioPlayer v-if="expandedTodo.audio" :src="expandedTodo.audio" removable @remove="expandedTodo.audio = null" />
         <div class="flex items-center justify-between">
@@ -427,6 +432,7 @@ defineExpose({ cancelAllEdits, isEditing })
               <button
                 type="button"
                 class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                @mousedown.prevent
                 @click="expandedEditId = null"
               >
                 <Icon name="uil:compress-arrows" class="text-xs" />
@@ -434,6 +440,7 @@ defineExpose({ cancelAllEdits, isEditing })
               <button
                 type="button"
                 class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 hover:text-white"
+                @mousedown.prevent
                 @click="cancelExpandedEdit"
               >
                 cancel
@@ -441,6 +448,7 @@ defineExpose({ cancelAllEdits, isEditing })
               <button
                 type="button"
                 class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/60 hover:text-white"
+                @mousedown.prevent
                 @click="saveExpandedEdit"
               >
                 save

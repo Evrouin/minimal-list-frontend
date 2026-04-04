@@ -174,7 +174,13 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
 
   const dialogTogglePin = () => { dialogPinned.value = !dialogPinned.value }
 
-  const expandEdit = (todo: Todo) => { expandedEditId.value = todo.uuid }
+  const expandedTitleRef = ref<HTMLInputElement>()
+  const expandedEditorRef = ref<{ focus: () => void } | null>(null)
+
+  const expandEdit = (todo: Todo) => {
+    expandedEditId.value = todo.uuid
+    nextTick(() => expandedTitleRef.value?.focus())
+  }
 
   const saveExpandedEdit = async () => {
     if (!expandedTodo.value) return
@@ -222,7 +228,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     onDialogImageSelect, cancelDialogTodo, saveDialogTodo, dialogToggleCompletion, dialogTogglePin,
     // Inline
     inlineEditorRefs, editImagePreviews, editAudioFiles, editAudioPreviews, expandedAudioRecording,
-    expandedEditId, expandedTodo, audioInteracting,
+    expandedEditId, expandedTodo, expandedTitleRef, expandedEditorRef, audioInteracting,
     editTodo, saveTodo, cancelEdit, cancelAllEdits, onEditImageSelect,
     expandEdit, saveExpandedEdit, cancelExpandedEdit, setEditorRef,
     isEditing,
