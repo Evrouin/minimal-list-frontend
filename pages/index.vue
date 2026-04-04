@@ -424,7 +424,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
 
     <!-- Mobile add dialog -->
     <Teleport to="body">
-      <div v-if="showMobileAdd" class="fixed inset-0 z-50 flex flex-col bg-gray-800 p-3">
+      <div v-if="showMobileAdd" class="fixed inset-x-0 top-0 z-50 flex h-[100dvh] flex-col bg-gray-800 p-3">
         <div class="mb-3 px-2">
           <span class="text-lg font-bold text-white lowercase">minimal list</span>
         </div>
