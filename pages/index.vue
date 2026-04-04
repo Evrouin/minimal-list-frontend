@@ -314,7 +314,7 @@ const { toasts, undo: undoToast } = useUndoToast()
         you're offline — changes won't sync
       </div>
     </Transition>
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+    <div class="w-full max-w-lg px-4 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
       <PageHeader title="minimal list">
         <div class="flex shrink-0 items-center">
           <button
@@ -335,7 +335,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       <!-- Mobile add button is now a FAB -->
     </div>
     <Transition name="slide-up">
-      <div v-if="!mobileHidden" class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
+      <div v-if="!mobileHidden" class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
         <button
           v-for="(filter, index) in filterOptions"
           :key="index"
@@ -348,7 +348,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       </div>
     </Transition>
     <div
-      class="w-full max-w-lg px-4 pb-10 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl"
+      class="w-full max-w-lg px-4 pb-10 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl"
     >
       <TodoList ref="todoListRef" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">

@@ -2,11 +2,9 @@ import { ref, type Ref } from 'vue'
 import { useTodoStore } from '~/stores/todos'
 
 interface UseSortableReorderOptions {
-  pinnedListRef: Ref<{ containerRef?: HTMLElement; refreshLayout?: () => void } | null>
-  unpinnedListRef: Ref<{ containerRef?: HTMLElement; refreshLayout?: () => void } | null>
+  pinnedListRef: Ref<{ containerRef?: HTMLElement; initGrid?: () => void } | null>
+  unpinnedListRef: Ref<{ containerRef?: HTMLElement; initGrid?: () => void } | null>
   isDragging: Ref<boolean>
-  onDragStart?: () => void
-  onChoose?: () => void
 }
 
 export function useSortableReorder(options: UseSortableReorderOptions) {
@@ -27,8 +25,5 @@ export function useSortableReorder(options: UseSortableReorderOptions) {
     }
   }
 
-  const createSortables = () => {}
-  const destroySortables = () => {}
-
-  return { reorderKey, handleReorder, createSortables, destroySortables }
+  return { reorderKey, handleReorder }
 }

@@ -83,6 +83,11 @@ export const useTodoStore = defineStore('todo', () => {
   const addTodo = async (todo: Partial<Todo> | FormData) => {
     const response = await api.createTodo(todo)
     const newTodo = { ...response.data, editing: false }
+    if (!newTodo.pinned) {
+      todos.value.forEach((t) => {
+        if (t.pinned && !t.deleted && t.order_id) t.order_id++
+      })
+    }
     todos.value.unshift(newTodo)
     if (newTodo.reminder_at) scheduleReminder(newTodo)
   }

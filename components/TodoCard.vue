@@ -139,20 +139,25 @@ const cardClasses = computed(() => [
       <LinkPreviewCard v-for="lp in todo.link_previews" :key="lp.url" :preview="lp" />
     </div>
     <AudioPlayer v-if="!todo.editing && todo.audio" :src="todo.audio" @audio-interact="(v: boolean) => emit('audio-interact', v)" />
-    <span v-if="!todo.editing && now" class="text-xs text-white/30">
-      {{ timeAgo(todo.created_at) }}
-      <template v-if="todo.reminder_at">
-        ·
-        <Icon
-          name="uil:bell"
-          class="inline text-xs"
-          :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'"
-        />
-        <span :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
-          {{ new Date(todo.reminder_at).getTime() <= Date.now() ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
-        </span>
-      </template>
-    </span>
+    <div v-if="!todo.editing && now" class="flex items-center justify-between">
+      <span class="text-xs text-white/30">
+        {{ timeAgo(todo.created_at) }}
+        <template v-if="todo.reminder_at">
+          ·
+          <Icon
+            name="uil:bell"
+            class="inline text-xs"
+            :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'"
+          />
+          <span :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
+            {{ new Date(todo.reminder_at).getTime() <= Date.now() ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
+          </span>
+        </template>
+      </span>
+      <div class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>
+        <Icon name="uil:draggabledots" class="text-sm" />
+      </div>
+    </div>
     <div v-if="todo.editing" @click.stop>
       <!-- eslint-disable vue/no-mutating-props -->
       <LazyTiptapEditor

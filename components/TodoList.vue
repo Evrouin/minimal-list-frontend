@@ -67,12 +67,10 @@ const {
   tap,
 })
 
-const { reorderKey, handleReorder, createSortables, destroySortables } = useSortableReorder({
+const { handleReorder } = useSortableReorder({
   pinnedListRef,
   unpinnedListRef,
   isDragging,
-  onChoose: () => hideHoverCheckboxes(),
-  onDragStart: () => { hideHoverCheckboxes(); clearHoverTimers(); cancelLongPress() },
 })
 
 const onPinnedReorder = (uuid: string, newIndex: number) => handleReorder('pinned', uuid, newIndex)
@@ -163,17 +161,6 @@ const restoreTodo = (todo: Todo) => {
 
 // --- Lifecycle ---
 
-const refreshGridLayout = () => {
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      pinnedListRef.value?.refreshLayout()
-      unpinnedListRef.value?.refreshLayout()
-    })
-  })
-}
-
-watch(() => filteredTodos.value.map((t) => t.editing), () => refreshGridLayout(), { deep: true })
-
 onMounted(() => {
   updateIsLg()
   window.addEventListener('resize', debouncedResize)
@@ -239,7 +226,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Pinned section -->
     <div v-if="pinnedTodos.length > 0" class="mb-6">
       <p class="mb-3 text-xs text-white/40 lowercase">pinned</p>
-      <MasonryGrid ref="pinnedListRef" :key="'pinned-' + reorderKey" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
+      <MasonryGrid ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
@@ -274,7 +261,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
       <p v-if="pinnedTodos.length > 0" class="mb-3 text-xs text-white/40 lowercase">others</p>
-      <MasonryGrid ref="unpinnedListRef" :key="'unpinned-' + reorderKey" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
+      <MasonryGrid ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
