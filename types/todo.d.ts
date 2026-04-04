@@ -20,6 +20,7 @@ export interface Todo {
   deleted: boolean
   pinned: boolean
   editing: boolean
+  order_id?: number
   reminder_at?: string | null
   link_previews?: LinkPreview[]
   created_at?: string

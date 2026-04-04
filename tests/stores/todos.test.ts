@@ -136,6 +136,7 @@ describe('Todo Store', () => {
         deleted: false,
         pinned: true,
         editing: false,
+        order_id: 3,
       },
       {
         uuid: "test-uuid-2",
@@ -145,6 +146,7 @@ describe('Todo Store', () => {
         deleted: false,
         pinned: true,
         editing: false,
+        order_id: 2,
       },
       {
         uuid: "test-uuid-3",
@@ -154,18 +156,23 @@ describe('Todo Store', () => {
         deleted: false,
         pinned: false,
         editing: false,
+        order_id: 1,
       },
     ]
     mockApi.bulkReorder.mockResolvedValue({ success: true })
     const store = useTodoStore()
     store.todos = todos
 
-    const snapshot = store.reorderTodosBySection('pinned', ['test-uuid-2', 'test-uuid-1'])
-    await store.bulkReorderCommit(store.todos.map((t) => t.uuid))
+    const snapshot = store.reorderTodosBySection('pinned', ['test-uuid-1'])
+    await store.bulkReorderCommit('test-uuid-1', 2, true)
 
-    expect(store.todos[0].uuid).toBe('test-uuid-2')
-    expect(store.todos[1].uuid).toBe('test-uuid-1')
-    expect(mockApi.bulkReorder).toHaveBeenCalledWith(['test-uuid-2', 'test-uuid-1', 'test-uuid-3'])
+    expect(mockApi.bulkReorder).toHaveBeenCalledWith('test-uuid-1', 2, true)
+    // After reorder: pinned order should be uuid-2, uuid-1 (by -order_id)
+    expect(store.todos.find((t) => t.uuid === 'test-uuid-2')!.order_id)
+      .toBeGreaterThan(store.todos.find((t) => t.uuid === 'test-uuid-1')!.order_id!)
+    // Unpinned should still be below pinned
+    expect(store.todos.find((t) => t.uuid === 'test-uuid-1')!.order_id)
+      .toBeGreaterThan(store.todos.find((t) => t.uuid === 'test-uuid-3')!.order_id!)
     expect(snapshot[0].uuid).toBe('test-uuid-1')
   })
 
@@ -179,6 +186,7 @@ describe('Todo Store', () => {
         deleted: false,
         pinned: true,
         editing: false,
+        order_id: 2,
       },
       {
         uuid: "test-uuid-2",
@@ -188,14 +196,15 @@ describe('Todo Store', () => {
         deleted: false,
         pinned: true,
         editing: false,
+        order_id: 1,
       },
     ]
     mockApi.bulkReorder.mockRejectedValue(new Error('fail'))
     const store = useTodoStore()
     store.todos = todos
 
-    const snapshot = store.reorderTodosBySection('pinned', ['test-uuid-2', 'test-uuid-1'])
-    await expect(store.bulkReorderCommit(store.todos.map((t) => t.uuid))).rejects.toThrow()
+    const snapshot = store.reorderTodosBySection('pinned', ['test-uuid-1'])
+    await expect(store.bulkReorderCommit('test-uuid-1', 2, true)).rejects.toThrow()
     store.reorderRollback(snapshot)
 
     expect(store.todos[0].uuid).toBe('test-uuid-1')
