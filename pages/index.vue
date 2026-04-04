@@ -402,13 +402,24 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
 
     <!-- Scroll to top (desktop) -->
     <Transition name="fade">
-      <button
+      <div
         v-if="showScrollTop"
-        class="fixed right-6 bottom-6 z-40 hidden h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white md:flex"
-        @click="scrollToTop"
+        class="fixed right-6 bottom-6 z-40 hidden flex-col gap-3 md:flex"
       >
-        <Icon name="uil:arrow-up" class="h-5 w-5" />
-      </button>
+        <button
+          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
+          title="New note"
+          @click="showCreateDialog = true"
+        >
+          <Icon name="uil:plus" class="h-5 w-5" />
+        </button>
+        <button
+          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
+          @click="scrollToTop"
+        >
+          <Icon name="uil:arrow-up" class="h-5 w-5" />
+        </button>
+      </div>
     </Transition>
 
     <!-- Mobile add dialog -->
