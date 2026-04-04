@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
@@ -11,263 +11,82 @@ const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoS
 
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
-    case 'active':
-      return 'no active notes available'
-    case 'completed':
-      return 'no completed notes available'
-    case 'deleted':
-      return 'no deleted notes available'
-    default:
-      return 'no notes available'
+    case 'active': return 'no active notes available'
+    case 'completed': return 'no completed notes available'
+    case 'deleted': return 'no deleted notes available'
+    default: return 'no notes available'
   }
 })
 
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 6))
-
-const showDeleteDialog = ref(false)
-const todoToDelete = ref<Todo | null>(null)
-
-const dialogTodo = ref<Todo | null>(null)
-const dialogTitle = ref('')
-const dialogBody = ref('')
-const dialogEditorRef = ref<{ focus: () => void } | null>(null)
-const dialogPinned = ref(false)
-const dialogColor = ref<import('~/types/todo').NoteColor>('default')
-const dialogReminderAt = ref<string | null>(null)
-const dialogExpanded = ref(false)
-const inlineEditorRefs = ref(new Map<string, { focus: () => void }>())
 const cardRefs = ref(new Map<string, Element>())
 const pinnedListRef = ref<any>(null)
 const unpinnedListRef = ref<any>(null)
 const isDragging = ref(false)
+const showDeleteDialog = ref(false)
+const todoToDelete = ref<Todo | null>(null)
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
-const updateIsLg = () => {
-  isLg.value = window.innerWidth >= 1024
+const updateIsLg = () => { isLg.value = window.innerWidth >= 1024 }
+const debouncedResize = () => {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(updateIsLg, 150)
 }
+
+// --- Composables ---
+
+const {
+  dialogTodo, dialogTitle, dialogBody, dialogEditorRef, dialogPinned, dialogColor,
+  dialogReminderAt, dialogExpanded, dialogImageFile, dialogImagePreview,
+  dialogAudioFile, dialogAudioPreview, dialogAudioRecording, dialogOriginalAudio,
+  onDialogImageSelect, cancelDialogTodo, saveDialogTodo, dialogToggleCompletion, dialogTogglePin,
+  inlineEditorRefs, editImagePreviews, editAudioFiles, editAudioPreviews, expandedAudioRecording,
+  expandedEditId, expandedTodo, audioInteracting,
+  editTodo, saveTodo, cancelEdit, cancelAllEdits, onEditImageSelect,
+  expandEdit, saveExpandedEdit, cancelExpandedEdit, setEditorRef,
+  isEditing,
+} = useTodoEditing({
+  isLg,
+  cardRefs,
+  endLongPress: () => endLongPress(),
+  endHover: (id: string) => endHover(id),
+})
+
+const {
+  multiSelectMode, selectedIds, isSelected, hasCheckbox,
+  hideHoverCheckboxes, clearHoverTimers, cancelLongPress,
+  startHover, endHover, toggleSelect, exitMultiSelect,
+  startLongPress, endLongPress,
+  allSelectedPinned, allSelectedUnpinned, allSelectedDeleted,
+} = useTodoSelection({
+  filteredTodos,
+  isDragging,
+  audioInteracting,
+  isTodoEditing: (id) => filteredTodos.value.find((t) => t.uuid === id)?.editing,
+  tap,
+})
 
 const { reorderKey, createSortables, destroySortables } = useSortableReorder({
   pinnedListRef,
   unpinnedListRef,
   isDragging,
   onChoose: () => hideHoverCheckboxes(),
-  onDragStart: () => {
-    hideHoverCheckboxes()
-    clearHoverTimers()
-    cancelLongPress()
-  },
-})
-
-const hideHoverCheckboxes = () => {
-  visibleCheckboxIds.value = []
-}
-
-const clearHoverTimers = () => {
-  for (const t of hoverTimers.values()) {
-    clearTimeout(t)
-  }
-  hoverTimers.clear()
-}
-
-const cancelLongPress = () => {
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
-}
-
-const debouncedResize = () => {
-  if (resizeTimer) clearTimeout(resizeTimer)
-  resizeTimer = setTimeout(updateIsLg, 150)
-}
-onMounted(() => {
-  updateIsLg()
-  window.addEventListener('resize', debouncedResize)
-  nextTick(() => createSortables())
-})
-onUnmounted(() => {
-  window.removeEventListener('resize', debouncedResize)
-  if (resizeTimer) clearTimeout(resizeTimer)
-  destroySortables()
-  flushAll()
-})
-
-watch(isLg, (lg) => {
-  if (lg && expandedEditId.value) {
-    const todo = expandedTodo.value
-    if (todo) {
-      todo.editing = false
-      expandedEditId.value = null
-      dialogTodo.value = todo
-      dialogTitle.value = todo.title
-      dialogBody.value = todo.body
-      dialogPinned.value = todo.pinned
-      dialogColor.value = todo.color
-      dialogReminderAt.value = todo.reminder_at ?? null
-      dialogOriginalAudio.value = todo.audio ?? null
-      nextTick(() => dialogEditorRef.value?.focus())
-    }
-  } else if (lg && filteredTodos.value.some((t) => t.editing)) {
-    const todo = filteredTodos.value.find((t) => t.editing)!
-    todo.editing = false
-    dialogTodo.value = todo
-    dialogTitle.value = todo.title
-    dialogBody.value = todo.body
-    dialogPinned.value = todo.pinned
-    dialogColor.value = todo.color
-    dialogReminderAt.value = todo.reminder_at ?? null
-    dialogOriginalAudio.value = todo.audio ?? null
-    nextTick(() => dialogEditorRef.value?.focus())
-  } else if (!lg && dialogTodo.value) {
-    const todo = dialogTodo.value
-    todo.title = dialogTitle.value
-    todo.body = dialogBody.value
-    dialogTodo.value = null
-    dialogExpanded.value = false
-    todo.editing = true
-    nextTick(() => inlineEditorRefs.value.get(todo.uuid)?.focus())
-  }
-})
-
-const multiSelectMode = ref(false)
-const selectedIds = ref<string[]>([])
-const visibleCheckboxIds = ref<string[]>([])
-const hoverTimers = new Map<string, ReturnType<typeof setTimeout>>()
-
-const isSelected = (id: string) => selectedIds.value.includes(id)
-const hasCheckbox = (id: string) => visibleCheckboxIds.value.includes(id)
-
-const isTodoEditing = (id: string) => filteredTodos.value.find((t) => t.uuid === id)?.editing
-
-const startHover = (id: string) => {
-  if (isDragging.value || multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
-  hoverTimers.set(
-    id,
-    setTimeout(() => {
-      if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value && !isDragging.value) visibleCheckboxIds.value.push(id)
-    }, 800),
-  )
-}
-
-const endHover = (id: string) => {
-  const t = hoverTimers.get(id)
-  if (t) {
-    clearTimeout(t)
-    hoverTimers.delete(id)
-  }
-  if (!multiSelectMode.value) {
-    visibleCheckboxIds.value = visibleCheckboxIds.value.filter((i) => i !== id)
-  }
-}
-
-const audioInteracting = ref(false)
-
-let longPressTimer: ReturnType<typeof setTimeout> | null = null
-const startLongPress = (id: string) => {
-  if (isDragging.value || isTodoEditing(id) || audioInteracting.value) return
-  longPressTimer = setTimeout(() => {
-    if (audioInteracting.value || isDragging.value) return
-    tap()
-    if (!multiSelectMode.value && !visibleCheckboxIds.value.includes(id)) {
-      visibleCheckboxIds.value.push(id)
-    }
-    toggleSelect(id)
-  }, 500)
-}
-const endLongPress = () => {
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
-}
-
-const MAX_SELECT = 50
-
-const toggleSelect = (id: string) => {
-  if (audioInteracting.value) return
-  const idx = selectedIds.value.indexOf(id)
-  if (idx >= 0) selectedIds.value.splice(idx, 1)
-  else if (selectedIds.value.length < MAX_SELECT) selectedIds.value.push(id)
-  multiSelectMode.value = selectedIds.value.length > 0
-  if (!multiSelectMode.value) visibleCheckboxIds.value = []
-}
-
-const exitMultiSelect = () => {
-  multiSelectMode.value = false
-  selectedIds.value = []
-  visibleCheckboxIds.value = []
-}
-
-const allSelectedPinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.uuid))
-  return sel.length > 0 && sel.every((t) => t.pinned)
-})
-const allSelectedUnpinned = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.uuid))
-  return sel.length > 0 && sel.every((t) => !t.pinned)
-})
-const allSelectedDeleted = computed(() => {
-  const sel = filteredTodos.value.filter((t) => selectedIds.value.includes(t.uuid))
-  return sel.length > 0 && sel.every((t) => t.deleted)
+  onDragStart: () => { hideHoverCheckboxes(); clearHoverTimers(); cancelLongPress() },
 })
 
 const { show: showToast, flushAll } = useUndoToast()
 
-const showBulkDeleteDialog = ref(false)
-const bulkDeleteIds = ref<string[]>([])
+const {
+  showBulkDeleteDialog, bulkDeleteIds,
+  requestBulkDelete, confirmBulkDelete, bulkRestoreSelected, bulkPinSelected,
+} = useBulkActions({
+  exitMultiSelect,
+  tap,
+  showToast,
+})
 
-const requestBulkDelete = () => {
-  bulkDeleteIds.value = [...selectedIds.value]
-  showBulkDeleteDialog.value = true
-}
-const confirmBulkDelete = () => {
-  showBulkDeleteDialog.value = false
-  const ids = bulkDeleteIds.value
-  const count = ids.length
-  exitMultiSelect()
-  tap()
-  const snapshot = todoStore.bulkDelete(ids)
-  bulkDeleteIds.value = []
-  showToast(
-    `${count} note${count > 1 ? 's' : ''} deleted`,
-    () => todoStore.bulkDeleteCommit(ids),
-    () => {
-      todoStore.bulkDeleteRollback(snapshot)
-    },
-  )
-}
-const bulkRestoreSelected = () => {
-  const ids = [...selectedIds.value]
-  const count = ids.length
-  exitMultiSelect()
-  tap()
-  const snapshot = todoStore.bulkRestore(ids)
-  showToast(
-    `${count} note${count > 1 ? 's' : ''} restored`,
-    () => todoStore.bulkRestoreCommit(ids),
-    () => {
-      todoStore.bulkRestoreRollback(snapshot)
-    },
-  )
-}
-
-const bulkPinSelected = (pinned: boolean) => {
-  const ids = [...selectedIds.value]
-  const count = ids.length
-  exitMultiSelect()
-  tap()
-  const snapshot = todoStore.bulkPin(ids, pinned)
-  showToast(
-    `${count} note${count > 1 ? 's' : ''} ${pinned ? 'pinned' : 'unpinned'}`,
-    () => todoStore.bulkPinCommit(ids, pinned),
-    () => {
-      todoStore.bulkPinRollback(snapshot)
-    },
-  )
-}
-
-const editOriginals = ref(new Map<string, { title: string; body: string; audio: string | null | undefined }>())
+// --- Event handlers ---
 
 const handleCardClick = (todo: Todo) => {
   if (todo.editing) return
@@ -275,197 +94,30 @@ const handleCardClick = (todo: Todo) => {
   else editTodo(todo)
 }
 
-const cancelAllEdits = () => {
-  const current = filteredTodos.value.find((t) => t.editing)
-  if (current) {
-    const orig = editOriginals.value.get(current.uuid)
-    if (orig) {
-      current.title = orig.title
-      current.body = orig.body
-    }
-    current.editing = false
-    editOriginals.value.delete(current.uuid)
-  }
-}
-
-const editTodo = (todo: Todo) => {
-  endLongPress()
-  endHover(todo.uuid)
-  const current = filteredTodos.value.find((t) => t.editing && t.uuid !== todo.uuid)
-  if (current) {
-    const orig = editOriginals.value.get(current.uuid)
-    if (orig) {
-      current.title = orig.title
-      current.body = orig.body
-    }
-    current.editing = false
-    editOriginals.value.delete(current.uuid)
-  }
-  if (isLg.value) {
-    dialogTodo.value = todo
-    dialogTitle.value = todo.title
-    dialogBody.value = todo.body
-    dialogPinned.value = todo.pinned
-    dialogColor.value = todo.color
-    dialogReminderAt.value = todo.reminder_at ?? null
-    dialogOriginalAudio.value = todo.audio ?? null
-    nextTick(() => dialogEditorRef.value?.focus())
-  } else {
-    editOriginals.value.set(todo.uuid, { title: todo.title, body: todo.body, audio: todo.audio ?? null })
-    todo.editing = true
-    nextTick(() => {
-      inlineEditorRefs.value.get(todo.uuid)?.focus()
-      setTimeout(() => {
-        cardRefs.value.get(todo.uuid)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }, 220)
-    })
-  }
-}
-
-const dialogImageFile = ref<File | null>(null)
-const dialogImagePreview = ref('')
-const dialogAudioFile = ref<File | null>(null)
-const dialogAudioPreview = ref('')
-const dialogAudioRecording = ref(false)
-const dialogOriginalAudio = ref<string | null | undefined>(null)
-
-const onDialogImageSelect = async (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (file) {
-    const compressed = await compressImage(file)
-    dialogImageFile.value = compressed
-    dialogImagePreview.value = URL.createObjectURL(compressed)
-  }
-}
-
-const cancelDialogTodo = () => {
-  if (dialogTodo.value) dialogTodo.value.audio = dialogOriginalAudio.value
-  dialogTodo.value = null
-  dialogImageFile.value = null
-  dialogImagePreview.value = ''
-  dialogAudioFile.value = null
-  dialogAudioPreview.value = ''
-  dialogOriginalAudio.value = null
-  dialogExpanded.value = false
-}
-
-const { fetchPreviews } = useLinkPreviews()
-
-const saveDialogTodo = async () => {
-  if (!dialogTodo.value || !dialogTitle.value.trim()) return
-  dialogTodo.value.title = dialogTitle.value
-  dialogTodo.value.body = dialogBody.value
-  dialogTodo.value.pinned = dialogPinned.value
-  dialogTodo.value.color = dialogColor.value
-  dialogTodo.value.reminder_at = dialogReminderAt.value
-  dialogTodo.value.link_previews = await fetchPreviews(dialogBody.value, dialogTodo.value.link_previews ?? [])
-  dialogTodo.value.editing = false
-  await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined, dialogAudioFile.value || undefined)
-  dialogTodo.value = null
-  dialogImageFile.value = null
-  dialogImagePreview.value = ''
-  dialogAudioFile.value = null
-  dialogAudioPreview.value = ''
-  dialogExpanded.value = false
-}
-
-const editImageFiles = ref(new Map<string, File>())
-const editImagePreviews = ref(new Map<string, string>())
-const editAudioFiles = ref(new Map<string, File>())
-const editAudioPreviews = ref(new Map<string, string>())
-const expandedAudioRecording = ref(false)
-
-const onEditImageSelect = async (todo: Todo, e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (file) {
-    const compressed = await compressImage(file)
-    editImageFiles.value.set(todo.uuid, compressed)
-    editImagePreviews.value.set(todo.uuid, URL.createObjectURL(compressed))
-  }
-}
-
-const saveTodo = async (todo: Todo) => {
-  if (!todo.title.trim()) return
-  todo.editing = false
-  todo.link_previews = await fetchPreviews(todo.body, todo.link_previews ?? [])
-  const imageFile = editImageFiles.value.get(todo.uuid)
-  const audioFile = editAudioFiles.value.get(todo.uuid)
-  editOriginals.value.delete(todo.uuid)
-  editImageFiles.value.delete(todo.uuid)
-  editImagePreviews.value.delete(todo.uuid)
-  editAudioFiles.value.delete(todo.uuid)
-  editAudioPreviews.value.delete(todo.uuid)
-  await todoStore.updateTodo({ ...todo }, imageFile, audioFile)
-}
-
-const cancelEdit = (todo: Todo) => {
-  const orig = editOriginals.value.get(todo.uuid)
-  if (orig) {
-    todo.title = orig.title
-    todo.body = orig.body
-    todo.audio = orig.audio
-  }
-  todo.editing = false
-  expandedEditId.value = null
-  editOriginals.value.delete(todo.uuid)
-  editImageFiles.value.delete(todo.uuid)
-  editImagePreviews.value.delete(todo.uuid)
-  editAudioFiles.value.delete(todo.uuid)
-  editAudioPreviews.value.delete(todo.uuid)
-}
-
-const expandedEditId = ref<string | null>(null)
-const expandedTodo = computed(() => (expandedEditId.value ? todoStore.todos.find((t) => t.uuid === expandedEditId.value) : null))
-
-const expandEdit = (todo: Todo) => {
-  expandedEditId.value = todo.uuid
-}
-
-const saveExpandedEdit = async () => {
-  if (!expandedTodo.value) return
-  const todo = expandedTodo.value
-  expandedEditId.value = null
-  await saveTodo(todo)
-}
-
-const cancelExpandedEdit = () => {
-  if (!expandedTodo.value) return
-  const todo = expandedTodo.value
-  expandedEditId.value = null
-  cancelEdit(todo)
-}
-
 const toggleCompletion = async (todo: Todo) => {
   endHover(todo.uuid)
   tap()
   await todoStore.toggleTodoCompletion(todo.uuid).catch(() => {})
 }
+
 const togglePin = async (todo: Todo) => {
   endHover(todo.uuid)
   tap()
   await todoStore.togglePin(todo.uuid).catch(() => {})
 }
 
-const dialogToggleCompletion = async () => {
-  if (!dialogTodo.value) return
-  tap()
-  await todoStore.toggleTodoCompletion(dialogTodo.value.uuid)
-  dialogTodo.value = null
-}
-const dialogTogglePin = () => {
-  dialogPinned.value = !dialogPinned.value
-}
-
 const requestDelete = (todo: Todo) => {
   todoToDelete.value = todo
   showDeleteDialog.value = true
 }
+
 const dialogRequestDelete = () => {
   if (!dialogTodo.value) return
   todoToDelete.value = dialogTodo.value
   dialogTodo.value = null
   showDeleteDialog.value = true
 }
+
 const confirmDelete = () => {
   if (!todoToDelete.value) return
   showDeleteDialog.value = false
@@ -477,9 +129,7 @@ const confirmDelete = () => {
   showToast(
     isPermanent ? 'note permanently deleted' : 'note deleted',
     () => todoStore.deleteTodoCommit(todo.uuid),
-    () => {
-      todoStore.deleteTodoRollback(snapshot)
-    },
+    () => todoStore.deleteTodoRollback(snapshot),
   )
 }
 
@@ -489,16 +139,23 @@ const restoreTodo = (todo: Todo) => {
   showToast(
     'note restored',
     () => todoStore.restoreTodoCommit(todo.uuid),
-    () => {
-      todoStore.restoreTodoRollback(snapshot)
-    },
+    () => todoStore.restoreTodoRollback(snapshot),
   )
 }
 
-const setEditorRef = (id: string, el: { focus: () => void }) => {
-  inlineEditorRefs.value.set(id, el)
-}
-const isEditing = computed(() => filteredTodos.value.some((t) => t.editing))
+// --- Lifecycle ---
+
+onMounted(() => {
+  updateIsLg()
+  window.addEventListener('resize', debouncedResize)
+  nextTick(() => createSortables())
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', debouncedResize)
+  if (resizeTimer) clearTimeout(resizeTimer)
+  destroySortables()
+  flushAll()
+})
 
 defineExpose({ cancelAllEdits, isEditing })
 </script>
@@ -517,7 +174,7 @@ defineExpose({ cancelAllEdits, isEditing })
         v-if="allSelectedUnpinned"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
         title="Pin selected"
-        @click="bulkPinSelected(true)"
+        @click="bulkPinSelected(selectedIds, true)"
       >
         <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
@@ -525,7 +182,7 @@ defineExpose({ cancelAllEdits, isEditing })
         v-if="allSelectedPinned"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
         title="Unpin selected"
-        @click="bulkPinSelected(false)"
+        @click="bulkPinSelected(selectedIds, false)"
       >
         <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
@@ -533,14 +190,14 @@ defineExpose({ cancelAllEdits, isEditing })
         v-if="todoStore.filterType === 'deleted'"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-white"
         title="Restore selected"
-        @click="bulkRestoreSelected"
+        @click="bulkRestoreSelected(selectedIds)"
       >
         <Icon name="uil:redo" class="h-3 w-3" />
       </button>
       <button
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"
         title="Delete selected"
-        @click="requestBulkDelete"
+        @click="requestBulkDelete(selectedIds)"
       >
         <Icon name="uil:trash" class="h-3 w-3" />
       </button>
@@ -663,7 +320,7 @@ defineExpose({ cancelAllEdits, isEditing })
           <button
             class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
             :title="dialogTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
-            @click="dialogToggleCompletion"
+            @click="tap(); dialogToggleCompletion()"
           >
             <Icon :name="dialogTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
           </button>
