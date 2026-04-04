@@ -33,6 +33,14 @@ const emit = defineEmits<{
 const { now, timeAgo } = useTimeAgo()
 const { onImageError } = useMediaFallback()
 const showPreview = ref(false)
+const wasDragged = ref(false)
+const onImgMouseDown = () => { wasDragged.value = false }
+const onImgMouseMove = () => { wasDragged.value = true }
+const onImgClick = (e: Event) => {
+  if (wasDragged.value || props.multiSelectMode) return
+  e.stopPropagation()
+  showPreview.value = true
+}
 
 const colors = computed(() => noteColors[props.todo.color] || noteColors.default)
 
@@ -72,7 +80,9 @@ const cardClasses = computed(() => [
       loading="lazy"
       class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover"
       style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none"
-      @click="if (!multiSelectMode) { $event.stopPropagation(); showPreview = true }"
+      @click="onImgClick"
+      @mousedown="onImgMouseDown"
+      @mousemove="onImgMouseMove"
       @error="onImageError"
     />
     <img
