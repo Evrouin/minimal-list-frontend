@@ -40,7 +40,7 @@ defineExpose({ containerRef })
 
 <template>
   <div ref="containerRef" class="flex gap-5">
-    <div v-for="(col, colIdx) in columns" :key="colIdx" class="flex flex-1 flex-col gap-5">
+    <div v-for="(col, colIdx) in columns" :key="colIdx" class="flex min-w-0 flex-1 flex-col gap-5">
       <div v-for="itemIdx in col" :key="(keyField && items[itemIdx]?.[keyField]) || itemIdx">
         <slot :item="items[itemIdx]" :index="itemIdx" />
       </div>
