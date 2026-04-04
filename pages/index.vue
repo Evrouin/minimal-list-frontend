@@ -318,7 +318,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       <PageHeader title="minimal list">
         <div class="flex shrink-0 items-center">
           <button
-            class="hidden cursor-pointer p-2 text-white/60 hover:text-white lg:block"
+            class="hidden cursor-pointer p-2 text-white/60 hover:text-white md:block"
             title="New note"
             @click="showCreateDialog = true"
           >
@@ -370,7 +370,7 @@ const { toasts, undo: undoToast } = useUndoToast()
       </TransitionGroup>
     </div>
 
-    <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 lg:hidden">
+    <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 md:hidden">
       <button
         class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-900 text-white/60 shadow-lg transition-colors hover:bg-gray-800 hover:text-white"
         @click="showMobileAdd = true"
@@ -392,7 +392,7 @@ const { toasts, undo: undoToast } = useUndoToast()
     <Transition name="fade">
       <button
         v-if="showScrollTop"
-        class="fixed right-6 bottom-6 z-40 hidden h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white lg:flex"
+        class="fixed right-6 bottom-6 z-40 hidden h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white md:flex"
         @click="scrollToTop"
       >
         <Icon name="uil:arrow-up" class="h-5 w-5" />
