@@ -312,6 +312,7 @@ export const useTodoStore = defineStore('todo', () => {
     for (const key of cache.keys()) {
       if (key !== filterType.value) cache.delete(key)
     }
+    cache.set(filterType.value, { todos: [...todos.value], cursor: nextCursor.value })
   }
 
   const pinnedTodos = computed(() =>
