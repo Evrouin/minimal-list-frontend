@@ -136,9 +136,39 @@ const handleChangePassword = async () => {
 
 const showDeleteDialog = ref(false)
 
+const defaultNoteColor = ref<import('~/types/todo').NoteColor>('default')
+const notificationsEnabled = ref(typeof Notification !== 'undefined' && Notification.permission === 'granted')
+
 const handleDeleteAccount = async () => {
   await authStore.deleteAccount()
   navigateTo('/auth/login')
+}
+
+const toggleNotifications = async () => {
+  if (typeof Notification === 'undefined') return
+  if (Notification.permission === 'granted') {
+    notificationsEnabled.value = false
+  } else {
+    const result = await Notification.requestPermission()
+    notificationsEnabled.value = result === 'granted'
+  }
+}
+
+const exportNotes = async () => {
+  const { request } = useApiFetch()
+  try {
+    const notes = await request<any[]>('/api/notes/?limit=1000')
+    const data = JSON.stringify(notes, null, 2)
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `minimal-list-export-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    // silently fail
+  }
 }
 
 const handleLogout = () => {
@@ -158,6 +188,9 @@ const handleLogout = () => {
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
 
       <template v-if="user">
+        <!-- ACCOUNT SECTION -->
+        <p class="mb-3 text-sm font-bold text-white lowercase">account</p>
+
         <!-- header card -->
         <div class="mb-3 rounded-lg bg-gray-700 p-5">
           <div class="flex items-center gap-4">
@@ -214,7 +247,7 @@ const handleLogout = () => {
           </template>
 
           <template v-if="isEditing">
-            <p class="mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">edit profile</p>
+            <p class="mb-3 text-sm font-bold text-white lowercase">edit profile</p>
             <div class="space-y-3">
               <div>
                 <label class="mb-1 block text-xs text-white/40">username</label>
@@ -267,7 +300,7 @@ const handleLogout = () => {
 
         <!-- password card -->
         <form class="mb-3 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
-          <p class="mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">
+          <p class="mb-3 text-sm font-bold text-white lowercase">
             {{ user.has_password ? 'change password' : 'set password' }}
           </p>
           <div class="space-y-3">
@@ -311,6 +344,68 @@ const handleLogout = () => {
             {{ user.has_password ? 'change password' : 'set password' }}
           </button>
         </form>
+
+        <!-- SETTINGS SECTION -->
+        <p class="mb-3 mt-6 text-sm font-bold text-white lowercase">settings</p>
+
+        <!-- settings -->
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <p class="mb-3 text-sm font-bold text-white lowercase">preferences</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">default note color</p>
+              <ColorPicker v-model="defaultNoteColor" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <p class="mb-3 text-sm font-bold text-white lowercase">notifications</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">browser reminders</p>
+              <button
+                class="cursor-pointer rounded-lg px-3 py-1 text-xs lowercase"
+                :class="notificationsEnabled ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-600 text-white/40'"
+                @click="toggleNotifications"
+              >
+                {{ notificationsEnabled ? 'on' : 'off' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <p class="mb-3 text-sm font-bold text-white lowercase">account</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">connected accounts</p>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-white/60">{{ user.has_password ? 'email' : 'google' }}</span>
+                <Icon name="logos:google-icon" class="text-sm" />
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">active sessions</p>
+              <span class="text-xs text-white/20 lowercase">coming soon</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+          <p class="mb-3 text-sm font-bold text-white lowercase">privacy</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">export notes</p>
+              <button
+                class="cursor-pointer rounded-lg bg-gray-600 px-3 py-1 text-xs text-white/60 lowercase hover:text-white"
+                @click="exportNotes"
+              >
+                export
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- danger zone -->
         <div class="rounded-lg border border-red-500/20 bg-gray-700 p-5">
