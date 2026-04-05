@@ -12,6 +12,7 @@ export default defineNuxtPlugin(() => {
   const firedIds = new Set<number>()
 
   const check = () => {
+    if (localStorage.getItem('notificationsEnabled') === 'false') return
     const now = Date.now()
     todoStore.todos.forEach((todo) => {
       if (

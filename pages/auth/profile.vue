@@ -141,7 +141,11 @@ const defaultNoteColor = ref<import('~/types/todo').NoteColor>(
 )
 watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
 
-const notificationsEnabled = ref(typeof Notification !== 'undefined' && Notification.permission === 'granted')
+const notificationsEnabled = ref(
+  localStorage.getItem('notificationsEnabled') !== 'false' &&
+  typeof Notification !== 'undefined' &&
+  Notification.permission === 'granted',
+)
 
 const handleDeleteAccount = async () => {
   await authStore.deleteAccount()
@@ -149,12 +153,16 @@ const handleDeleteAccount = async () => {
 }
 
 const toggleNotifications = async () => {
-  if (typeof Notification === 'undefined') return
-  if (Notification.permission === 'granted') {
+  if (notificationsEnabled.value) {
     notificationsEnabled.value = false
+    localStorage.setItem('notificationsEnabled', 'false')
   } else {
-    const result = await Notification.requestPermission()
-    notificationsEnabled.value = result === 'granted'
+    if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+      const result = await Notification.requestPermission()
+      if (result !== 'granted') return
+    }
+    notificationsEnabled.value = true
+    localStorage.setItem('notificationsEnabled', 'true')
   }
 }
 
@@ -372,8 +380,8 @@ const handleLogout = () => {
             <div class="flex items-center justify-between">
               <p class="text-xs text-white/40">browser reminders</p>
               <button
-                class="cursor-pointer rounded-lg px-3 py-1 text-xs lowercase"
-                :class="notificationsEnabled ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-600 text-white/40'"
+                class="cursor-pointer rounded-lg px-4 py-2 text-xs lowercase min-w-[70px] text-center"
+                :class="notificationsEnabled ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'"
                 @click="toggleNotifications"
               >
                 {{ notificationsEnabled ? 'on' : 'off' }}
@@ -405,7 +413,7 @@ const handleLogout = () => {
             <div class="flex items-center justify-between">
               <p class="text-xs text-white/40">export notes</p>
               <button
-                class="cursor-pointer rounded-lg bg-gray-600 px-3 py-1 text-xs text-white/60 lowercase hover:text-white"
+                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white/60 lowercase hover:text-white min-w-[70px] text-center"
                 @click="exportNotes"
               >
                 export
