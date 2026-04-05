@@ -132,7 +132,7 @@ const createErrorMsg = ref('')
 const createSubmitting = ref(false)
 const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
-const createColor = ref<import('~/types/todo').NoteColor>('default')
+const createColor = ref<import('~/types/todo').NoteColor>((localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default')
 const createReminderAt = ref<string | null>(null)
 const createPinned = ref(false)
 const createExpanded = ref(false)
@@ -191,7 +191,7 @@ const createDialogSubmit = async () => {
     }
     createTitle.value = ''
     createBody.value = ''
-    createColor.value = 'default'
+    createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
     createPinned.value = false
     createReminderAt.value = null
     clearCreateImage()
@@ -212,7 +212,7 @@ const cancelCreate = () => {
   createExpanded.value = false
   createTitle.value = ''
   createBody.value = ''
-  createColor.value = 'default'
+  createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
   createPinned.value = false
   createReminderAt.value = null
   createImageFile.value = null
@@ -226,7 +226,7 @@ const cancelMobileAdd = () => {
   showMobileAdd.value = false
   createTitle.value = ''
   createBody.value = ''
-  createColor.value = 'default'
+  createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
   createPinned.value = false
   createReminderAt.value = null
   createImageFile.value = null

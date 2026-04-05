@@ -136,7 +136,11 @@ const handleChangePassword = async () => {
 
 const showDeleteDialog = ref(false)
 
-const defaultNoteColor = ref<import('~/types/todo').NoteColor>('default')
+const defaultNoteColor = ref<import('~/types/todo').NoteColor>(
+  (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default',
+)
+watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
+
 const notificationsEnabled = ref(typeof Notification !== 'undefined' && Notification.permission === 'granted')
 
 const handleDeleteAccount = async () => {

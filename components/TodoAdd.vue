@@ -8,7 +8,7 @@ const todoStore = useTodoStore()
 
 const title = ref<string>('')
 const body = ref<string>('')
-const color = ref<NoteColor>('default')
+const color = ref<NoteColor>((localStorage.getItem('defaultNoteColor') as NoteColor) || 'default')
 const reminderAt = ref<string | null>(null)
 const pinned = ref(false)
 
@@ -81,7 +81,7 @@ const addTodo = async () => {
     }
     title.value = ''
     body.value = ''
-    color.value = 'default'
+    color.value = (localStorage.getItem('defaultNoteColor') as NoteColor) || 'default'
     reminderAt.value = null
     pinned.value = false
     clearImage()
