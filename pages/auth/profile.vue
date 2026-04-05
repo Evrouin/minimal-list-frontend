@@ -546,7 +546,7 @@ const handleLogout = () => {
 
     <!-- sessions dialog -->
     <ModalOverlay :show="showSessions" @click.self="showSessions = false">
-      <div class="mx-4 w-full max-w-md rounded-lg bg-gray-700 p-5">
+      <div class="mx-4 w-full min-w-xs max-w-md min-h-75 rounded-lg bg-gray-700 p-5">
         <div class="mb-4 flex items-center justify-between">
           <p class="text-sm font-bold text-white lowercase">active sessions</p>
           <button class="cursor-pointer text-xs text-white/30 hover:text-white/60" @click="showSessions = false">✕</button>
