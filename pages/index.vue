@@ -333,7 +333,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
       </div>
     </Transition>
     <div ref="headerRef" class="w-full max-w-lg px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
-      <PageHeader title="minimal list">
+      <PageHeader title="minimal list" class="pl-2.5">
         <div class="flex shrink-0 items-center">
           <button
             class="hidden cursor-pointer p-2 text-white/60 hover:text-white sm:block"

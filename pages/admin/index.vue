@@ -16,10 +16,11 @@ onMounted(async () => {
 
 <template>
   <div>
-    <PageHeader title="admin dashboard">
+    <PageHeader title="admin dashboard" class="px-2.5">
       <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
     </PageHeader>
 
+    <div class="mx-2.5">
     <div v-if="!stats && !error">
       <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div v-for="i in 4" :key="i" class="animate-pulse rounded-lg bg-gray-700 p-4 text-center">
@@ -96,6 +97,7 @@ onMounted(async () => {
         <span>manage notes</span>
         <Icon name="uil:arrow-right" class="text-white/40" />
       </NuxtLink>
+    </div>
     </div>
   </div>
 </template>

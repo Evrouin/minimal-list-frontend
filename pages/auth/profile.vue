@@ -178,21 +178,24 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 py-10">
-    <div class="w-full max-w-lg px-4 md:max-w-2xl lg:max-w-3xl xl:max-w-5xl">
-      <PageHeader title="profile">
+  <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-10">
+    <div class="w-full max-w-lg px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
+      <PageHeader title="profile" class="px-2.5">
         <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
         <button class="cursor-pointer text-sm text-white/60 lowercase hover:text-white" @click="handleLogout">logout</button>
       </PageHeader>
+    </div>
+
+    <div class="w-full max-w-lg px-4 pb-10 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
 
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
 
       <template v-if="user">
         <!-- ACCOUNT SECTION -->
-        <p class="mb-3 text-sm font-bold text-white lowercase">account</p>
+        <p class="mb-3 mx-2.5 text-sm font-bold text-white lowercase">account</p>
 
         <!-- header card -->
-        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <div class="flex items-center gap-4">
             <div class="group relative cursor-pointer" @click="avatarInput?.click()">
               <img
@@ -222,7 +225,7 @@ const handleLogout = () => {
         </div>
 
         <!-- profile info / edit card -->
-        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <template v-if="!isEditing">
             <div class="space-y-3 text-sm">
               <div class="flex items-center justify-between">
@@ -299,7 +302,7 @@ const handleLogout = () => {
         </div>
 
         <!-- password card -->
-        <form class="mb-3 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
+        <form class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
           <p class="mb-3 text-sm font-bold text-white lowercase">
             {{ user.has_password ? 'change password' : 'set password' }}
           </p>
@@ -346,10 +349,10 @@ const handleLogout = () => {
         </form>
 
         <!-- SETTINGS SECTION -->
-        <p class="mb-3 mt-6 text-sm font-bold text-white lowercase">settings</p>
+        <p class="mb-3 mt-6 mx-2.5 text-sm font-bold text-white lowercase">settings</p>
 
         <!-- settings -->
-        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <p class="mb-3 text-sm font-bold text-white lowercase">preferences</p>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
@@ -359,7 +362,7 @@ const handleLogout = () => {
           </div>
         </div>
 
-        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <p class="mb-3 text-sm font-bold text-white lowercase">notifications</p>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
@@ -375,7 +378,7 @@ const handleLogout = () => {
           </div>
         </div>
 
-        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <p class="mb-3 text-sm font-bold text-white lowercase">account</p>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
@@ -392,7 +395,7 @@ const handleLogout = () => {
           </div>
         </div>
 
-        <div class="mb-3 rounded-lg bg-gray-700 p-5">
+        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <p class="mb-3 text-sm font-bold text-white lowercase">privacy</p>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
@@ -408,7 +411,7 @@ const handleLogout = () => {
         </div>
 
         <!-- danger zone -->
-        <div class="rounded-lg border border-red-500/20 bg-gray-700 p-5">
+        <div class="mx-2.5 rounded-lg border border-red-500/20 bg-gray-700 p-5">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-red-300">delete account</p>
