@@ -47,3 +47,15 @@ export interface PasswordResetConfirmPayload {
   new_password: string
   new_password2: string
 }
+
+export interface Session {
+  id: number
+  device_name: string
+  device_type: string
+  browser: string
+  os: string
+  ip_address: string
+  created_at: string
+  last_active_at: string
+  is_current: boolean
+}

@@ -83,6 +83,17 @@ export const useAuthApi = () => {
     deleteAccount: () =>
       request(`${base}/delete-account/`, { method: 'DELETE' }),
 
+    listSessions: (refresh?: string) => {
+      const params = refresh ? `?refresh=${encodeURIComponent(refresh)}` : ''
+      return request<import('~/types/auth').Session[]>(`${base}/sessions/${params}`)
+    },
+
+    revokeSession: (id: number) =>
+      request(`${base}/sessions/${id}/`, { method: 'DELETE' }),
+
+    revokeOtherSessions: (refresh: string) =>
+      request(`${base}/sessions/revoke-others/`, { method: 'DELETE', body: { refresh } }),
+
     unlockAccount: (token: string) =>
       request<{ message: string }>(`${base}/unlock-account/${token}/`, { method: 'POST' }),
   }

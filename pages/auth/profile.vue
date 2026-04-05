@@ -142,6 +142,46 @@ const defaultNoteColor = ref<import('~/types/todo').NoteColor>(
 watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
 const showColorPicker = ref(false)
 
+const showSessions = ref(false)
+const sessions = ref<import('~/types/auth').Session[]>([])
+const sessionsLoading = ref(false)
+const api = useAuthApi()
+const { timeAgo, now } = useTimeAgo()
+
+const openSessions = async () => {
+  showSessions.value = true
+  sessionsLoading.value = true
+  try {
+    const tokens = JSON.parse(localStorage.getItem('auth_tokens') || '{}')
+    const res = await api.listSessions(tokens.refresh)
+    const list = Array.isArray(res) ? res : (res as any).data || (res as any).results || []
+    sessions.value = list
+  } catch { sessions.value = [] }
+  finally { sessionsLoading.value = false }
+}
+
+const revokeSession = async (id: number) => {
+  try {
+    await api.revokeSession(id)
+    sessions.value = sessions.value.filter((s) => s.id !== id)
+  } catch {}
+}
+
+const revokeOtherSessions = async () => {
+  const tokens = JSON.parse(localStorage.getItem('auth_tokens') || '{}')
+  if (!tokens.refresh) return
+  try {
+    await api.revokeOtherSessions(tokens.refresh)
+    sessions.value = sessions.value.filter((s) => s.is_current)
+  } catch {}
+}
+
+const deviceIcon = (type: string) => {
+  if (type === 'mobile') return 'uil:mobile-android'
+  if (type === 'tablet') return 'uil:tablet'
+  return 'uil:desktop'
+}
+
 const notificationsEnabled = ref(
   localStorage.getItem('notificationsEnabled') !== 'false' &&
   typeof Notification !== 'undefined' &&
@@ -428,13 +468,18 @@ const handleLogout = () => {
             <div class="flex items-center justify-between">
               <p class="text-xs text-white/40">connected accounts</p>
               <div class="flex items-center gap-2">
-                <span class="text-xs text-white/60">{{ user.has_password ? 'email' : 'google' }}</span>
-                <Icon name="logos:google-icon" class="text-sm" />
+                <Icon v-if="user.has_password" name="uil:envelope" class="h-5 w-5 text-white/60" />
+                <Icon name="logos:google-icon" class="h-4 w-4" />
               </div>
             </div>
             <div class="flex items-center justify-between">
               <p class="text-xs text-white/40">active sessions</p>
-              <span class="text-xs text-white/20 lowercase">coming soon</span>
+              <button
+                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white/60 lowercase hover:text-white min-w-[70px] text-center"
+                @click="openSessions"
+              >
+                manage
+              </button>
             </div>
           </div>
         </div>
@@ -482,6 +527,61 @@ const handleLogout = () => {
       confirm-text="delete forever"
       @confirm="handleDeleteAccount"
     />
+
+    <!-- sessions dialog -->
+    <ModalOverlay :show="showSessions" @click.self="showSessions = false">
+      <div class="mx-4 w-full max-w-md rounded-lg bg-gray-700 p-5">
+        <div class="mb-4 flex items-center justify-between">
+          <p class="text-sm font-bold text-white lowercase">active sessions</p>
+          <button class="cursor-pointer text-xs text-white/30 hover:text-white/60" @click="showSessions = false">✕</button>
+        </div>
+
+        <div v-if="sessionsLoading" class="py-4 text-center text-xs text-white/40">loading...</div>
+
+        <div v-else-if="sessions.length === 0" class="py-4 text-center text-xs text-white/40">no sessions found</div>
+
+        <div v-else class="space-y-3">
+          <div
+            v-for="session in sessions"
+            :key="session.id"
+            class="flex items-center gap-3 rounded-lg bg-gray-600/50 p-3"
+          >
+            <Icon :name="deviceIcon(session.device_type)" class="shrink-0 text-lg text-white/40" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <p class="truncate text-xs text-white">{{ session.device_name }}</p>
+              </div>
+              <p class="text-xs text-white/30">
+                {{ session.ip_address }} ·
+                <span v-if="session.is_current" class="text-green-400">active now</span>
+                <span v-else>{{ now ? timeAgo(session.last_active_at) : '' }}</span>
+              </p>
+            </div>
+            <span
+              v-if="session.is_current"
+              class="shrink-0 rounded bg-green-500/20 px-2 py-1 text-xs text-green-300"
+            >
+              current
+            </span>
+            <button
+              v-else
+              class="shrink-0 cursor-pointer rounded px-2 py-1 text-xs text-red-400 hover:text-red-300"
+              @click="revokeSession(session.id)"
+            >
+              revoke
+            </button>
+          </div>
+        </div>
+
+        <button
+          v-if="sessions.length > 1"
+          class="mt-4 w-full cursor-pointer rounded-lg bg-red-500/10 py-2 text-xs text-red-300 lowercase hover:bg-red-500/20"
+          @click="revokeOtherSessions"
+        >
+          log out all other devices
+        </button>
+      </div>
+    </ModalOverlay>
 
     <!-- avatar crop modal -->
     <ModalOverlay :show="showCropper" backdrop-class="bg-black/70" @click.self="cancelCrop">
