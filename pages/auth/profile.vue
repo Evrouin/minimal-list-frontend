@@ -161,7 +161,11 @@ const openSessions = async () => {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || '{}')
     const res = await api.listSessions(tokens.refresh)
     const list = Array.isArray(res) ? res : (res as any).data || (res as any).results || []
-    sessions.value = list
+    const sortedSessions = list.sort((a, b) => new Date(b.last_active_at).getTime() - new Date(a.last_active_at).getTime())
+    const currentSession = sortedSessions.find(s => s.is_current)
+    const otherSessions = sortedSessions.filter(s => !s.is_current)
+    const finalSessions = currentSession ? [currentSession, ...otherSessions] : sortedSessions
+    sessions.value = finalSessions
   } catch { sessions.value = [] }
   finally { sessionsLoading.value = false }
 }
@@ -568,7 +572,7 @@ const handleLogout = () => {
                 <p class="truncate text-xs text-white">{{ session.device_name }}</p>
               </div>
               <p class="text-xs text-white/30">
-                {{ session.ip_address }} ·
+                <span class="truncate">{{ session.ip_address }}</span> ·
                 <span v-if="session.is_current" class="text-green-400">active now</span>
                 <span v-else>{{ now ? timeAgo(session.last_active_at) : '' }}</span>
               </p>
