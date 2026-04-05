@@ -5,6 +5,11 @@ html, body {
   background-color: #1f2937;
 }
 
+/* Prevent horizontal scroll on main containers */
+.flex.min-h-screen {
+  overflow-x: hidden;
+}
+
 @theme {
   --font-sans: 'JetBrains Mono', monospace;
 }

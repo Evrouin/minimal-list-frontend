@@ -24,8 +24,9 @@ let columnCount = 1
 
 const getColumnCount = () => {
   const width = window.innerWidth
+
   if (width >= 1920) return 5
-  if (width >= 1536) return 4
+  if (width >= 1280) return 4
   if (width >= 1024) return 3
   if (width >= 640) return 2
   return 1
@@ -202,6 +203,7 @@ watch(() => props.items.length, (len, oldLen) => {
       return
     }
 
+    columnCount = getColumnCount()
     const w = getItemWidth()
     const currentEls = new Set(grid.getItems().map((i: any) => i.getElement()))
     const domEls = Array.from(containerRef.value.querySelectorAll(':scope > .muuri-item')) as HTMLElement[]
