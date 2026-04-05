@@ -10,6 +10,7 @@ const title = ref<string>('')
 const body = ref<string>('')
 const color = ref<NoteColor>('default')
 const reminderAt = ref<string | null>(null)
+const pinned = ref(false)
 
 const hasBody = computed(
   () =>
@@ -62,6 +63,7 @@ const addTodo = async () => {
       fd.append('title', title.value.toLowerCase())
       fd.append('body', body.value)
       fd.append('color', color.value)
+      if (pinned.value) fd.append('pinned', 'true')
       if (reminderAt.value) fd.append('reminder_at', reminderAt.value)
       if (imageFile.value) fd.append('image', imageFile.value)
       if (audioFile.value) fd.append('audio', audioFile.value)
@@ -72,6 +74,7 @@ const addTodo = async () => {
         title: title.value.toLowerCase(),
         body: body.value,
         color: color.value,
+        pinned: pinned.value,
         reminder_at: reminderAt.value,
         link_previews: previews,
       })
@@ -80,6 +83,7 @@ const addTodo = async () => {
     body.value = ''
     color.value = 'default'
     reminderAt.value = null
+    pinned.value = false
     clearImage()
     clearAudio()
     expanded.value = false
@@ -94,7 +98,7 @@ const addTodo = async () => {
 const expanded = ref(false)
 const focused = ref(false)
 
-defineExpose({ title, body, imageFile, imagePreview, color, reminderAt, audioFile, audioPreview, expanded, clearImage, clearAudio })
+defineExpose({ title, body, imageFile, imagePreview, color, reminderAt, pinned, audioFile, audioPreview, expanded, clearImage, clearAudio })
 
 const handleTitleInput = (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -126,6 +130,9 @@ const handleTitleInput = (event: Event) => {
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
+            <button v-if="!audioRecording" type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="pinned = !pinned">
+              <Icon name="mdi:pin" class="text-xs" />
+            </button>
             <AudioRecorder
               @recorded="
                 (f, u) => {
@@ -190,6 +197,9 @@ const handleTitleInput = (event: Event) => {
           <div class="flex items-center gap-1">
             <template v-if="!audioRecording">
               <ReminderPicker v-model="reminderAt" />
+              <button type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="pinned = !pinned">
+                <Icon name="mdi:pin" class="text-xs" />
+              </button>
             </template>
             <AudioRecorder
               @recorded="

@@ -134,6 +134,7 @@ const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
 const createColor = ref<import('~/types/todo').NoteColor>('default')
 const createReminderAt = ref<string | null>(null)
+const createPinned = ref(false)
 const createExpanded = ref(false)
 const createAudioFile = ref<File | null>(null)
 const createAudioPreview = ref('')
@@ -172,6 +173,7 @@ const createDialogSubmit = async () => {
       fd.append('title', createTitle.value.toLowerCase())
       fd.append('body', createBody.value)
       fd.append('color', createColor.value)
+      if (createPinned.value) fd.append('pinned', 'true')
       if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
       if (createImageFile.value) fd.append('image', createImageFile.value)
       if (createAudioFile.value) fd.append('audio', createAudioFile.value)
@@ -182,6 +184,7 @@ const createDialogSubmit = async () => {
         title: createTitle.value.toLowerCase(),
         body: createBody.value,
         color: createColor.value,
+        pinned: createPinned.value,
         reminder_at: createReminderAt.value,
         link_previews: previews,
       })
@@ -189,6 +192,7 @@ const createDialogSubmit = async () => {
     createTitle.value = ''
     createBody.value = ''
     createColor.value = 'default'
+    createPinned.value = false
     createReminderAt.value = null
     clearCreateImage()
     clearCreateAudio()
@@ -209,6 +213,7 @@ const cancelCreate = () => {
   createTitle.value = ''
   createBody.value = ''
   createColor.value = 'default'
+  createPinned.value = false
   createReminderAt.value = null
   createImageFile.value = null
   createImagePreview.value = ''
@@ -222,6 +227,7 @@ const cancelMobileAdd = () => {
   createTitle.value = ''
   createBody.value = ''
   createColor.value = 'default'
+  createPinned.value = false
   createReminderAt.value = null
   createImageFile.value = null
   createImagePreview.value = ''
@@ -452,6 +458,9 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
             <ColorPicker v-else v-model="createColor" />
             <div class="flex items-center gap-1">
               <ReminderPicker v-model="createReminderAt" />
+              <button type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="createPinned = !createPinned">
+                <Icon name="mdi:pin" class="text-xs" />
+              </button>
               <AudioRecorder @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }" @update:recording="(v) => (createAudioRecording = v)" />
               <template v-if="!createAudioRecording">
                 <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
@@ -506,6 +515,9 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
+            <button v-if="!createAudioRecording" type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="createPinned = !createPinned">
+              <Icon name="mdi:pin" class="text-xs" />
+            </button>
             <AudioRecorder
               @recorded="
                 (f, u) => {
