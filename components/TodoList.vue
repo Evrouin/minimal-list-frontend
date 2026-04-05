@@ -9,6 +9,11 @@ const { tap } = useHaptics()
 const todoStore = useTodoStore()
 const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
 
+const isScrolledDown = ref(false)
+const onScrollUpdate = () => { isScrolledDown.value = window.scrollY > 150 }
+onMounted(() => window.addEventListener('scroll', onScrollUpdate, { passive: true }))
+onUnmounted(() => window.removeEventListener('scroll', onScrollUpdate))
+
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
     case 'active': return 'no active notes available'
@@ -193,7 +198,7 @@ defineExpose({ cancelAllEdits, isEditing })
 
   <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'pointer-events-none animate-pulse' : ''">
     <!-- Multi-select bar -->
-    <div v-if="multiSelectMode" class="sticky top-0 z-20 -mx-4 mb-4 flex items-center justify-end gap-1.5 bg-gray-800 px-4 py-1.5">
+    <div v-if="multiSelectMode" class="sticky top-0 z-20 mb-4 flex items-center justify-end gap-1.5 bg-gray-800 pr-2.5 transition-[padding]" :class="isScrolledDown ? 'py-3' : 'py-1.5'">
       <button
         v-if="allSelectedUnpinned"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"

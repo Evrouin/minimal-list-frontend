@@ -58,7 +58,7 @@ const cardClasses = computed(() => [
 <template>
   <div
     :class="[...cardClasses, selected && 'ring-2 ring-blue-400']"
-    class="todo-card relative cursor-pointer"
+    class="todo-card group relative cursor-pointer"
     @click="emit('click')"
     @mouseenter="!todo.editing && emit('start-hover')"
     @mouseleave="!todo.editing && emit('end-hover')"
@@ -111,7 +111,7 @@ const cardClasses = computed(() => [
         @click.stop
       />
       <!-- eslint-enable vue/no-mutating-props -->
-      <div class="flex items-center gap-1" @click.stop>
+      <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100" :class="todo.editing && 'opacity-100'" @click.stop>
         <button
           class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
           :class="pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'"
@@ -136,7 +136,7 @@ const cardClasses = computed(() => [
           <Icon name="uil:trash" />
         </button>
         <button
-          class="cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
+          class="cursor-pointer rounded px-1 py-0.5 mb-px text-xs text-gray-400 hover:text-gray-200"
           :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
           @click="emit('toggle-completion')"
         >
