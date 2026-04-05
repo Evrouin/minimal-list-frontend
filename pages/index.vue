@@ -326,11 +326,11 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
         <span v-else>pull to refresh</span>
       </div>
     </Transition>
-    <div ref="headerRef" class="w-full max-w-lg px-4 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+    <div ref="headerRef" class="w-full max-w-lg px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
       <PageHeader title="minimal list">
         <div class="flex shrink-0 items-center">
           <button
-            class="hidden cursor-pointer p-2 text-white/60 hover:text-white md:block"
+            class="hidden cursor-pointer p-2 text-white/60 hover:text-white sm:block"
             title="New note"
             @click="showCreateDialog = true"
           >
@@ -347,7 +347,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
       <!-- Mobile add button is now a FAB -->
     </div>
     <Transition name="slide-up">
-      <div v-if="!mobileHidden" class="my-4 flex w-full max-w-lg justify-center px-4 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+      <div v-if="!mobileHidden" class="my-4 flex w-full max-w-lg justify-center px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
         <button
           v-for="(filter, index) in filterOptions"
           :key="index"
@@ -360,7 +360,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
       </div>
     </Transition>
     <div
-      class="w-full max-w-lg px-4 pb-10 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl"
+      class="w-full max-w-lg px-4 pb-10 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl"
     >
       <TodoList ref="todoListRef" :key="todoListKey" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
@@ -382,7 +382,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
       </TransitionGroup>
     </div>
 
-    <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 md:hidden">
+    <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 sm:hidden">
       <button
         class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-900 text-white/60 shadow-lg transition-colors hover:bg-gray-800 hover:text-white"
         @click="showMobileAdd = true"
@@ -404,7 +404,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
     <Transition name="fade">
       <div
         v-if="showScrollTop"
-        class="fixed right-6 bottom-6 z-40 hidden flex-col gap-3 md:flex"
+        class="fixed right-6 bottom-6 z-40 hidden flex-col gap-3 sm:flex"
       >
         <button
           class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"

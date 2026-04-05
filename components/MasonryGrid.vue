@@ -25,7 +25,7 @@ let columnCount = 1
 const getColumnCount = () => {
   const width = window.innerWidth
   if (width >= 1024) return 3
-  if (width >= 768) return 2
+  if (width >= 640) return 2
   return 1
 }
 
