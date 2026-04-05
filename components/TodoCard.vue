@@ -237,7 +237,7 @@ const cardClasses = computed(() => [
 }
 .todo-body :deep(ul[data-type='taskList'] li) {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.4rem;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -249,6 +249,7 @@ const cardClasses = computed(() => [
 }
 .todo-body :deep(ul[data-type='taskList'] li label) {
   pointer-events: none;
+  flex-shrink: 0;
 }
 .todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']) {
   appearance: none;
@@ -257,7 +258,6 @@ const cardClasses = computed(() => [
   border: 1.5px solid rgba(255, 255, 255, 0.4);
   border-radius: 3px;
   background: transparent;
-  margin-top: 0.15rem;
 }
 .todo-body :deep(ul[data-type='taskList'] li label input[type='checkbox']:checked) {
   background: #60a5fa;

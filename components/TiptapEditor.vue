@@ -180,7 +180,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
 }
 .tiptap-wrapper .tiptap ul[data-type='taskList'] li {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.4rem;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -191,7 +191,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
   flex: 1;
 }
 .tiptap-wrapper .tiptap ul[data-type='taskList'] li label {
-  margin-top: 0.15rem;
+  flex-shrink: 0;
 }
 .tiptap-wrapper .tiptap ul[data-type='taskList'] li label input[type='checkbox'] {
   cursor: pointer;
