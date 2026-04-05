@@ -140,6 +140,7 @@ const defaultNoteColor = ref<import('~/types/todo').NoteColor>(
   (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default',
 )
 watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
+const showColorPicker = ref(false)
 
 const notificationsEnabled = ref(
   localStorage.getItem('notificationsEnabled') !== 'false' &&
@@ -203,8 +204,9 @@ const handleLogout = () => {
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
 
       <template v-if="user">
-        <!-- ACCOUNT SECTION -->
-        <p class="mb-3 mx-2.5 text-sm font-bold text-white lowercase">account</p>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div>
+            <p class="mb-3 mx-2.5 text-sm font-bold text-white lowercase">account</p>
 
         <!-- header card -->
         <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
@@ -360,16 +362,46 @@ const handleLogout = () => {
           </button>
         </form>
 
-        <!-- SETTINGS SECTION -->
-        <p class="mb-3 mt-6 mx-2.5 text-sm font-bold text-white lowercase">settings</p>
+          </div>
+
+          <div>
+            <p class="mb-3 mx-2.5 text-sm font-bold text-white lowercase">settings</p>
 
         <!-- settings -->
         <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
           <p class="mb-3 text-sm font-bold text-white lowercase">preferences</p>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">theme</p>
+              <div class="group relative">
+                <span class="cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-xs text-white/60 min-w-[70px] text-center inline-block">dark</span>
+                <div class="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs text-white/50 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
+                  other themes coming soon
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
               <p class="text-xs text-white/40">default note color</p>
-              <ColorPicker v-model="defaultNoteColor" />
+              <div class="flex items-center gap-1">
+                <Transition name="fade">
+                  <div v-if="showColorPicker" class="flex items-center gap-1">
+                    <button
+                      v-for="(c, name) in noteColors"
+                      :key="name"
+                      class="h-5 w-5 cursor-pointer rounded-full border transition-transform hover:scale-110"
+                      :class="[c.bg, defaultNoteColor === name ? 'border-white' : 'border-white/20']"
+                      @click="defaultNoteColor = name as import('~/types/todo').NoteColor; showColorPicker = false"
+                    />
+                  </div>
+                </Transition>
+                <button
+                  class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 min-w-[70px] text-center border border-white/10"
+                  :class="noteColors[defaultNoteColor]?.bg || 'bg-gray-800'"
+                  @click="showColorPicker = !showColorPicker"
+                >
+                  {{ defaultNoteColor }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -435,6 +467,9 @@ const handleLogout = () => {
             >
               delete
             </button>
+          </div>
+        </div>
+
           </div>
         </div>
       </template>
