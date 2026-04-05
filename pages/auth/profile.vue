@@ -142,6 +142,12 @@ const defaultNoteColor = ref<import('~/types/todo').NoteColor>(
 watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
 const showColorPicker = ref(false)
 
+const hapticsEnabled = ref(localStorage.getItem('hapticsEnabled') !== 'false')
+const toggleHaptics = () => {
+  hapticsEnabled.value = !hapticsEnabled.value
+  localStorage.setItem('hapticsEnabled', String(hapticsEnabled.value))
+}
+
 const showSessions = ref(false)
 const sessions = ref<import('~/types/auth').Session[]>([])
 const sessionsLoading = ref(false)
@@ -442,6 +448,16 @@ const handleLogout = () => {
                   {{ defaultNoteColor }}
                 </button>
               </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-white/40">haptic feedback</p>
+              <button
+                class="cursor-pointer rounded-lg px-4 py-2 text-xs lowercase min-w-[70px] text-center"
+                :class="hapticsEnabled ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'"
+                @click="toggleHaptics"
+              >
+                {{ hapticsEnabled ? 'on' : 'off' }}
+              </button>
             </div>
           </div>
         </div>
