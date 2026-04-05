@@ -72,7 +72,7 @@ const todoToDelete = ref<Todo | null>(null)
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
-const updateIsLg = () => { isLg.value = window.innerWidth >= 640 }
+const updateIsLg = () => { isLg.value = window.innerWidth >= 768 }
 const debouncedResize = () => {
   if (resizeTimer) clearTimeout(resizeTimer)
   resizeTimer = setTimeout(updateIsLg, 150)
