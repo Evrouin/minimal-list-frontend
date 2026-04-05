@@ -112,36 +112,46 @@ const cardClasses = computed(() => [
       />
       <!-- eslint-enable vue/no-mutating-props -->
       <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100" :class="todo.editing && 'opacity-100'" @click.stop>
-        <button
-          class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
-          :class="pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'"
-          :title="pinned ? 'Unpin' : 'Pin'"
-          @click="emit('toggle-pin')"
-        >
-          <Icon name="mdi:pin" />
-        </button>
-        <button
-          v-if="todo.deleted"
-          class="cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
-          title="Restore"
-          @click="emit('restore')"
-        >
-          <Icon name="uil:redo" />
-        </button>
-        <button
-          class="-mt-0.5 cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
-          :title="`Delete ${todo.title}`"
-          @click="emit('request-delete')"
-        >
-          <Icon name="uil:trash" />
-        </button>
-        <button
-          class="cursor-pointer rounded px-1 py-0.5 mb-px text-xs text-gray-400 hover:text-gray-200"
-          :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
-          @click="emit('toggle-completion')"
-        >
-          <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
-        </button>
+        <template v-if="!todo.deleted">
+          <button
+            class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
+            :class="pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'"
+            :title="pinned ? 'Unpin' : 'Pin'"
+            @click="emit('toggle-pin')"
+          >
+            <Icon name="mdi:pin" />
+          </button>
+          <button
+            class="-mt-0.5 cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
+            :title="`Delete ${todo.title}`"
+            @click="emit('request-delete')"
+          >
+            <Icon name="uil:trash" />
+          </button>
+          <button
+            class="cursor-pointer rounded px-1 py-0.5 mb-px text-xs text-gray-400 hover:text-gray-200"
+            :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+            @click="emit('toggle-completion')"
+          >
+            <Icon :name="todo.completed ? 'uil:check-circle' : 'uil:circle'" />
+          </button>
+        </template>
+        <template v-else>
+          <button
+            class="-mt-[2.5px] cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
+            title="Restore"
+            @click="emit('restore')"
+          >
+            <Icon name="uil:redo" />
+          </button>
+          <button
+            class="-mt-0.5 cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
+            title="Delete permanently"
+            @click="emit('request-delete')"
+          >
+            <Icon name="uil:trash" />
+          </button>
+        </template>
       </div>
     </div>
     <div v-if="!todo.editing" class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase" v-html="todo.body" />
@@ -164,7 +174,7 @@ const cardClasses = computed(() => [
           </span>
         </template>
       </span>
-      <div class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>
+      <div v-if="!todo.deleted" class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>
         <Icon name="uil:draggabledots" class="text-sm" />
       </div>
     </div>

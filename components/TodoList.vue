@@ -10,6 +10,16 @@ const todoStore = useTodoStore()
 const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
 
 const isScrolledDown = ref(false)
+
+watch(() => todoStore.filterType, () => {
+  const scrollY = window.scrollY
+  gridKey.value++
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollY)
+    setTimeout(() => window.scrollTo(0, scrollY), 100)
+    setTimeout(() => window.scrollTo(0, scrollY), 500)
+  })
+})
 const onScrollUpdate = () => { isScrolledDown.value = window.scrollY > 150 }
 onMounted(() => window.addEventListener('scroll', onScrollUpdate, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', onScrollUpdate))
@@ -24,6 +34,33 @@ const isTodoEmptyMessage = computed(() => {
 })
 
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 6))
+
+const deletedSections = computed(() => {
+  if (todoStore.filterType !== 'deleted') return []
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const msDay = 86400000
+  const buckets: { label: string, todos: Todo[] }[] = [
+    { label: 'today', todos: [] },
+    { label: 'yesterday', todos: [] },
+    { label: 'this week', todos: [] },
+    { label: 'last week', todos: [] },
+    { label: 'this month', todos: [] },
+    { label: 'older', todos: [] },
+  ]
+  for (const t of filteredTodos.value) {
+    const d = new Date(t.updated_at).getTime()
+    const diff = startOfToday.getTime() - d
+    if (diff < 0) buckets[0].todos.push(t)
+    else if (diff < msDay) buckets[1].todos.push(t)
+    else if (diff < 6 * msDay) buckets[2].todos.push(t)
+    else if (diff < 13 * msDay) buckets[3].todos.push(t)
+    else if (diff < 29 * msDay) buckets[4].todos.push(t)
+    else buckets[5].todos.push(t)
+  }
+  return buckets.filter((b) => b.todos.length > 0)
+})
+
 const cardRefs = ref(new Map<string, Element>())
 const pinnedListRef = ref<any>(null)
 const unpinnedListRef = ref<any>(null)
@@ -118,10 +155,13 @@ const onDragEnd = () => {
   isDragging.value = false
 }
 
+const viewTodo = ref<Todo | null>(null)
+
 const handleCardClick = (todo: Todo) => {
   if (todo.editing) return
   if (wasDragging.value) { wasDragging.value = false; return }
   if (multiSelectMode.value) toggleSelect(todo.uuid)
+  else if (todo.deleted) viewTodo.value = todo
   else editTodo(todo)
 }
 
@@ -200,7 +240,7 @@ defineExpose({ cancelAllEdits, isEditing })
     <!-- Multi-select bar -->
     <div v-if="multiSelectMode" class="sticky top-0 z-20 mb-4 flex items-center justify-end gap-1.5 bg-gray-800 pr-2.5 transition-[padding]" :class="isScrolledDown ? 'py-3' : 'py-1.5'">
       <button
-        v-if="allSelectedUnpinned"
+        v-if="allSelectedUnpinned && todoStore.filterType !== 'deleted'"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
         title="Pin selected"
         @click="bulkPinSelected(selectedIds, true)"
@@ -208,7 +248,7 @@ defineExpose({ cancelAllEdits, isEditing })
         <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
       <button
-        v-if="allSelectedPinned"
+        v-if="allSelectedPinned && todoStore.filterType !== 'deleted'"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
         title="Unpin selected"
         @click="bulkPinSelected(selectedIds, false)"
@@ -238,10 +278,48 @@ defineExpose({ cancelAllEdits, isEditing })
       </div>
     </div>
 
+    <!-- Deleted sections (grouped by date) -->
+    <template v-if="todoStore.filterType === 'deleted'">
+      <div v-for="section in deletedSections" :key="section.label" class="mb-6">
+        <p class="mb-3 ml-2.5 text-xs text-white/40 lowercase">{{ section.label }}</p>
+        <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
+          <template #default="{ item: todo }">
+            <TodoCard
+              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
+              :todo="todo"
+              :pinned="false"
+              :selected="isSelected(todo.uuid)"
+              :show-checkbox="hasCheckbox(todo.uuid)"
+              :multi-select-mode="multiSelectMode"
+              :edit-image-preview="editImagePreviews.get(todo.uuid)"
+              @click="handleCardClick(todo)"
+              @toggle-pin="togglePin(todo)"
+              @request-delete="requestDelete(todo)"
+              @toggle-completion="toggleCompletion(todo)"
+              @restore="restoreTodo(todo)"
+              @save="saveTodo(todo)"
+              @cancel="cancelEdit(todo)"
+              @expand="expandEdit(todo)"
+              @remove-audio="todo.audio = null"
+              @audio-interact="(v: boolean) => audioInteracting = v"
+              @toggle-select="toggleSelect(todo.uuid)"
+              @start-hover="startHover(todo.uuid)"
+              @end-hover="endHover(todo.uuid)"
+              @start-long-press="startLongPress(todo.uuid)"
+              @end-long-press="endLongPress()"
+              @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
+              @image-select="(e: Event) => onEditImageSelect(todo, e)"
+            />
+          </template>
+        </MasonryGrid>
+      </div>
+    </template>
+
     <!-- Pinned section -->
+    <template v-else>
     <div v-if="pinnedTodos.length > 0" class="mb-6">
-      <p v-if="pinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">pinned</p>
-      <MasonryGrid :key="'pinned-' + gridKey" ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" drag-enabled @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
+      <p v-if="pinnedListRef?.ready && todoStore.filterType !== 'deleted'" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">pinned</p>
+      <MasonryGrid :key="'pinned-' + gridKey" ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" :drag-enabled="todoStore.filterType !== 'deleted'" @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
@@ -275,8 +353,8 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Others section -->
     <div v-if="unpinnedTodos.length > 0">
-      <p v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">others</p>
-      <MasonryGrid :key="'unpinned-' + gridKey" ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" drag-enabled @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
+      <p v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready && todoStore.filterType !== 'deleted'" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">others</p>
+      <MasonryGrid :key="'unpinned-' + gridKey" ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" :drag-enabled="todoStore.filterType !== 'deleted'" @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
         <template #default="{ item: todo }">
             <TodoCard
               :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
@@ -307,6 +385,7 @@ defineExpose({ cancelAllEdits, isEditing })
         </template>
       </MasonryGrid>
     </div>
+    </template>
   </div>
 
   <!-- Edit dialog (lg+ screens) -->
@@ -389,6 +468,26 @@ defineExpose({ cancelAllEdits, isEditing })
             </button>
           </template>
         </div>
+      </div>
+    </div>
+  </ModalOverlay>
+
+  <!-- View-only dialog (deleted notes) -->
+  <ModalOverlay :show="!!viewTodo" tabindex="0" @keydown.esc="viewTodo = null">
+    <div v-if="viewTodo" class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg p-6 shadow-xl" :class="noteColors[viewTodo.color]?.bg || 'bg-gray-800'">
+      <ImagePreview
+        v-if="viewTodo.thumbnail || viewTodo.image"
+        :src="viewTodo.thumbnail || viewTodo.image!"
+        :padding="6"
+      />
+      <p class="text-sm font-bold text-white lowercase">{{ viewTodo.title }}</p>
+      <div v-if="viewTodo.body" class="view-body text-xs text-wrap break-words text-white lowercase" v-html="viewTodo.body" />
+      <div v-if="viewTodo.link_previews?.length" class="flex flex-col gap-1">
+        <LinkPreviewCard v-for="lp in viewTodo.link_previews" :key="lp.url" :preview="lp" />
+      </div>
+      <AudioPlayer v-if="viewTodo.audio" :src="viewTodo.audio" />
+      <div class="flex justify-end">
+        <button class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white" @click="viewTodo = null">exit</button>
       </div>
     </div>
   </ModalOverlay>
@@ -506,4 +605,17 @@ defineExpose({ cancelAllEdits, isEditing })
 .fade-leave-to {
   opacity: 0;
 }
+</style>
+
+<style>
+.view-body ul { list-style-type: disc; padding-left: 1.2rem; }
+.view-body ol { list-style-type: decimal; padding-left: 1.2rem; }
+.view-body li { margin: 0.15rem 0; overflow-wrap: break-word; word-break: break-word; min-width: 0; }
+.view-body p { margin: 0; }
+.view-body ul[data-type='taskList'] { list-style: none; padding-left: 0; }
+.view-body ul[data-type='taskList'] li { display: flex; align-items: center; gap: 0.4rem; overflow-wrap: break-word; word-break: break-word; min-width: 0; }
+.view-body ul[data-type='taskList'] li > div { min-width: 0; flex: 1; }
+.view-body ul[data-type='taskList'] li label { pointer-events: none; flex-shrink: 0; }
+.view-body ul[data-type='taskList'] li label input[type='checkbox'] { appearance: none; width: 0.9rem; height: 0.9rem; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 3px; background: transparent; }
+.view-body ul[data-type='taskList'] li label input[type='checkbox']:checked { background: #60a5fa; border-color: #60a5fa; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); background-size: 100%; }
 </style>
