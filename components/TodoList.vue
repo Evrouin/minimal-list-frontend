@@ -12,6 +12,7 @@ const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoS
 const isScrolledDown = ref(false)
 
 watch(() => todoStore.filterType, () => {
+  exitMultiSelect()
   const scrollY = window.scrollY
   gridKey.value++
   requestAnimationFrame(() => {
