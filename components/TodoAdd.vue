@@ -149,8 +149,8 @@ const handleTitleInput = (event: Event) => {
               @update:recording="(v) => (audioRecording = v)"
             />
             <template v-if="!audioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-                <Icon name="uil:image" class="text-xs" />
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+                <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
               </label>
               <button
@@ -179,6 +179,21 @@ const handleTitleInput = (event: Event) => {
   <!-- Expanded fullscreen -->
   <Teleport to="body">
     <div v-if="expanded" class="fixed inset-0 z-50 flex flex-col bg-gray-800 p-3">
+      <div class="mb-3 flex items-center justify-between px-2">
+        <span class="text-lg font-bold text-white lowercase">minimal list</span>
+        <div class="flex items-center gap-1">
+          <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
+          <button
+            type="button"
+            class="cursor-pointer rounded p-1.5 text-sm transition-colors"
+            :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
+            :title="pinned ? 'Unpin' : 'Pin'"
+            @click="pinned = !pinned"
+          >
+            <Icon name="mdi:pin" />
+          </button>
+        </div>
+      </div>
       <form
         class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
         :class="noteColors[color]?.bg || 'bg-gray-700'"
@@ -201,17 +216,6 @@ const handleTitleInput = (event: Event) => {
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
-            <template v-if="!audioRecording">
-              <ReminderPicker v-model="reminderAt" />
-              <button
-                type="button"
-                class="cursor-pointer rounded px-2 py-0.5 transition-colors"
-                :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
-                @click="pinned = !pinned"
-              >
-                <Icon name="mdi:pin" class="text-xs" />
-              </button>
-            </template>
             <AudioRecorder
               @recorded="
                 (f, u) => {
@@ -222,8 +226,8 @@ const handleTitleInput = (event: Event) => {
               @update:recording="(v) => (audioRecording = v)"
             />
             <template v-if="!audioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-                <Icon name="uil:image" class="text-xs" />
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+                <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
               </label>
               <button
