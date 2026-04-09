@@ -60,6 +60,40 @@ export const useApiFetch = () => {
     return refreshPromise
   }
 
+  const parseErrorMessage = (data: Record<string, unknown> | undefined): string => {
+    if (!data) return 'something went wrong'
+    if (typeof data.detail === 'string') return data.detail
+    if (typeof data.error === 'string') return data.error
+    if (typeof data.message === 'string') return data.message
+    const firstField = Object.entries(data).find(([, v]) => Array.isArray(v))
+    if (firstField) return `${firstField[0]}: ${(firstField[1] as string[])[0]}`
+    return 'something went wrong'
+  }
+
+  const handleErrorStatus = async <T>(status: number, message: string, tokens: { refresh?: string } | null, url: string, opts: Record<string, unknown>): Promise<T> => {
+    if (status === 401 && tokens?.refresh && !opts._retried) {
+      try {
+        await refreshAccessToken()
+        return await request<T>(url, { ...opts, _retried: true })
+      } catch (refreshErr: unknown) {
+        if ((refreshErr as ApiError)?.statusCode === 429) throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
+        throw Object.assign(new Error('session expired'), { statusCode: 401 })
+      }
+    }
+    if (status === 429) throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
+    if (status === 503) {
+      navigateTo('/maintenance')
+      throw Object.assign(new Error('service unavailable'), { statusCode: 503 })
+    }
+    if (status >= 500) throw Object.assign(new Error(message), { statusCode: status })
+    if (status === 401) {
+      const { clearAuth } = useAuthStore()
+      clearAuth()
+      if (globalThis.location.pathname !== '/auth/login') navigateTo('/auth/login')
+    }
+    throw Object.assign(new Error(message), { statusCode: status })
+  }
+
   const request = async <T>(
     url: string,
     opts: Record<string, unknown> = {},
@@ -79,56 +113,10 @@ export const useApiFetch = () => {
         }),
       )) as T
     } catch (err: unknown) {
-      const error = err as {
-        response?: { status?: number; _data?: Record<string, unknown> }
-        message?: string
-      }
+      const error = err as { response?: { status?: number; _data?: Record<string, unknown> }; message?: string }
       const status = error.response?.status || 500
-      const data = error.response?._data
-
-      let message = 'something went wrong'
-      if (data) {
-        if (typeof data.detail === 'string') message = data.detail
-        else if (typeof data.error === 'string') message = data.error
-        else if (typeof data.message === 'string') message = data.message
-        else {
-          const firstField = Object.entries(data).find(([, v]) => Array.isArray(v))
-          if (firstField) message = `${firstField[0]}: ${(firstField[1] as string[])[0]}`
-        }
-      }
-
-      if (status === 401 && tokens?.refresh && !opts._retried) {
-        try {
-          await refreshAccessToken()
-          return await request<T>(url, { ...opts, _retried: true })
-        } catch (refreshErr: unknown) {
-          if ((refreshErr as ApiError)?.statusCode === 429) throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
-          throw Object.assign(new Error('session expired'), { statusCode: 401 })
-        }
-      }
-
-      if (status === 429) {
-        throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
-      }
-
-      if (status === 503) {
-        navigateTo('/maintenance')
-        throw Object.assign(new Error('service unavailable'), { statusCode: 503 })
-      }
-
-      if (status >= 500) {
-        throw Object.assign(new Error(message), { statusCode: status })
-      }
-
-      if (status === 401) {
-        const { clearAuth } = useAuthStore()
-        clearAuth()
-        if (globalThis.location.pathname !== '/auth/login') {
-          navigateTo('/auth/login')
-        }
-      }
-
-      throw Object.assign(new Error(message), { statusCode: status })
+      const message = parseErrorMessage(error.response?._data)
+      return handleErrorStatus<T>(status, message, tokens, url, opts)
     }
   }
 
