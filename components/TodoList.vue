@@ -276,6 +276,21 @@ const restoreTodo = (todo: Todo) => {
 
 // --- Lifecycle ---
 
+const api = useTodoApi()
+const showEmptyTrashDialog = ref(false)
+const emptyingTrash = ref(false)
+
+const confirmEmptyTrash = async () => {
+  emptyingTrash.value = true
+  try {
+    await api.emptyTrash()
+    todoStore.todos = todoStore.todos.filter((t) => !t.deleted)
+  } catch { /* silently fail */ } finally {
+    emptyingTrash.value = false
+    showEmptyTrashDialog.value = false
+  }
+}
+
 onMounted(() => {
   updateIsLg()
   window.addEventListener('resize', debouncedResize)
@@ -344,6 +359,14 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Deleted sections (grouped by date) -->
     <template v-if="todoStore.filterType === 'deleted'">
+      <div class="mb-4 flex justify-end pr-2.5">
+        <button
+          class="cursor-pointer text-xs text-white/30 lowercase hover:text-red-400"
+          @click="showEmptyTrashDialog = true"
+        >
+          empty trash
+        </button>
+      </div>
       <div v-for="section in deletedSections" :key="section.label" class="mb-6">
         <p class="mb-3 ml-2.5 text-xs text-white/40 lowercase">{{ section.label }}</p>
         <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
@@ -733,6 +756,15 @@ defineExpose({ cancelAllEdits, isEditing })
     "
     :confirm-text="allSelectedDeleted ? 'delete forever' : 'delete'"
     @confirm="confirmBulkDelete"
+  />
+
+  <ConfirmDialog
+    v-model="showEmptyTrashDialog"
+    title="empty trash"
+    message="permanently delete all notes in trash? this cannot be undone."
+    confirm-text="empty trash"
+    :loading="emptyingTrash"
+    @confirm="confirmEmptyTrash"
   />
 </template>
 

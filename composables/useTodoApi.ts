@@ -56,5 +56,11 @@ export const useTodoApi = () => {
         method: 'POST',
         body: { url },
       }),
+
+    clearTodos: (password: string) =>
+      request<{ success: boolean }>(`${base}/clear-all/`, { method: 'POST', body: { password } }),
+
+    emptyTrash: () =>
+      request<{ success: boolean }>(`${base}/empty-trash/`, { method: 'DELETE' }),
   }
 }

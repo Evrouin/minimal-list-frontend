@@ -211,6 +211,40 @@ const handleDeleteAccount = async () => {
   navigateTo('/auth/login')
 }
 
+const todoApi = useTodoApi()
+const showClearNotesDialog = ref(false)
+const showClearPasswordDialog = ref(false)
+const clearPassword = ref('')
+const clearPasswordError = ref('')
+const clearingNotes = ref(false)
+
+const onClearNotesConfirm = () => {
+  showClearNotesDialog.value = false
+  if (!user.value?.has_password) {
+    // OAuth user with no password — skip password check
+    handleClearNotes('', true)
+    return
+  }
+  showClearPasswordDialog.value = true
+  clearPassword.value = ''
+  clearPasswordError.value = ''
+}
+
+const handleClearNotes = async (password = clearPassword.value, skipPassword = false) => {
+  if (!skipPassword && !password) { clearPasswordError.value = 'password is required'; return }
+  clearingNotes.value = true
+  clearPasswordError.value = ''
+  try {
+    await todoApi.clearTodos(password)
+    showClearPasswordDialog.value = false
+    clearPassword.value = ''
+  } catch (e: unknown) {
+    clearPasswordError.value = (e as Error)?.message || 'failed. check your password.'
+  } finally {
+    clearingNotes.value = false
+  }
+}
+
 const toggleNotifications = async () => {
   if (notificationsEnabled.value) {
     notificationsEnabled.value = false
@@ -440,7 +474,7 @@ const handleLogout = () => {
                   <p class="text-xs text-white/40">theme</p>
                   <div class="group relative">
                     <span
-                      class="inline-block min-w-17.5 cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-center text-xs text-white/60"
+                      class="inline-block min-w-18.5 cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-center text-xs text-white/60"
                     >
                       dark
                     </span>
@@ -466,7 +500,7 @@ const handleLogout = () => {
                       </div>
                     </Transition>
                     <button
-                      class="min-w-17.5 cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-center text-xs text-white/60"
+                      class="min-w-18.5 cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-center text-xs text-white/60"
                       :class="noteColors[defaultNoteColor]?.bg || 'bg-gray-800'"
                       @click="showColorPicker = !showColorPicker"
                     >
@@ -477,7 +511,7 @@ const handleLogout = () => {
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-white/40">haptic feedback</p>
                   <button
-                    class="min-w-17.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
+                    class="min-w-18.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
                     :class="
                       hapticsEnabled ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'
                     "
@@ -495,7 +529,7 @@ const handleLogout = () => {
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-white/40">browser reminders</p>
                   <button
-                    class="min-w-17.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
+                    class="min-w-18.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
                     :class="
                       notificationsEnabled
                         ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
@@ -522,7 +556,7 @@ const handleLogout = () => {
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-white/40">active sessions</p>
                   <button
-                    class="min-w-17.5 cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-center text-xs text-white/60 lowercase hover:text-white"
+                    class="min-w-18.5 cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-center text-xs text-white/60 lowercase hover:text-white"
                     @click="openSessions"
                   >
                     manage
@@ -537,7 +571,7 @@ const handleLogout = () => {
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-white/40">export notes</p>
                   <button
-                    class="min-w-17.5 cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-center text-xs text-white/60 lowercase hover:text-white"
+                    class="min-w-18.5 cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-center text-xs text-white/60 lowercase hover:text-white"
                     @click="exportNotes"
                   >
                     export
@@ -548,6 +582,18 @@ const handleLogout = () => {
 
             <!-- danger zone -->
             <div class="mx-2.5 rounded-lg border border-red-500/20 bg-gray-700 p-5">
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-red-300">clear notes</p>
+                  <p class="text-xs text-white/40">permanently delete all your notes</p>
+                </div>
+                <button
+                  class="min-w-18.5 cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
+                  @click="showClearNotesDialog = true"
+                >
+                  clear
+                </button>
+              </div>
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-red-300">delete account</p>
@@ -573,6 +619,41 @@ const handleLogout = () => {
       confirm-text="delete forever"
       @confirm="handleDeleteAccount"
     />
+
+    <!-- Clear notes warning -->
+    <ConfirmDialog
+      v-model="showClearNotesDialog"
+      title="clear notes"
+      message="this will permanently delete all your notes, recordings, and images. this cannot be undone."
+      confirm-text="yes, clear all"
+      @confirm="onClearNotesConfirm"
+    />
+
+    <!-- Clear notes password confirmation -->
+    <ModalOverlay :show="showClearPasswordDialog" @click.self="showClearPasswordDialog = false">
+      <div class="mx-4 w-full max-w-sm rounded-lg bg-gray-700 p-5">
+        <p class="mb-1 text-sm font-bold text-white lowercase">confirm your password</p>
+        <p class="mb-4 text-xs text-white/40">enter your password to permanently clear all notes.</p>
+        <input
+          v-model="clearPassword"
+          type="password"
+          placeholder="password"
+          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+          @keydown.enter="handleClearNotes()"
+        >
+        <p v-if="clearPasswordError" class="mt-2 text-xs text-red-400">{{ clearPasswordError }}</p>
+        <div class="mt-4 flex justify-end gap-2">
+          <button class="cursor-pointer text-xs text-white/40 hover:text-white" @click="showClearPasswordDialog = false">cancel</button>
+          <button
+            class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30 disabled:opacity-50"
+            :disabled="clearingNotes"
+            @click="handleClearNotes()"
+          >
+            {{ clearingNotes ? 'clearing...' : 'confirm' }}
+          </button>
+        </div>
+      </div>
+    </ModalOverlay>
 
     <!-- sessions dialog -->
     <ModalOverlay :show="showSessions" @click.self="showSessions = false">
