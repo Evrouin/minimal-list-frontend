@@ -163,6 +163,34 @@ const clearCreateImage = () => {
 
 const { fetchPreviews: fetchCreatePreviews } = useLinkPreviews()
 
+const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
+  if (createImageFile.value || createAudioFile.value) {
+    const fd = new FormData()
+    fd.append('title', createTitle.value.toLowerCase())
+    fd.append('body', createBody.value)
+    fd.append('color', createColor.value)
+    if (createPinned.value) fd.append('pinned', 'true')
+    if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
+    if (createImageFile.value) fd.append('image', createImageFile.value)
+    if (createAudioFile.value) fd.append('audio', createAudioFile.value)
+    if (previews.length) fd.append('link_previews', JSON.stringify(previews))
+    return fd
+  }
+  return { title: createTitle.value.toLowerCase(), body: createBody.value, color: createColor.value, pinned: createPinned.value, reminder_at: createReminderAt.value, link_previews: previews }
+}
+
+const resetCreateForm = () => {
+  createTitle.value = ''
+  createBody.value = ''
+  createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
+  createPinned.value = false
+  createReminderAt.value = null
+  clearCreateImage()
+  clearCreateAudio()
+  createExpanded.value = false
+  showCreateDialog.value = false
+}
+
 const createDialogSubmit = async () => {
   if (!createTitle.value.trim() || (!hasCreateBody.value && !createImageFile.value && !createAudioFile.value) || createSubmitting.value)
     return
@@ -170,36 +198,8 @@ const createDialogSubmit = async () => {
   createErrorMsg.value = ''
   try {
     const previews = await fetchCreatePreviews(createBody.value, [])
-    if (createImageFile.value || createAudioFile.value) {
-      const fd = new FormData()
-      fd.append('title', createTitle.value.toLowerCase())
-      fd.append('body', createBody.value)
-      fd.append('color', createColor.value)
-      if (createPinned.value) fd.append('pinned', 'true')
-      if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
-      if (createImageFile.value) fd.append('image', createImageFile.value)
-      if (createAudioFile.value) fd.append('audio', createAudioFile.value)
-      if (previews.length) fd.append('link_previews', JSON.stringify(previews))
-      await todoStore.addTodo(fd)
-    } else {
-      await todoStore.addTodo({
-        title: createTitle.value.toLowerCase(),
-        body: createBody.value,
-        color: createColor.value,
-        pinned: createPinned.value,
-        reminder_at: createReminderAt.value,
-        link_previews: previews,
-      })
-    }
-    createTitle.value = ''
-    createBody.value = ''
-    createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
-    createPinned.value = false
-    createReminderAt.value = null
-    clearCreateImage()
-    clearCreateAudio()
-    createExpanded.value = false
-    showCreateDialog.value = false
+    await todoStore.addTodo(buildCreatePayload(previews))
+    resetCreateForm()
     todoListKey.value++
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
@@ -209,18 +209,7 @@ const createDialogSubmit = async () => {
   }
 }
 
-const cancelCreate = () => {
-  showCreateDialog.value = false
-  createExpanded.value = false
-  createTitle.value = ''
-  createBody.value = ''
-  createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
-  createPinned.value = false
-  createReminderAt.value = null
-  createImageFile.value = null
-  createImagePreview.value = ''
-  clearCreateAudio()
-}
+const cancelCreate = () => resetCreateForm()
 
 const mobileAddSubmit = () =>
   createDialogSubmit().then(() => {
