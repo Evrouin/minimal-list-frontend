@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const props = defineProps<{ sm?: boolean }>()
 const model = defineModel<string | null>()
 
 const open = ref(false)
@@ -170,11 +171,14 @@ const onMinuteBlur = () => {
   <div>
     <button
       type="button"
-      class="cursor-pointer rounded p-1.5 transition-colors"
-      :class="hasReminder ? (isOverdue ? 'text-red-400' : 'text-yellow-400') : 'text-white/30 hover:text-white/60'"
+      class="cursor-pointer rounded transition-colors"
+      :class="[
+        props.sm ? 'px-2 py-0.5' : 'p-1.5',
+        hasReminder ? (isOverdue ? 'text-red-400' : 'text-yellow-400') : 'text-white/30 hover:text-white/60'
+      ]"
       @click.stop="open = !open"
     >
-      <Icon name="uil:bell" />
+      <Icon name="uil:bell" :class="props.sm ? 'text-xs' : ''" />
     </button>
 
     <Teleport to="body">

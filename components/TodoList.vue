@@ -561,7 +561,7 @@ defineExpose({ cancelAllEdits, isEditing })
       <div class="flex items-center justify-between">
         <ColorPicker v-model="dialogColor" />
         <div class="flex items-center gap-1">
-          <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" />
+          <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" sm />
           <AudioRecorder
             @recorded="
               (f, u) => {

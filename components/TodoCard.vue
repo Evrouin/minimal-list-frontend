@@ -217,7 +217,7 @@ const cardClasses = computed(() => [
         <!-- eslint-enable vue/no-mutating-props -->
         <div class="flex items-center gap-1">
           <!-- eslint-disable vue/no-mutating-props -->
-          <ReminderPicker v-model="todo.reminder_at" />
+          <ReminderPicker v-model="todo.reminder_at" sm />
           <!-- eslint-enable vue/no-mutating-props -->
           <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />

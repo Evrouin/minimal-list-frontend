@@ -558,7 +558,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
           <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
+            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" sm />
             <button
               v-if="!createAudioRecording"
               type="button"

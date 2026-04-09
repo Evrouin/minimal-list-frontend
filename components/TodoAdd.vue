@@ -129,7 +129,7 @@ const handleTitleInput = (event: Event) => {
           <span v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</span>
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
+            <ReminderPicker v-if="!audioRecording" v-model="reminderAt" sm />
             <button
               v-if="!audioRecording"
               type="button"
