@@ -277,7 +277,7 @@ const handleLogout = () => {
                     @error="avatarError = true"
                   >
                   <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
-                    {{ (user?.username || user?.email || '?')[0].toUpperCase() }}
+                    {{ (user?.username || user?.email || '?')[0]?.toUpperCase() }}
                   </div>
                   <div
                     class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
@@ -327,16 +327,18 @@ const handleLogout = () => {
                 <p class="mb-3 text-sm font-bold text-white lowercase">edit profile</p>
                 <div class="space-y-3">
                   <div>
-                    <label class="mb-1 block text-xs text-white/40">username</label>
+                    <label for="edit-username" class="mb-1 block text-xs text-white/40">username</label>
                     <input
+                      id="edit-username"
                       v-model="editForm.username"
                       class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                       placeholder="username"
                     >
                   </div>
                   <div>
-                    <label class="mb-1 block text-xs text-white/40">phone</label>
+                    <label for="edit-phone" class="mb-1 block text-xs text-white/40">phone</label>
                     <input
+                      id="edit-phone"
                       v-model="editForm.phone"
                       type="tel"
                       class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
@@ -344,8 +346,9 @@ const handleLogout = () => {
                     >
                   </div>
                   <div>
-                    <label class="mb-1 block text-xs text-white/40">bio</label>
+                    <label for="edit-bio" class="mb-1 block text-xs text-white/40">bio</label>
                     <textarea
+                      id="edit-bio"
                       v-model="editForm.bio"
                       class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                       placeholder="bio"
@@ -382,8 +385,9 @@ const handleLogout = () => {
               </p>
               <div class="space-y-3">
                 <div v-if="user.has_password">
-                  <label class="mb-1 block text-xs text-white/40">current password</label>
+                  <label for="current-password" class="mb-1 block text-xs text-white/40">current password</label>
                   <input
+                    id="current-password"
                     v-model="passwordForm.current_password"
                     type="password"
                     class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
@@ -391,8 +395,9 @@ const handleLogout = () => {
                   >
                 </div>
                 <div>
-                  <label class="mb-1 block text-xs text-white/40">new password</label>
+                  <label for="new-password" class="mb-1 block text-xs text-white/40">new password</label>
                   <input
+                    id="new-password"
                     v-model="passwordForm.new_password"
                     type="password"
                     class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
@@ -400,8 +405,9 @@ const handleLogout = () => {
                   >
                 </div>
                 <div>
-                  <label class="mb-1 block text-xs text-white/40">confirm new password</label>
+                  <label for="confirm-password" class="mb-1 block text-xs text-white/40">confirm new password</label>
                   <input
+                    id="confirm-password"
                     v-model="passwordForm.confirm_password"
                     type="password"
                     class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"

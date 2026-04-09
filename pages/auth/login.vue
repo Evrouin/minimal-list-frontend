@@ -69,8 +69,9 @@ const handleGoogleLogin = async () => {
     <form @submit.prevent="handleLogin">
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-xs text-white/40">email</label>
+          <label for="login-email" class="mb-1 block text-xs text-white/40">email</label>
           <input
+            id="login-email"
             v-model="form.email"
             type="email"
             placeholder="user@example.com"
@@ -78,9 +79,10 @@ const handleGoogleLogin = async () => {
           >
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/40">password</label>
+          <label for="login-password" class="mb-1 block text-xs text-white/40">password</label>
           <div class="relative">
             <input
+              id="login-password"
               v-model="form.password"
               :type="showPassword ? 'text' : 'password'"
               placeholder="password"

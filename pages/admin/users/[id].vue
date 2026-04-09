@@ -76,12 +76,13 @@ const confirmDelete = async () => {
         <div class="flex items-center gap-4">
           <img
             v-if="(user.avatar || user.avatar_url) && !avatarError"
+            alt=""
             :src="user.avatar || user.avatar_url"
             class="h-12 w-12 rounded-full object-cover"
             @error="avatarError = true"
           >
           <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-sm font-bold text-white/70">
-            {{ (user.username || user.email)[0].toUpperCase() }}
+            {{ (user.username || user.email)[0]?.toUpperCase() }}
           </div>
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium text-white">{{ user.email }}</p>
@@ -124,24 +125,27 @@ const confirmDelete = async () => {
           <p class="mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">edit profile</p>
           <div class="space-y-3">
             <div>
-              <label class="mb-1 block text-xs text-white/40">username</label>
+              <label for="admin-username" class="mb-1 block text-xs text-white/40">username</label>
               <input
+                id="admin-username"
                 v-model="editForm.username"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                 placeholder="username"
               >
             </div>
             <div>
-              <label class="mb-1 block text-xs text-white/40">phone</label>
+              <label for="admin-phone" class="mb-1 block text-xs text-white/40">phone</label>
               <input
+                id="admin-phone"
                 v-model="editForm.phone"
                 class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                 placeholder="phone"
               >
             </div>
             <div>
-              <label class="mb-1 block text-xs text-white/40">bio</label>
+              <label for="admin-bio" class="mb-1 block text-xs text-white/40">bio</label>
               <textarea
+                id="admin-bio"
                 v-model="editForm.bio"
                 class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
                 placeholder="bio"

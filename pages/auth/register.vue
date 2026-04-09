@@ -57,8 +57,9 @@ const handleGoogleSignUp = async () => {
     <form @submit.prevent="handleRegister">
       <div class="space-y-5">
         <div>
-          <label class="mb-1 block text-xs text-white/40">email</label>
+          <label for="reg-email" class="mb-1 block text-xs text-white/40">email</label>
           <input
+            id="reg-email"
             v-model="form.email"
             type="email"
             placeholder="user@example.com"
@@ -69,8 +70,9 @@ const handleGoogleSignUp = async () => {
 
       <div class="mt-4 space-y-4">
         <div>
-          <label class="mb-1 block text-xs text-white/40">password</label>
+          <label for="reg-password" class="mb-1 block text-xs text-white/40">password</label>
           <input
+            id="reg-password"
             v-model="form.password"
             type="password"
             placeholder="min 8 characters"
@@ -78,8 +80,9 @@ const handleGoogleSignUp = async () => {
           >
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/40">confirm password</label>
+          <label for="reg-password2" class="mb-1 block text-xs text-white/40">confirm password</label>
           <input
+            id="reg-password2"
             v-model="form.password2"
             type="password"
             placeholder="confirm password"

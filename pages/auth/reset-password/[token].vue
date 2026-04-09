@@ -43,8 +43,9 @@ const handleSubmit = async () => {
     <form @submit.prevent="handleSubmit">
       <div class="space-y-4">
         <div>
-          <label class="mb-1 block text-xs text-white/40">new password</label>
+          <label for="reset-password" class="mb-1 block text-xs text-white/40">new password</label>
           <input
+            id="reset-password"
             v-model="form.new_password"
             type="password"
             placeholder="min 8 characters"
@@ -52,8 +53,9 @@ const handleSubmit = async () => {
           >
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/40">confirm password</label>
+          <label for="reset-password2" class="mb-1 block text-xs text-white/40">confirm password</label>
           <input
+            id="reset-password2"
             v-model="form.new_password2"
             type="password"
             placeholder="confirm password"

@@ -23,8 +23,9 @@ const handleSubmit = async () => {
   <AuthFormCard title="forgot password" link-to="/auth/login" link-label="login">
     <form @submit.prevent="handleSubmit">
       <div>
-        <label class="mb-1 block text-xs text-white/40">email</label>
+        <label for="forgot-email" class="mb-1 block text-xs text-white/40">email</label>
         <input
+          id="forgot-email"
           v-model="email"
           type="email"
           placeholder="user@example.com"

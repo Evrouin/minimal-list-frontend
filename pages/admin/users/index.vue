@@ -150,7 +150,7 @@ const confirmDelete = async () => {
       </div>
 
       <!-- desktop: table layout -->
-      <div class="hidden min-h-[520px] overflow-hidden rounded-lg bg-gray-700 shadow-md md:block">
+      <div class="hidden min-h-130 overflow-hidden rounded-lg bg-gray-700 shadow-md md:block">
         <table class="w-full text-left text-xs text-white">
           <thead class="border-b border-white/10 text-xs text-white/50 lowercase">
             <tr>

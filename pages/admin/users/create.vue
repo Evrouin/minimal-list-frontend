@@ -17,11 +17,13 @@ const handleCreate = async () => {
   errorMsg.value = ''
   successMsg.value = ''
 
-  if (!form.email.trim()) return (errorMsg.value = 'email is required')
-  if (!form.username.trim()) return (errorMsg.value = 'username is required')
-  if (form.password.length < 8) return (errorMsg.value = 'password must be at least 8 characters')
-  if (!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(form.password))
-    return (errorMsg.value = 'password must include letters, numbers, and a special character')
+  if (!form.email.trim()) { errorMsg.value = 'email is required'; return }
+  if (!form.username.trim()) { errorMsg.value = 'username is required'; return }
+  if (form.password.length < 8) { errorMsg.value = 'password must be at least 8 characters'; return }
+  if (!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(form.password)) {
+    errorMsg.value = 'password must include letters, numbers, and a special character'
+    return
+  }
 
   submitting.value = true
   try {
@@ -50,8 +52,9 @@ const handleCreate = async () => {
 
       <div class="space-y-4">
         <div>
-          <label class="mb-1 block text-xs text-white/40">email</label>
+          <label for="create-email" class="mb-1 block text-xs text-white/40">email</label>
           <input
+            id="create-email"
             v-model="form.email"
             type="email"
             placeholder="user@example.com"
@@ -59,8 +62,9 @@ const handleCreate = async () => {
           >
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/40">username</label>
+          <label for="create-username" class="mb-1 block text-xs text-white/40">username</label>
           <input
+            id="create-username"
             v-model="form.username"
             type="text"
             placeholder="username"
@@ -68,8 +72,9 @@ const handleCreate = async () => {
           >
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/40">password</label>
+          <label for="create-password" class="mb-1 block text-xs text-white/40">password</label>
           <input
+            id="create-password"
             v-model="form.password"
             type="password"
             placeholder="min 8 characters"
@@ -81,14 +86,14 @@ const handleCreate = async () => {
       <p class="mt-5 mb-3 text-xs font-bold tracking-wider text-white/40 lowercase">permissions</p>
 
       <div class="flex gap-6">
-        <label class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
-          <ToggleSwitch v-model="form.is_verified" />
+        <div class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
+          <ToggleSwitch v-model="form.is_verified" aria-label="verified" />
           verified
-        </label>
-        <label class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
-          <ToggleSwitch v-model="form.is_superuser" color="yellow" />
+        </div>
+        <div class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
+          <ToggleSwitch v-model="form.is_superuser" color="yellow" aria-label="admin" />
           admin
-        </label>
+        </div>
       </div>
 
       <div v-if="errorMsg" class="mt-4 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ errorMsg }}</div>

@@ -32,8 +32,14 @@ const confirmDelete = async () => {
 
 const formatDate = (date?: string) => (date ? new Date(date).toLocaleString() : '—')
 
-const statusLabel = (t: AdminTodo) => (t.deleted ? 'deleted' : t.completed ? 'completed' : 'active')
-const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' => (t.deleted ? 'red' : t.completed ? 'green' : 'blue')
+const statusLabel = (t: AdminTodo) => {
+  if (t.deleted) return 'deleted'
+  return t.completed ? 'completed' : 'active'
+}
+const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' => {
+  if (t.deleted) return 'red'
+  return t.completed ? 'green' : 'blue'
+}
 </script>
 
 <template>
@@ -52,6 +58,7 @@ const statusColor = (t: AdminTodo): 'green' | 'red' | 'blue' => (t.deleted ? 're
           <h2 class="text-sm font-bold text-white lowercase">{{ todo.title }}</h2>
           <PillBadge class="ml-3 shrink-0" :color="statusColor(todo)" :label="statusLabel(todo)" />
         </div>
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <div v-if="todo.body" class="todo-body text-xs text-white/80 lowercase" v-html="todo.body" />
         <p v-else class="text-xs text-white/30 italic">no content</p>
       </div>

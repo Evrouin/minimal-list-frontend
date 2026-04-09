@@ -40,7 +40,7 @@ onMounted(() => {
   if (saved && filterOptions.includes(saved as (typeof filterOptions)[number])) {
     todoStore.changeFilter(saved as (typeof filterOptions)[number])
   }
-  todoStore.loadTodos()
+  if (authStore.isAuthenticated) todoStore.loadTodos()
   window.addEventListener('scroll', onScroll)
 })
 
