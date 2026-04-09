@@ -100,7 +100,7 @@ const confirmDelete = async () => {
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-1 flex-col">
     <PageHeader title="users">
       <input
         v-model="search"
@@ -116,9 +116,10 @@ const confirmDelete = async () => {
     <div v-if="loading" class="p-4 text-sm text-white/40">loading...</div>
     <div v-else-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>
 
-    <div v-else :class="searching ? 'opacity-50' : ''">
+    <div v-else :class="searching ? 'opacity-50' : ''" class="flex flex-1 flex-col justify-between">
+      <div>
       <!-- mobile: card layout -->
-      <div class="flex min-h-[520px] flex-col gap-3 md:hidden">
+      <div class="flex flex-col gap-3 md:hidden">
         <div
           v-for="u in sortedUsers"
           :key="u.uuid"
@@ -211,6 +212,8 @@ const confirmDelete = async () => {
           </tbody>
         </table>
         <div v-if="users.length === 0" class="p-4 text-center text-sm text-white/40">no users</div>
+      </div>
+
       </div>
 
       <!-- pagination -->

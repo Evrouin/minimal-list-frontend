@@ -9,8 +9,7 @@ const emit = defineEmits<{ 'update:page': [page: number] }>()
 </script>
 
 <template>
-  <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between text-xs">
-    <span class="text-white/40">{{ totalCount }} {{ label }}</span>
+  <div v-if="totalPages > 1" class="mt-4 flex items-center justify-end pb-4 text-xs sm:pb-0">
     <div class="flex items-center gap-2">
       <button
         :disabled="page === 1"
