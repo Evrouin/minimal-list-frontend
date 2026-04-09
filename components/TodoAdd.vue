@@ -52,41 +52,41 @@ const clearAudio = () => {
 
 const { fetchPreviews } = useLinkPreviews()
 
+const buildPayload = (previews: import('~/types/todo').LinkPreview[]) => {
+  if (imageFile.value || audioFile.value) {
+    const fd = new FormData()
+    fd.append('title', title.value.toLowerCase())
+    fd.append('body', body.value)
+    fd.append('color', color.value)
+    if (pinned.value) fd.append('pinned', 'true')
+    if (reminderAt.value) fd.append('reminder_at', reminderAt.value)
+    if (imageFile.value) fd.append('image', imageFile.value)
+    if (audioFile.value) fd.append('audio', audioFile.value)
+    if (previews.length) fd.append('link_previews', JSON.stringify(previews))
+    return fd
+  }
+  return { title: title.value.toLowerCase(), body: body.value, color: color.value, pinned: pinned.value, reminder_at: reminderAt.value, link_previews: previews }
+}
+
+const resetForm = () => {
+  title.value = ''
+  body.value = ''
+  color.value = (localStorage.getItem('defaultNoteColor') as NoteColor) || 'default'
+  reminderAt.value = null
+  pinned.value = false
+  clearImage()
+  clearAudio()
+  expanded.value = false
+}
+
 const addTodo = async () => {
   if (!isValidTodo.value || submitting.value) return
   submitting.value = true
   errorMsg.value = ''
   try {
     const previews = await fetchPreviews(body.value, [])
-    if (imageFile.value || audioFile.value) {
-      const fd = new FormData()
-      fd.append('title', title.value.toLowerCase())
-      fd.append('body', body.value)
-      fd.append('color', color.value)
-      if (pinned.value) fd.append('pinned', 'true')
-      if (reminderAt.value) fd.append('reminder_at', reminderAt.value)
-      if (imageFile.value) fd.append('image', imageFile.value)
-      if (audioFile.value) fd.append('audio', audioFile.value)
-      if (previews.length) fd.append('link_previews', JSON.stringify(previews))
-      await todoStore.addTodo(fd)
-    } else {
-      await todoStore.addTodo({
-        title: title.value.toLowerCase(),
-        body: body.value,
-        color: color.value,
-        pinned: pinned.value,
-        reminder_at: reminderAt.value,
-        link_previews: previews,
-      })
-    }
-    title.value = ''
-    body.value = ''
-    color.value = (localStorage.getItem('defaultNoteColor') as NoteColor) || 'default'
-    reminderAt.value = null
-    pinned.value = false
-    clearImage()
-    clearAudio()
-    expanded.value = false
+    await todoStore.addTodo(buildPayload(previews))
+    resetForm()
   } catch (e: unknown) {
     const msg = (e as Error)?.message || ''
     errorMsg.value = msg.includes('limit') ? 'note limit reached' : 'failed to add note'

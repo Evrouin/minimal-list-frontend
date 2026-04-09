@@ -237,7 +237,7 @@ const onMinuteBlur = () => {
                 @focus="onHourFocus"
                 @blur="onHourBlur"
                 @input="onHourInput"
-              />
+              >
               <div v-if="showHourList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
                   v-for="h in 12"
@@ -262,7 +262,7 @@ const onMinuteBlur = () => {
                 @focus="onMinuteFocus"
                 @blur="onMinuteBlur"
                 @input="onMinuteInput"
-              />
+              >
               <div v-if="showMinuteList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
                   v-for="m in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]"
