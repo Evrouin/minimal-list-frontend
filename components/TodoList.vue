@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
+import type { CardRef } from '@/types/api'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
 
@@ -71,7 +72,7 @@ const deletedSections = computed(() => {
   return buckets.filter((b) => b.todos.length > 0)
 })
 
-const cardRefs = ref(new Map<string, Element>())
+const cardRefs = ref(new Map<string, CardRef>())
 const pinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const unpinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const isDragging = ref(false)
@@ -344,7 +345,7 @@ defineExpose({ cancelAllEdits, isEditing })
             <TodoCard
               :ref="
                 (el) => {
-                  if (el) cardRefs.set(todo.uuid, el as any)
+                  if (el) cardRefs.set(todo.uuid, el as CardRef)
                 }
               "
               :todo="todo"
@@ -394,7 +395,7 @@ defineExpose({ cancelAllEdits, isEditing })
             <TodoCard
               :ref="
                 (el) => {
-                  if (el) cardRefs.set(todo.uuid, el as any)
+                  if (el) cardRefs.set(todo.uuid, el as CardRef)
                 }
               "
               :todo="todo"
@@ -447,7 +448,7 @@ defineExpose({ cancelAllEdits, isEditing })
             <TodoCard
               :ref="
                 (el) => {
-                  if (el) cardRefs.set(todo.uuid, el as any)
+                  if (el) cardRefs.set(todo.uuid, el as CardRef)
                 }
               "
               :todo="todo"

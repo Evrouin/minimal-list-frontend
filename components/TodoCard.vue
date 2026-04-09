@@ -201,7 +201,7 @@ const cardClasses = computed(() => [
       <!-- eslint-disable vue/no-mutating-props -->
       <LazyTiptapEditor
         :ref="
-          (el: any) => {
+          (el: object | null) => {
             if (el) emit('set-editor-ref', el)
           }
         "

@@ -1,12 +1,13 @@
 import { computed, nextTick, ref, watch, type Ref } from 'vue'
 import type { Todo } from '@/types'
 import type { NoteColor } from '~/types/todo'
+import type { CardRef } from '~/types/api'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
 
 interface UseTodoEditingOptions {
   isLg: Ref<boolean>
-  cardRefs: Ref<Map<string, Element>>
+  cardRefs: Ref<Map<string, CardRef>>
   endLongPress: () => void
   endHover: (id: string) => void
   onEditEnd?: () => void
@@ -76,7 +77,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
         inlineEditorRefs.value.get(todo.uuid)?.focus()
         setTimeout(() => {
           const el = cardRefs.value.get(todo.uuid)
-          const dom = ((el as { $el?: HTMLElement })?.$el ?? el) as HTMLElement | undefined
+          const dom = (el?.$el ?? el) as HTMLElement | undefined
           const muuriItem = dom?.closest('.muuri-item') ?? dom
           muuriItem?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }, 300)

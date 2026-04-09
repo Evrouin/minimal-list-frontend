@@ -1,3 +1,5 @@
+import type { FetchError, RequestOptions } from '~/types/api'
+
 export interface ApiError {
   statusCode: number
   message: string
@@ -12,7 +14,7 @@ const withRetry = async <T>(fn: () => Promise<T>, retries = 2): Promise<T> => {
       return await fn()
     } catch (err) {
       const status =
-        (err as { response?: { status?: number } }).response?.status || 0
+        (err as FetchError).response?.status || 0
       if (i === retries || !isRetryable(status)) throw err
       await new Promise((r) => setTimeout(r, 1000 * 2 ** i))
     }
@@ -42,7 +44,7 @@ export const useApiFetch = () => {
         localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
         return res.access
       } catch (e: unknown) {
-        const refreshStatus = (e as { response?: { status?: number } }).response?.status
+        const refreshStatus = (e as FetchError).response?.status
         if (refreshStatus === 429) {
           throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
         }
@@ -70,7 +72,7 @@ export const useApiFetch = () => {
     return 'something went wrong'
   }
 
-  const handleErrorStatus = async <T>(status: number, message: string, tokens: { refresh?: string } | null, url: string, opts: Record<string, unknown>): Promise<T> => {
+  const handleErrorStatus = async <T>(status: number, message: string, tokens: { refresh?: string } | null, url: string, opts: RequestOptions): Promise<T> => {
     if (status === 401 && tokens?.refresh && !opts._retried) {
       try {
         await refreshAccessToken()
@@ -96,7 +98,7 @@ export const useApiFetch = () => {
 
   const request = async <T>(
     url: string,
-    opts: Record<string, unknown> = {},
+    opts: RequestOptions = {},
   ): Promise<T> => {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
     const headers: Record<string, string> = {}
@@ -113,7 +115,7 @@ export const useApiFetch = () => {
         }),
       )) as T
     } catch (err: unknown) {
-      const error = err as { response?: { status?: number; _data?: Record<string, unknown> }; message?: string }
+      const error = err as FetchError
       const status = error.response?.status || 500
       const message = parseErrorMessage(error.response?._data)
       return handleErrorStatus<T>(status, message, tokens, url, opts)
