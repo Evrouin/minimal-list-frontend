@@ -4,7 +4,7 @@ import type { Todo } from '~/types'
 const uuidToInt = (uuid: string) => {
   let hash = 0
   for (let i = 0; i < uuid.length; i++) {
-    hash = ((hash << 5) - hash + uuid.charCodeAt(i)) | 0
+    hash = Math.trunc((hash << 5) - hash + (uuid.codePointAt(i) ?? 0))
   }
   return Math.abs(hash)
 }
@@ -21,7 +21,7 @@ export const useReminders = () => {
           {
             id: uuidToInt(todo.uuid),
             title: todo.title,
-            body: todo.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
+            body: todo.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
             schedule: { at: new Date(todo.reminder_at) },
           },
         ],
@@ -51,7 +51,7 @@ export const useReminders = () => {
         notifications: upcoming.map((t) => ({
           id: uuidToInt(t.uuid),
           title: t.title,
-          body: t.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
+          body: t.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
           schedule: { at: new Date(t.reminder_at!) },
         })),
       })

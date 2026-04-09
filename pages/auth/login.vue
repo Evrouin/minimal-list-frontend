@@ -30,8 +30,7 @@ const handleLogin = async () => {
     else if (msg.includes('verify')) {
       errorMsg.value = 'please verify your email first.'
       showResend.value = true
-    }
-    else errorMsg.value = 'invalid email or password'
+    } else errorMsg.value = 'invalid email or password'
   }
 }
 
@@ -41,7 +40,9 @@ const resendVerification = async () => {
     await api.resendVerification(form.email)
     resendMsg.value = 'verification email sent — check your inbox.'
     resendCooldown.value = true
-    setTimeout(() => { resendCooldown.value = false }, 60000)
+    setTimeout(() => {
+      resendCooldown.value = false
+    }, 60000)
   } catch {
     resendMsg.value = 'failed to send. try again later.'
   }
@@ -74,7 +75,7 @@ const handleGoogleLogin = async () => {
             type="email"
             placeholder="user@example.com"
             class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          />
+          >
         </div>
         <div>
           <label class="mb-1 block text-xs text-white/40">password</label>
@@ -84,7 +85,7 @@ const handleGoogleLogin = async () => {
               :type="showPassword ? 'text' : 'password'"
               placeholder="password"
               class="w-full rounded-lg bg-gray-600 px-3 py-2 pr-9 text-xs text-white placeholder-white/30 focus:outline-none"
-            />
+            >
             <button
               type="button"
               class="absolute top-1/2 right-2 -translate-y-1/2 text-white/30 hover:text-white/60"

@@ -34,8 +34,12 @@ const { now, timeAgo } = useTimeAgo()
 const { onImageError } = useMediaFallback()
 const showPreview = ref(false)
 const wasDragged = ref(false)
-const onImgMouseDown = () => { wasDragged.value = false }
-const onImgMouseMove = () => { wasDragged.value = true }
+const onImgMouseDown = () => {
+  wasDragged.value = false
+}
+const onImgMouseMove = () => {
+  wasDragged.value = true
+}
 const onImgClick = (e: Event) => {
   if (wasDragged.value || props.multiSelectMode) return
   e.stopPropagation()
@@ -47,7 +51,7 @@ const colors = computed(() => noteColors[props.todo.color] || noteColors.default
 const cardClasses = computed(() => [
   props.todo.editing
     ? 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full'
-    : 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full min-h-[120px] max-h-[300px] lg:min-h-0 lg:max-h-[400px]',
+    : 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full min-h-30 max-h-75 lg:min-h-0 lg:max-h-100',
   colors.value.bg,
   colors.value.hover,
   'transition-colors duration-200',
@@ -63,8 +67,16 @@ const cardClasses = computed(() => [
     @mouseenter="!todo.editing && emit('start-hover')"
     @mouseleave="!todo.editing && emit('end-hover')"
     @touchstart="!todo.editing && emit('start-long-press')"
-    @touchend="(e: TouchEvent) => { if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press') }"
-    @touchmove="(e: TouchEvent) => { if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press') }"
+    @touchend="
+      (e: TouchEvent) => {
+        if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press')
+      }
+    "
+    @touchmove="
+      (e: TouchEvent) => {
+        if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press')
+      }
+    "
   >
     <button
       v-if="multiSelectMode || showCheckbox"
@@ -76,6 +88,7 @@ const cardClasses = computed(() => [
     </button>
     <img
       v-if="!todo.editing && (todo.thumbnail || todo.image)"
+      alt=""
       :src="todo.thumbnail || todo.image"
       loading="lazy"
       class="-mx-5 -mt-5 mb-1 block h-32 cursor-zoom-in rounded-t object-cover"
@@ -84,34 +97,39 @@ const cardClasses = computed(() => [
       @mousedown="onImgMouseDown"
       @mousemove="onImgMouseMove"
       @error="onImageError"
-    />
+    >
     <img
       v-if="todo.editing && (editImagePreview || todo.thumbnail || todo.image)"
+      alt=""
       :src="editImagePreview || todo.thumbnail || todo.image"
       class="-mx-5 -mt-5 mb-1 block h-32 rounded-t object-cover"
       style="width: calc(100% + 2.5rem); min-width: calc(100% + 2.5rem); max-width: none"
       @error="onImageError"
-    />
+    >
     <ModalOverlay :show="showPreview" backdrop-class="bg-black/80" @click="showPreview = false">
       <button class="absolute top-4 right-4 cursor-pointer text-2xl text-white/60 hover:text-white" @click.stop="showPreview = false">
         ✕
       </button>
-      <img :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop @error="onImageError" />
+      <img alt="" :src="todo.image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" @click.stop @error="onImageError" >
     </ModalOverlay>
     <div class="flex w-full items-center justify-between">
-      <span v-if="!todo.editing" class="flex-grow text-sm font-bold text-white lowercase">
+      <span v-if="!todo.editing" class="grow text-sm font-bold text-white lowercase">
         {{ todo.title }}
       </span>
       <!-- eslint-disable vue/no-mutating-props -->
       <input
         v-if="todo.editing"
         v-model="todo.title"
-        class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
+        class="grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
         @keydown.enter="emit('save')"
         @click.stop
-      />
+      >
       <!-- eslint-enable vue/no-mutating-props -->
-      <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100" :class="todo.editing && 'opacity-100'" @click.stop>
+      <div
+        class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+        :class="todo.editing && 'opacity-100'"
+        @click.stop
+      >
         <template v-if="!todo.deleted">
           <button
             class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
@@ -129,7 +147,7 @@ const cardClasses = computed(() => [
             <Icon name="uil:trash" />
           </button>
           <button
-            class="cursor-pointer rounded px-1 py-0.5 mb-px text-xs text-gray-400 hover:text-gray-200"
+            class="mb-px cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
             :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
             @click="emit('toggle-completion')"
           >
@@ -154,7 +172,8 @@ const cardClasses = computed(() => [
         </template>
       </div>
     </div>
-    <div v-if="!todo.editing" class="todo-body overflow-hidden text-xs text-wrap break-words text-white lowercase" v-html="todo.body" />
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div v-if="!todo.editing" class="todo-body overflow-hidden text-xs text-wrap wrap-break-word text-white lowercase" v-html="todo.body" />
     <div v-if="!todo.editing && todo.link_previews?.length" class="flex flex-col gap-1">
       <LinkPreviewCard v-for="lp in todo.link_previews" :key="lp.url" :preview="lp" />
     </div>
@@ -202,7 +221,7 @@ const cardClasses = computed(() => [
           <!-- eslint-enable vue/no-mutating-props -->
           <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
             <Icon name="uil:image" class="text-xs" />
-            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" />
+            <input type="file" accept="image/*" class="hidden" @change="(e: Event) => emit('image-select', e)" >
           </label>
           <button
             type="button"

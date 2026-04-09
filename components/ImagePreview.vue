@@ -7,7 +7,7 @@ const pad = computed(() => `${(props.padding ?? 5) * 0.25}rem`)
 
 <template>
   <div class="relative mb-1" :style="{ marginTop: `-${pad}`, marginLeft: `-${pad}`, marginRight: `-${pad}` }">
-    <img :src="src" class="block h-32 w-full rounded-t object-cover" />
+    <img alt="" :src="src" class="block h-32 w-full rounded-t object-cover" >
     <button
       v-if="removable"
       type="button"

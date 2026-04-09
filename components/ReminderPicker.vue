@@ -74,7 +74,7 @@ const selectDay = (day: number) => {
 
 const confirm = () => {
   if (!selectedDate.value) return
-  const [y, m, d] = selectedDate.value.split('-').map(Number)
+  const [y = 0, m = 1, d = 1] = selectedDate.value.split('-').map(Number)
   const dt = new Date(y, m - 1, d, selectedHour.value, selectedMinute.value)
   model.value = dt.toISOString()
   open.value = false
@@ -110,7 +110,7 @@ watch(selectedMinute, (v) => {
   if (!minuteFocused.value) minuteDisplay.value = String(v).padStart(2, '0')
 })
 watch(ampm, () => {
-  const h12 = parseInt(hourDisplay.value) || 12
+  const h12 = Number.parseInt(hourDisplay.value) || 12
   selectedHour.value = to24(h12, ampm.value)
 })
 
@@ -135,12 +135,12 @@ const selectMinute = (m: number) => {
   minuteDisplay.value = String(m).padStart(2, '0')
 }
 const onHourInput = () => {
-  const n = parseInt(hourDisplay.value)
-  if (!isNaN(n) && n >= 1 && n <= 12) selectedHour.value = to24(n, ampm.value)
+  const n = Number.parseInt(hourDisplay.value)
+  if (!Number.isNaN(n) && n >= 1 && n <= 12) selectedHour.value = to24(n, ampm.value)
 }
 const onMinuteInput = () => {
-  const n = parseInt(minuteDisplay.value)
-  if (!isNaN(n) && n >= 0 && n <= 59) selectedMinute.value = n
+  const n = Number.parseInt(minuteDisplay.value)
+  if (!Number.isNaN(n) && n >= 0 && n <= 59) selectedMinute.value = n
 }
 const onHourFocus = () => {
   hourFocused.value = true
@@ -153,7 +153,7 @@ const onMinuteFocus = () => {
 const onHourBlur = () => {
   hourFocused.value = false
   showHourList.value = false
-  let n = parseInt(hourDisplay.value) || 12
+  let n = Number.parseInt(hourDisplay.value) || 12
   n = Math.max(1, Math.min(12, n))
   selectedHour.value = to24(n, ampm.value)
   hourDisplay.value = String(n).padStart(2, '0')
@@ -161,7 +161,7 @@ const onHourBlur = () => {
 const onMinuteBlur = () => {
   minuteFocused.value = false
   showMinuteList.value = false
-  selectedMinute.value = Math.max(0, Math.min(59, parseInt(minuteDisplay.value) || 0))
+  selectedMinute.value = Math.max(0, Math.min(59, Number.parseInt(minuteDisplay.value) || 0))
   minuteDisplay.value = String(selectedMinute.value).padStart(2, '0')
 }
 </script>
@@ -202,7 +202,7 @@ const onMinuteBlur = () => {
           </div>
 
           <!-- Days grid -->
-          <div class="grid min-h-[210px] grid-cols-7 gap-1 text-center text-sm">
+          <div class="grid min-h-52.5 grid-cols-7 gap-1 text-center text-sm">
             <span v-for="_ in firstDayOfWeek" :key="'e' + _" />
             <button
               v-for="day in daysInMonth"
@@ -237,7 +237,7 @@ const onMinuteBlur = () => {
                 @focus="onHourFocus"
                 @blur="onHourBlur"
                 @input="onHourInput"
-              />
+              >
               <div v-if="showHourList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
                   v-for="h in 12"
@@ -262,7 +262,7 @@ const onMinuteBlur = () => {
                 @focus="onMinuteFocus"
                 @blur="onMinuteBlur"
                 @input="onMinuteInput"
-              />
+              >
               <div v-if="showMinuteList" class="absolute left-0 z-10 mt-1 max-h-32 w-12 overflow-y-auto rounded bg-gray-600 py-1 shadow-lg">
                 <button
                   v-for="m in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]"

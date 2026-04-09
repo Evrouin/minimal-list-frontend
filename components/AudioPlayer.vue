@@ -1,13 +1,18 @@
 <script setup lang="ts">
 const props = defineProps<{ src: string; removable?: boolean }>()
-const emit = defineEmits<{ remove: []; 'audio-interact': [value: boolean] }>()
+const emit = defineEmits<{ 'remove': []; 'audio-interact': [value: boolean] }>()
 
 const config = useRuntimeConfig()
 const cdnUrl = config.public.cdnUrl as string
 const fallbackUrl = config.public.cdnFallbackUrl as string
 const audioSrc = ref(props.src)
 
-watch(() => props.src, (v) => { audioSrc.value = v })
+watch(
+  () => props.src,
+  (v) => {
+    audioSrc.value = v
+  },
+)
 
 const onAudioError = () => {
   if (cdnUrl && fallbackUrl && audioSrc.value.includes(cdnUrl)) {
@@ -45,7 +50,7 @@ const onEnded = () => {
 const progress = computed(() => (totalDuration.value ? (currentTime.value / totalDuration.value) * 100 : 0))
 
 const formatTime = (s: number) => {
-  if (!s || !isFinite(s)) return '0:00'
+  if (!s || !Number.isFinite(s)) return '0:00'
   const m = Math.floor(s / 60)
   return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 }
@@ -53,14 +58,23 @@ const formatTime = (s: number) => {
 const seek = (e: MouseEvent | TouchEvent) => {
   if (!audio.value || !totalDuration.value) return
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+  const clientX = 'touches' in e ? e.touches[0]?.clientX ?? (e as unknown as MouseEvent).clientX : (e as MouseEvent).clientX
   const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
   audio.value.currentTime = pct * totalDuration.value
 }
 </script>
 
 <template>
-  <div data-audio-player class="audio-player flex items-center gap-2" @click.stop @mouseenter.stop @mouseleave.stop @touchstart.stop="emit('audio-interact', true)" @touchend.stop="!playing && emit('audio-interact', false)" @touchmove.stop>
+  <div
+    data-audio-player
+    class="audio-player flex items-center gap-2"
+    @click.stop
+    @mouseenter.stop
+    @mouseleave.stop
+    @touchstart.stop="emit('audio-interact', true)"
+    @touchend.stop="!playing && emit('audio-interact', false)"
+    @touchmove.stop
+  >
     <audio
       ref="audio"
       :src="audioSrc"
@@ -81,7 +95,13 @@ const seek = (e: MouseEvent | TouchEvent) => {
       </div>
     </div>
     <span class="shrink-0 text-xs text-white/30">{{ formatTime(currentTime) }} / {{ formatTime(totalDuration) }}</span>
-    <button v-if="props.removable" type="button" class="cursor-pointer text-xs text-red-400 hover:text-red-300" @mousedown.prevent @click="emit('remove')">
+    <button
+      v-if="props.removable"
+      type="button"
+      class="cursor-pointer text-xs text-red-400 hover:text-red-300"
+      @mousedown.prevent
+      @click="emit('remove')"
+    >
       ✕
     </button>
   </div>

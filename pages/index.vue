@@ -79,7 +79,7 @@ watch(showCreateDialog, (val) => {
 const isLg = ref(false)
 let lgQuery: MediaQueryList | null = null
 onMounted(() => {
-  lgQuery = window.matchMedia('(min-width: 1024px)')
+  lgQuery = globalThis.matchMedia('(min-width: 1024px)')
   isLg.value = lgQuery.matches
   lgQuery.addEventListener('change', (e) => {
     isLg.value = e.matches
@@ -123,8 +123,8 @@ watch(isLg, (lg) => {
 const hasCreateBody = computed(
   () =>
     createBody.value
-      .replace(/<[^>]*>/g, '')
-      .replace(/&nbsp;/g, '')
+      .replaceAll(/<[^>]*>/g, '')
+      .replaceAll('\u00a0', '')
       .trim().length > 0,
 )
 
@@ -132,7 +132,9 @@ const createErrorMsg = ref('')
 const createSubmitting = ref(false)
 const createImageFile = ref<File | null>(null)
 const createImagePreview = ref('')
-const createColor = ref<import('~/types/todo').NoteColor>((localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default')
+const createColor = ref<import('~/types/todo').NoteColor>(
+  (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default',
+)
 const createReminderAt = ref<string | null>(null)
 const createPinned = ref(false)
 const createExpanded = ref(false)
@@ -220,7 +222,10 @@ const cancelCreate = () => {
   clearCreateAudio()
 }
 
-const mobileAddSubmit = () => createDialogSubmit().then(() => { showMobileAdd.value = false })
+const mobileAddSubmit = () =>
+  createDialogSubmit().then(() => {
+    showMobileAdd.value = false
+  })
 
 const cancelMobileAdd = () => {
   showMobileAdd.value = false
@@ -272,14 +277,26 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
     </nav>
     <div class="flex flex-1 flex-col items-center justify-center px-6 pt-10 text-center sm:pt-0">
       <h1 class="mb-4 text-2xl font-bold text-white lowercase sm:text-4xl">notes, simplified.</h1>
-      <p class="mb-8 max-w-xs text-xs leading-relaxed text-white/40 sm:max-w-md sm:text-sm">a minimalist space for your notes and recordings. built to keep you focused.</p>
+      <p class="mb-8 max-w-xs text-xs leading-relaxed text-white/40 sm:max-w-md sm:text-sm">
+        a minimalist space for your notes and recordings. built to keep you focused.
+      </p>
       <p class="mb-6 text-xs tracking-widest text-white/20">write. record. remember.</p>
       <div class="flex gap-3">
-        <NuxtLink to="/auth/register" class="rounded-lg bg-gray-600 px-6 py-2.5 text-xs font-medium text-white lowercase transition-colors hover:bg-gray-500">get started</NuxtLink>
-        <NuxtLink to="/auth/login" class="rounded-lg border border-white/10 px-6 py-2.5 text-xs text-white/60 lowercase transition-colors hover:border-white/20 hover:text-white">login</NuxtLink>
+        <NuxtLink
+          to="/auth/register"
+          class="rounded-lg bg-gray-600 px-6 py-2.5 text-xs font-medium text-white lowercase transition-colors hover:bg-gray-500"
+        >
+          get started
+        </NuxtLink>
+        <NuxtLink
+          to="/auth/login"
+          class="rounded-lg border border-white/10 px-6 py-2.5 text-xs text-white/60 lowercase transition-colors hover:border-white/20 hover:text-white"
+        >
+          login
+        </NuxtLink>
       </div>
     </div>
-    <div class="px-6 pb-20 pt-8">
+    <div class="px-6 pt-8 pb-20">
       <div class="mx-auto grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div class="rounded-lg bg-gray-700 p-5">
           <Icon name="uil:edit" class="mb-2 text-lg text-white/40" />
@@ -332,7 +349,10 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
         <span v-else>pull to refresh</span>
       </div>
     </Transition>
-    <div ref="headerRef" class="w-full max-w-lg px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
+    <div
+      ref="headerRef"
+      class="w-full max-w-lg px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl"
+    >
       <PageHeader title="minimal list" class="pl-2.5">
         <div class="flex shrink-0 items-center">
           <button
@@ -353,7 +373,10 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
       <!-- Mobile add button is now a FAB -->
     </div>
     <Transition name="slide-up">
-      <div v-if="!mobileHidden" class="my-4 flex w-full max-w-lg justify-center px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
+      <div
+        v-if="!mobileHidden"
+        class="my-4 flex w-full max-w-lg justify-center px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl"
+      >
         <button
           v-for="(filter, index) in filterOptions"
           :key="index"
@@ -365,9 +388,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
         </button>
       </div>
     </Transition>
-    <div
-      class="w-full max-w-lg px-4 pb-10 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]"
-    >
+    <div class="w-full max-w-lg px-4 pb-10 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <TodoList ref="todoListRef" :key="todoListKey" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
         <span class="text-sm text-white/40">loading...</span>
@@ -408,10 +429,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
 
     <!-- Scroll to top (desktop) -->
     <Transition name="fade">
-      <div
-        v-if="showScrollTop"
-        class="fixed right-6 bottom-6 z-40 hidden flex-col gap-3 sm:flex"
-      >
+      <div v-if="showScrollTop" class="fixed right-6 bottom-6 z-40 hidden flex-col gap-3 sm:flex">
         <button
           class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-700 text-white/60 shadow-lg transition-colors hover:bg-gray-600 hover:text-white"
           title="New note"
@@ -430,7 +448,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
 
     <!-- Mobile add dialog -->
     <Teleport to="body">
-      <div v-if="showMobileAdd" class="fixed inset-x-0 top-0 z-50 flex h-[100dvh] flex-col bg-gray-800 p-3">
+      <div v-if="showMobileAdd" class="fixed inset-x-0 top-0 z-50 flex h-dvh flex-col bg-gray-800 p-3">
         <div class="mb-3 px-2">
           <span class="text-lg font-bold text-white lowercase">minimal list</span>
         </div>
@@ -447,7 +465,12 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
             placeholder="title"
             maxlength="100"
             class="border-b border-white/20 bg-transparent text-sm placeholder-white/60 focus:outline-none"
-            @input="(e) => { (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.toLowerCase(); createTitle = (e.target as HTMLInputElement).value }"
+            @input="
+              (e) => {
+                ;(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.toLowerCase()
+                createTitle = (e.target as HTMLInputElement).value
+              }
+            "
           >
           <div class="flex-1 overflow-y-auto" @click="mobileAddEditorRef?.focus()">
             <LazyTiptapEditor ref="mobileAddEditorRef" v-model="createBody" placeholder="body" />
@@ -458,10 +481,23 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
             <ColorPicker v-else v-model="createColor" />
             <div class="flex items-center gap-1">
               <ReminderPicker v-model="createReminderAt" />
-              <button type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="createPinned = !createPinned">
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 transition-colors"
+                :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
+                @click="createPinned = !createPinned"
+              >
                 <Icon name="mdi:pin" class="text-xs" />
               </button>
-              <AudioRecorder @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }" @update:recording="(v) => (createAudioRecording = v)" />
+              <AudioRecorder
+                @recorded="
+                  (f, u) => {
+                    createAudioFile = f
+                    createAudioPreview = u
+                  }
+                "
+                @update:recording="(v) => (createAudioRecording = v)"
+              />
               <template v-if="!createAudioRecording">
                 <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                   <Icon name="uil:image" class="text-xs" />
@@ -478,7 +514,11 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
                 <button
                   type="submit"
                   class="cursor-pointer rounded px-2 py-0.5 text-xs"
-                  :class="createTitle.trim() && (hasCreateBody || createImageFile || createAudioFile) ? 'text-white/60 hover:text-white' : 'text-white/20'"
+                  :class="
+                    createTitle.trim() && (hasCreateBody || createImageFile || createAudioFile)
+                      ? 'text-white/60 hover:text-white'
+                      : 'text-white/20'
+                  "
                   :disabled="!createTitle.trim() || (!hasCreateBody && !createImageFile && !createAudioFile)"
                   @mousedown.prevent
                 >
@@ -505,8 +545,8 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
           placeholder="title"
           maxlength="100"
           class="w-full border-b border-white/20 bg-transparent pb-2 text-sm font-bold text-white lowercase placeholder-white/60 focus:outline-none"
-        />
-        <div :class="createExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : 'min-h-[150px]'">
+        >
+        <div :class="createExpanded ? 'min-h-100 flex-1 overflow-y-auto' : 'min-h-37.5'">
           <LazyTiptapEditor ref="createEditorRef" v-model="createBody" placeholder="body" @submit="createDialogSubmit" />
         </div>
         <AudioPlayer v-if="createAudioPreview" :src="createAudioPreview" removable @remove="clearCreateAudio" />
@@ -515,7 +555,13 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
-            <button v-if="!createAudioRecording" type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="createPinned = !createPinned">
+            <button
+              v-if="!createAudioRecording"
+              type="button"
+              class="cursor-pointer rounded px-2 py-0.5 transition-colors"
+              :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
+              @click="createPinned = !createPinned"
+            >
               <Icon name="mdi:pin" class="text-xs" />
             </button>
             <AudioRecorder
@@ -528,9 +574,9 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
               @update:recording="(v) => (createAudioRecording = v)"
             />
             <template v-if="!createAudioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-                <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" />
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+                <Icon name="uil:image" class="text-xs" aria-hidden="true" />
+                <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
               </label>
               <button
                 type="button"

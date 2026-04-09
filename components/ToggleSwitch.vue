@@ -5,7 +5,10 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
-const bg = computed(() => (props.modelValue ? (props.color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500') : 'bg-gray-600'))
+const bg = computed(() => {
+  if (!props.modelValue) return 'bg-gray-600'
+  return props.color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
+})
 </script>
 
 <template>

@@ -15,10 +15,11 @@ const emit = defineEmits<{ remove: [] }>()
   >
     <img
       v-if="preview.image"
+      alt=""
       :src="preview.image"
       class="h-14 w-14 shrink-0 rounded object-cover"
       @error="($event.target as HTMLImageElement).style.display = 'none'"
-    />
+    >
     <div v-else class="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white/10">
       <Icon name="uil:link" class="text-lg text-white/30" />
     </div>

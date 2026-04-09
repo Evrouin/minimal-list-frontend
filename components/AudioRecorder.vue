@@ -15,11 +15,9 @@ const start = async () => {
   loading.value = true
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    const supportedMime = MediaRecorder.isTypeSupported('audio/webm')
-      ? 'audio/webm'
-      : MediaRecorder.isTypeSupported('audio/mp4')
-        ? 'audio/mp4'
-        : ''
+    let supportedMime = ''
+    if (MediaRecorder.isTypeSupported('audio/webm')) supportedMime = 'audio/webm'
+    else if (MediaRecorder.isTypeSupported('audio/mp4')) supportedMime = 'audio/mp4'
     mediaRecorder = new MediaRecorder(stream, supportedMime ? { mimeType: supportedMime } : undefined)
     chunks = []
     duration.value = 0
@@ -65,7 +63,7 @@ defineExpose({ recording, stop })
 
 const toggle = () => {
   if (loading.value) return
-  recording.value ? stop() : start()
+  if (recording.value) { stop() } else { start() }
 }
 
 const formatTime = (s: number) => {

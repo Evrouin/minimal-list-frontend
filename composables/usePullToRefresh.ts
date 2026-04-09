@@ -10,17 +10,17 @@ export function usePullToRefresh(triggerEl: Ref<HTMLElement | undefined>, onRefr
   let active = false
 
   const onTouchStart = (e: TouchEvent) => {
-    if (window.scrollY > 0) return
+    if (globalThis.scrollY > 0) return
     const rect = triggerEl.value?.getBoundingClientRect()
     if (!rect) return
-    if (e.touches[0].clientY > rect.bottom) return
-    startY = e.touches[0].clientY
+    if (e.touches[0]!.clientY > rect.bottom) return
+    startY = e.touches[0]!.clientY
     active = true
   }
 
   const onTouchMove = (e: TouchEvent) => {
     if (!active || refreshing.value) return
-    const dy = e.touches[0].clientY - startY
+    const dy = e.touches[0]!.clientY - startY
     if (dy > 0) {
       pulling.value = true
       pullDistance.value = Math.min(dy * 0.5, 120)
@@ -40,15 +40,15 @@ export function usePullToRefresh(triggerEl: Ref<HTMLElement | undefined>, onRefr
   }
 
   onMounted(() => {
-    window.addEventListener('touchstart', onTouchStart, { passive: true })
-    window.addEventListener('touchmove', onTouchMove, { passive: true })
-    window.addEventListener('touchend', onTouchEnd)
+    globalThis.addEventListener('touchstart', onTouchStart, { passive: true })
+    globalThis.addEventListener('touchmove', onTouchMove, { passive: true })
+    globalThis.addEventListener('touchend', onTouchEnd)
   })
 
   onUnmounted(() => {
-    window.removeEventListener('touchstart', onTouchStart)
-    window.removeEventListener('touchmove', onTouchMove)
-    window.removeEventListener('touchend', onTouchEnd)
+    globalThis.removeEventListener('touchstart', onTouchStart)
+    globalThis.removeEventListener('touchmove', onTouchMove)
+    globalThis.removeEventListener('touchend', onTouchEnd)
   })
 
   return { pulling, pullDistance, refreshing, threshold }

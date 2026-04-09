@@ -30,10 +30,7 @@ onMounted(async () => {
             :class="status === 'success' ? 'text-green-400' : 'text-red-400'"
           />
           <p class="mb-4 text-sm text-white/70">{{ message }}</p>
-          <NuxtLink
-            to="/auth/login"
-            class="inline-block rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500"
-          >
+          <NuxtLink to="/auth/login" class="inline-block rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500">
             go to login
           </NuxtLink>
         </template>

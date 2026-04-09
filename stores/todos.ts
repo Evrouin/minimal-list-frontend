@@ -243,7 +243,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   const savePendingOrder = (order: string[] | null) => {
     pendingReorder.value = order
-    if (process.client) {
+    if (import.meta.client) {
       if (order && order.length) {
         window.localStorage.setItem(pendingReorderKey, JSON.stringify(order))
       } else {
@@ -253,7 +253,7 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const loadPendingOrder = (): string[] | null => {
-    if (!process.client) return null
+    if (!import.meta.client) return null
     const raw = window.localStorage.getItem(pendingReorderKey)
     if (!raw) return null
     try {
@@ -272,13 +272,12 @@ export const useTodoStore = defineStore('todo', () => {
     })
   }
 
-  const reorderTodosBySection = (section: 'pinned' | 'unpinned', movedUuids: string[]) => {
+  const reorderTodosBySection = (_section: 'pinned' | 'unpinned', _movedUuids: string[]) => {
     const snapshot = [...todos.value]
     return snapshot
   }
 
   const bulkReorderCommit = async (uuid: string, newPosition: number, pinned: boolean) => {
-    try {
       const response = await api.bulkReorder(uuid, newPosition, pinned)
       if (!response.success) throw new Error('bulk reorder failed')
 
@@ -298,9 +297,6 @@ export const useTodoStore = defineStore('todo', () => {
       combined.forEach((t, i) => { t.order_id = combined.length - i })
 
       savePendingOrder(null)
-    } catch (e) {
-      throw e
-    }
   }
 
   const reorderRollback = (snapshot: Todo[]) => {

@@ -30,7 +30,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     try {
       const { Capacitor } = await import('@capacitor/core')
       if (Capacitor.isNativePlatform()) return navigateTo('/auth/login')
-    } catch {}
+    } catch {
+      // ignore: Capacitor not available in web context
+    }
   }
 
   if (to.path === '/auth/login' && authStore.isAuthenticated) {

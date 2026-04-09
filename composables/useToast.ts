@@ -47,7 +47,7 @@ export function useUndoToast() {
     const pending = [...pendingCommits]
     const promises = all.map((t) => {
       clearTimeout(t.timer)
-      return t.onCommit()
+      return Promise.resolve(t.onCommit())
     })
     toasts.value = []
     await Promise.all([...promises, ...pending])

@@ -1,7 +1,7 @@
 export const useMediaFallback = () => {
   const config = useRuntimeConfig()
-  const cdnUrl = config.public.cdnUrl as string
-  const fallbackUrl = config.public.cdnFallbackUrl as string
+  const cdnUrl = config.public.cdnUrl
+  const fallbackUrl = config.public.cdnFallbackUrl
 
   const onImageError = (e: Event) => {
     if (!cdnUrl || !fallbackUrl) return

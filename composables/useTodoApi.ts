@@ -8,7 +8,8 @@ export const useTodoApi = () => {
   return {
     fetchTodos: (params?: string, cursor?: string) => {
       if (cursor) return request<ApiResponse<Todo[]>>(cursor)
-      return request<ApiResponse<Todo[]>>(`${base}/${params ? `?${params}` : ''}`)
+      const query = params ? `?${params}` : ''
+      return request<ApiResponse<Todo[]>>(`${base}/${query}`)
     },
 
     createTodo: (todo: Partial<Todo> | FormData) =>

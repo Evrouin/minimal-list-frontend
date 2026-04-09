@@ -24,7 +24,7 @@ let refreshPromise: Promise<string> | null = null
 
 export const useApiFetch = () => {
   const config = useRuntimeConfig()
-  const baseUrl = (config.public.authApiBase as string).replace('/api/auth', '')
+  const baseUrl = config.public.authApiBase.replace('/api/auth', '')
 
   const refreshAccessToken = async (): Promise<string> => {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
@@ -34,21 +34,21 @@ export const useApiFetch = () => {
 
     refreshPromise = (async () => {
       try {
-        const res = await $fetch<{ access: string; refresh?: string }>(
+        const res = await $fetch(
           `${baseUrl}/api/auth/token/refresh/`,
           { method: 'POST', body: { refresh: tokens.refresh } },
-        )
+        ) as { access: string; refresh?: string }
         const newTokens = { ...tokens, access: res.access, ...(res.refresh && { refresh: res.refresh }) }
         localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
         return res.access
       } catch (e: unknown) {
         const refreshStatus = (e as { response?: { status?: number } }).response?.status
         if (refreshStatus === 429) {
-          throw { statusCode: 429, message: 'too many requests. try again later.' }
+          throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
         }
         const { clearAuth } = useAuthStore()
         clearAuth()
-        if (window.location.pathname !== '/auth/login') {
+        if (globalThis.location.pathname !== '/auth/login') {
           navigateTo('/auth/login')
         }
         throw new Error('refresh failed')
@@ -72,7 +72,7 @@ export const useApiFetch = () => {
 
     try {
       return (await withRetry(() =>
-        $fetch<T>(`${baseUrl}${url}`, {
+        $fetch(`${baseUrl}${url}`, {
           ...opts,
           headers: { ...headers, ...(opts.headers as Record<string, string>) },
           timeout: 15000,
@@ -84,7 +84,7 @@ export const useApiFetch = () => {
         message?: string
       }
       const status = error.response?.status || 500
-      const data = error.response?._data as Record<string, unknown> | undefined
+      const data = error.response?._data
 
       let message = 'something went wrong'
       if (data) {
@@ -102,33 +102,33 @@ export const useApiFetch = () => {
           await refreshAccessToken()
           return await request<T>(url, { ...opts, _retried: true })
         } catch (refreshErr: unknown) {
-          if ((refreshErr as ApiError)?.statusCode === 429) throw refreshErr as ApiError
-          throw { statusCode: 401, message: 'session expired' } as ApiError
+          if ((refreshErr as ApiError)?.statusCode === 429) throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
+          throw Object.assign(new Error('session expired'), { statusCode: 401 })
         }
       }
 
       if (status === 429) {
-        throw { statusCode: 429, message: 'too many requests. try again later.' } as ApiError
+        throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
       }
 
       if (status === 503) {
         navigateTo('/maintenance')
-        throw { statusCode: 503, message: 'service unavailable' } as ApiError
+        throw Object.assign(new Error('service unavailable'), { statusCode: 503 })
       }
 
       if (status >= 500) {
-        throw { statusCode: status, message } as ApiError
+        throw Object.assign(new Error(message), { statusCode: status })
       }
 
       if (status === 401) {
         const { clearAuth } = useAuthStore()
         clearAuth()
-        if (window.location.pathname !== '/auth/login') {
+        if (globalThis.location.pathname !== '/auth/login') {
           navigateTo('/auth/login')
         }
       }
 
-      throw { statusCode: status, message } as ApiError
+      throw Object.assign(new Error(message), { statusCode: status })
     }
   }
 

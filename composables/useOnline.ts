@@ -8,7 +8,7 @@ export function useOnline() {
       return
     }
     try {
-      await $fetch(`${(config.public.authApiBase as string).replace('/api/auth', '')}/health/`, { method: 'HEAD', timeout: 3000 })
+      await $fetch(`${config.public.authApiBase.replace('/api/auth', '')}/health/`, { method: 'HEAD', timeout: 3000 })
       online.value = true
     } catch {
       online.value = false
@@ -19,13 +19,13 @@ export function useOnline() {
 
   onMounted(() => {
     check()
-    window.addEventListener('online', check)
-    window.addEventListener('offline', check)
+    globalThis.addEventListener('online', check)
+    globalThis.addEventListener('offline', check)
     interval = setInterval(check, 30000)
   })
   onUnmounted(() => {
-    window.removeEventListener('online', check)
-    window.removeEventListener('offline', check)
+    globalThis.removeEventListener('online', check)
+    globalThis.removeEventListener('offline', check)
     clearInterval(interval)
   })
 

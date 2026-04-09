@@ -76,7 +76,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
         inlineEditorRefs.value.get(todo.uuid)?.focus()
         setTimeout(() => {
           const el = cardRefs.value.get(todo.uuid)
-          const dom = ((el as any)?.$el ?? el) as HTMLElement | undefined
+          const dom = ((el as { $el?: HTMLElement })?.$el ?? el) as HTMLElement | undefined
           const muuriItem = dom?.closest('.muuri-item') ?? dom
           muuriItem?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }, 300)

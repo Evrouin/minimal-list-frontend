@@ -8,7 +8,7 @@ export const useLinkPreviews = () => {
   const failed = new Set<string>()
 
   const extractUrls = (html: string): string[] => {
-    const text = html.replace(/<[^>]*>/g, ' ')
+    const text = html.replaceAll(/<[^>]*>/g, ' ')
     const matches = text.match(URL_REGEX) || []
     return [...new Set(matches)]
   }

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import Muuri from 'muuri'
+import Muuri, { type Item } from 'muuri'
+import type { Todo } from '@/types'
 
 const props = defineProps<{
-  items: any[]
+  items: Todo[]
   keyField?: string
   dragEnabled?: boolean
 }>()
@@ -71,11 +72,11 @@ const initGrid = () => {
   grid = new Muuri(containerRef.value, {
     items: '.muuri-item',
     dragEnabled: props.dragEnabled ?? false,
-    dragSort: () => grid ? [grid] : [],
+    dragSort: () => (grid ? [grid] : []),
     dragStartPredicate: { delay: 0, distance: 10 },
     dragHandle: columnCount <= 2 ? '.drag-handle' : undefined,
     dragAutoScroll: {
-      targets: [{ element: window, priority: 0 }],
+      targets: [{ element: globalThis as unknown as Window, priority: 0 }],
       sortDuringScroll: true,
       smoothStop: true,
     },
@@ -85,18 +86,21 @@ const initGrid = () => {
     hideDuration: 0,
     dragPlaceholder: {
       enabled: true,
-      createElement: (item: any) => {
+      createElement: (item: Item) => {
         const el = document.createElement('div')
-        el.style.cssText = `width:100%;height:${item.getElement().offsetHeight}px;border-radius:0.5rem;background:rgba(255,255,255,0.05);`
+        const height = item.getElement()?.offsetHeight ?? 0
+        el.style.cssText = `width:100%;height:${height}px;border-radius:0.5rem;background:rgba(255,255,255,0.05);`
         return el
       },
     },
   })
 
-  grid.on('layoutEnd', () => { ready.value = true })
+  grid.on('layoutEnd', () => {
+    ready.value = true
+  })
 
   grid.on('dragStart', () => emit('dragStart'))
-  grid.on('dragEnd', (item: any) => {
+  grid.on('dragEnd', (item: Item) => {
     emit('dragEnd')
     const el = item.getElement() as HTMLElement
     const uuid = el.dataset.uuid
@@ -113,14 +117,17 @@ const initGrid = () => {
     })
   })
 
-  fadeObserver = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) {
-        (e.target as HTMLElement).classList.add('muuri-item-visible')
-        fadeObserver?.unobserve(e.target)
-      }
-    })
-  }, { threshold: 0.05 })
+  fadeObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          ;(e.target as HTMLElement).classList.add('muuri-item-visible')
+          fadeObserver?.unobserve(e.target)
+        }
+      })
+    },
+    { threshold: 0.05 },
+  )
   containerRef.value.querySelectorAll('.muuri-item').forEach((el) => fadeObserver!.observe(el))
 }
 
@@ -170,67 +177,82 @@ onUnmounted(() => {
   destroyGrid()
 })
 
-watch(() => props.items.length, (len, oldLen) => {
-  if (!len) { destroyGrid(); return }
-  const prevLen = oldLen ?? 0
+watch(
+  () => props.items.length,
+  (len, oldLen) => {
+    if (!len) {
+      destroyGrid()
+      return
+    }
+    const prevLen = oldLen ?? 0
 
-  if (prevLen === 0) {
-    nextTick(() => nextTick(() => initGrid()))
-    return
-  }
-
-  if (len <= prevLen) {
-    nextTick(() => {
-      if (!grid || !containerRef.value) { initGrid(); return }
-      const liveEls = new Set(containerRef.value.querySelectorAll(':scope > .muuri-item'))
-      const stale = grid.getItems().filter((i: any) => !liveEls.has(i.getElement()))
-      if (stale.length >= (grid.getItems().length || 1)) {
-        initGrid()
-      } else {
-        if (stale.length) grid.remove(stale, { removeElements: false })
-        refreshLayout()
-      }
-    })
-    return
-  }
-
-  nextTick(() => {
-    if (!grid || !containerRef.value) { initGrid(); return }
-
-    const firstMuuriEl = grid.getItems()[0]?.getElement()
-    if (firstMuuriEl && !containerRef.value.contains(firstMuuriEl)) {
-      initGrid()
+    if (prevLen === 0) {
+      nextTick(() => nextTick(() => initGrid()))
       return
     }
 
-    columnCount = getColumnCount()
-    const w = getItemWidth()
-    const currentEls = new Set(grid.getItems().map((i: any) => i.getElement()))
-    const domEls = Array.from(containerRef.value.querySelectorAll(':scope > .muuri-item')) as HTMLElement[]
-    const newEls = domEls.filter((el) => !currentEls.has(el))
-
-    if (newEls.length > 0) {
-      newEls.forEach((el) => {
-        el.style.width = w + 'px'
-        el.style.transition = 'none'
+    if (len <= prevLen) {
+      nextTick(() => {
+        if (!grid || !containerRef.value) {
+          initGrid()
+          return
+        }
+        const liveEls = new Set(containerRef.value.querySelectorAll(':scope > .muuri-item'))
+        const stale = grid.getItems().filter((i: Item) => !liveEls.has(i.getElement()!))
+        if (stale.length >= (grid.getItems().length || 1)) {
+          initGrid()
+        } else {
+          if (stale.length) grid.remove(stale, { removeElements: false })
+          refreshLayout()
+        }
       })
-      const firstNewIdx = domEls.indexOf(newEls[0])
-      grid.add(newEls, { index: firstNewIdx, layout: false })
-      newEls.forEach((el) => {
-        const content = el.querySelector('.muuri-item-content')
-        if (content) resizeObserver?.observe(content)
-        fadeObserver?.observe(el)
-        el.querySelectorAll('img').forEach((img) => {
-          if (!img.complete) img.addEventListener('load', refreshLayout, { once: true })
-        })
-      })
-      requestAnimationFrame(() => {
-        newEls.forEach((el) => { el.style.transition = '' })
-        refreshLayout()
-      })
+      return
     }
-  })
-}, { flush: 'post' })
+
+    nextTick(() => {
+      if (!grid || !containerRef.value) {
+        initGrid()
+        return
+      }
+
+      const firstMuuriEl = grid.getItems()[0]?.getElement()
+      if (firstMuuriEl && !containerRef.value.contains(firstMuuriEl)) {
+        initGrid()
+        return
+      }
+
+      columnCount = getColumnCount()
+      const w = getItemWidth()
+      const currentEls = new Set(grid.getItems().map((i: Item) => i.getElement()!))
+      const domEls = Array.from(containerRef.value.querySelectorAll(':scope > .muuri-item')) as HTMLElement[]
+      const newEls = domEls.filter((el) => !currentEls.has(el))
+
+      if (newEls.length > 0) {
+        newEls.forEach((el) => {
+          el.style.width = w + 'px'
+          el.style.transition = 'none'
+        })
+        const firstNewIdx = newEls[0] ? domEls.indexOf(newEls[0]) : -1
+        grid.add(newEls, { index: firstNewIdx, layout: false })
+        newEls.forEach((el) => {
+          const content = el.querySelector('.muuri-item-content')
+          if (content) resizeObserver?.observe(content)
+          fadeObserver?.observe(el)
+          el.querySelectorAll('img').forEach((img) => {
+            if (!img.complete) img.addEventListener('load', refreshLayout, { once: true })
+          })
+        })
+        requestAnimationFrame(() => {
+          newEls.forEach((el) => {
+            el.style.transition = ''
+          })
+          refreshLayout()
+        })
+      }
+    })
+  },
+  { flush: 'post' },
+)
 
 defineExpose({ containerRef, refreshLayout, reinit: initGrid, ready })
 </script>
@@ -240,8 +262,8 @@ defineExpose({ containerRef, refreshLayout, reinit: initGrid, ready })
     <div ref="containerRef" class="muuri-grid">
       <div
         v-for="(item, idx) in items"
-        :key="(keyField && item?.[keyField]) || idx"
-        :data-uuid="keyField ? item?.[keyField] : undefined"
+        :key="(keyField && String((item as unknown as Record<string, unknown>)[keyField])) || idx"
+        :data-uuid="keyField ? (item as unknown as Record<string, unknown>)?.[keyField] : undefined"
         class="muuri-item"
       >
         <div class="muuri-item-content">
@@ -267,8 +289,12 @@ defineExpose({ containerRef, refreshLayout, reinit: initGrid, ready })
   animation: muuri-fade-in 0.5s ease forwards;
 }
 @keyframes muuri-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .muuri-item.muuri-item-dragging {
   z-index: 3;

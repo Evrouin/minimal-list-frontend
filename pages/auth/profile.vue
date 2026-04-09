@@ -3,6 +3,8 @@ import { useAuthStore } from '~/stores/auth'
 import { storeToRefs } from 'pinia'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
+import type { Session } from '@/types/auth'
+import type { NoteColor } from '~/types/todo'
 
 const authStore = useAuthStore()
 const { user, loading } = storeToRefs(authStore)
@@ -136,11 +138,15 @@ const handleChangePassword = async () => {
 
 const showDeleteDialog = ref(false)
 
-const defaultNoteColor = ref<import('~/types/todo').NoteColor>(
-  (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default',
+const defaultNoteColor = ref<NoteColor>(
+  (localStorage.getItem('defaultNoteColor') as NoteColor) || 'default',
 )
 watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
 const showColorPicker = ref(false)
+const selectNoteColor = (name: NoteColor) => {
+  defaultNoteColor.value = name
+  showColorPicker.value = false
+}
 
 const hapticsEnabled = ref(localStorage.getItem('hapticsEnabled') !== 'false')
 const toggleHaptics = () => {
@@ -160,21 +166,25 @@ const openSessions = async () => {
   try {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || '{}')
     const res = await api.listSessions(tokens.refresh)
-    const list = Array.isArray(res) ? res : (res as any).data || (res as any).results || []
+    const raw = res as { data?: Session[]; results?: Session[] } | Session[]
+    const list = Array.isArray(raw) ? raw : (raw.data ?? raw.results ?? [])
     const sortedSessions = list.sort((a, b) => new Date(b.last_active_at).getTime() - new Date(a.last_active_at).getTime())
-    const currentSession = sortedSessions.find(s => s.is_current)
-    const otherSessions = sortedSessions.filter(s => !s.is_current)
+    const currentSession = sortedSessions.find((s) => s.is_current)
+    const otherSessions = sortedSessions.filter((s) => !s.is_current)
     const finalSessions = currentSession ? [currentSession, ...otherSessions] : sortedSessions
     sessions.value = finalSessions
-  } catch { sessions.value = [] }
-  finally { sessionsLoading.value = false }
+  } catch {
+    sessions.value = []
+  } finally {
+    sessionsLoading.value = false
+  }
 }
 
 const revokeSession = async (id: number) => {
   try {
     await api.revokeSession(id)
     sessions.value = sessions.value.filter((s) => s.id !== id)
-  } catch {}
+  } catch { /* silently fail */ }
 }
 
 const revokeOtherSessions = async () => {
@@ -183,7 +193,7 @@ const revokeOtherSessions = async () => {
   try {
     await api.revokeOtherSessions(tokens.refresh)
     sessions.value = sessions.value.filter((s) => s.is_current)
-  } catch {}
+  } catch { /* silently fail */ }
 }
 
 const deviceIcon = (type: string) => {
@@ -193,9 +203,7 @@ const deviceIcon = (type: string) => {
 }
 
 const notificationsEnabled = ref(
-  localStorage.getItem('notificationsEnabled') !== 'false' &&
-  typeof Notification !== 'undefined' &&
-  Notification.permission === 'granted',
+  localStorage.getItem('notificationsEnabled') !== 'false' && typeof Notification !== 'undefined' && Notification.permission === 'granted',
 )
 
 const handleDeleteAccount = async () => {
@@ -220,7 +228,7 @@ const toggleNotifications = async () => {
 const exportNotes = async () => {
   const { request } = useApiFetch()
   try {
-    const notes = await request<any[]>('/api/notes/?limit=1000')
+    const notes = await request<unknown[]>('/api/notes/?limit=1000')
     const data = JSON.stringify(notes, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -242,299 +250,311 @@ const handleLogout = () => {
 
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-10">
-    <div class="w-full max-w-lg px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
+    <div class="w-full max-w-lg px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <PageHeader title="profile" class="px-2.5">
         <NuxtLink to="/" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
         <button class="cursor-pointer text-sm text-white/60 lowercase hover:text-white" @click="handleLogout">logout</button>
       </PageHeader>
     </div>
 
-    <div class="w-full max-w-lg px-4 pb-10 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-[1600px]">
-
+    <div class="w-full max-w-lg px-4 pb-10 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
 
       <template v-if="user">
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div>
-            <p class="mb-3 mx-2.5 text-sm font-bold text-white lowercase">account</p>
+            <p class="mx-2.5 mb-3 text-sm font-bold text-white lowercase">account</p>
 
-        <!-- header card -->
-        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
-          <div class="flex items-center gap-4">
-            <div class="group relative cursor-pointer" @click="avatarInput?.click()">
-              <img
-                v-if="(user.avatar || user.avatar_url) && !avatarError"
-                :src="user.avatar || user.avatar_url"
-                class="h-12 w-12 rounded-full object-cover"
-                @error="avatarError = true"
-              />
-              <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
-                {{ (user.username || user.email)[0].toUpperCase() }}
+            <!-- header card -->
+            <div class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5">
+              <div class="flex items-center gap-4">
+                <div class="group relative cursor-pointer" @click="avatarInput?.click()">
+                  <img
+                    v-if="(user.avatar || user.avatar_url) && !avatarError"
+                    alt=""
+                    :src="user?.avatar || user?.avatar_url"
+                    class="h-12 w-12 rounded-full object-cover"
+                    @error="avatarError = true"
+                  >
+                  <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
+                    {{ (user?.username || user?.email || '?')[0].toUpperCase() }}
+                  </div>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <Icon name="uil:camera" class="text-sm text-white" />
+                  </div>
+                </div>
+                <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" >
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-lg font-medium text-white">{{ user.username || 'no username' }}</p>
+                  <p class="text-sm text-white/50">{{ user.email }}</p>
+                </div>
               </div>
-              <div
-                class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-              >
-                <Icon name="uil:camera" class="text-sm text-white" />
+              <div class="mt-4 flex flex-wrap gap-2">
+                <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
               </div>
             </div>
-            <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" />
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-lg font-medium text-white">{{ user.username || 'no username' }}</p>
-              <p class="text-sm text-white/50">{{ user.email }}</p>
-            </div>
-          </div>
-          <div class="mt-4 flex flex-wrap gap-2">
-            <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
-          </div>
-        </div>
 
-        <!-- profile info / edit card -->
-        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
-          <template v-if="!isEditing">
-            <div class="space-y-3 text-sm">
-              <div class="flex items-center justify-between">
-                <p class="text-xs font-bold tracking-wider text-white/40">user details</p>
-                <button class="cursor-pointer text-xs text-blue-300 lowercase hover:text-blue-200" @click="isEditing = true">edit</button>
-              </div>
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <p class="text-xs text-white/40">username</p>
-                  <p class="text-white">{{ user.username || '—' }}</p>
+            <!-- profile info / edit card -->
+            <div class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5">
+              <template v-if="!isEditing">
+                <div class="space-y-3 text-sm">
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs font-bold tracking-wider text-white/40">user details</p>
+                    <button class="cursor-pointer text-xs text-blue-300 lowercase hover:text-blue-200" @click="isEditing = true">
+                      edit
+                    </button>
+                  </div>
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <p class="text-xs text-white/40">username</p>
+                      <p class="text-white">{{ user.username || '—' }}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-white/40">phone</p>
+                      <p class="text-white">{{ user.phone || '—' }}</p>
+                    </div>
+                    <div class="sm:col-span-2">
+                      <p class="text-xs text-white/40">bio</p>
+                      <p class="text-white">{{ user.bio || '—' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <template v-if="isEditing">
+                <p class="mb-3 text-sm font-bold text-white lowercase">edit profile</p>
+                <div class="space-y-3">
+                  <div>
+                    <label class="mb-1 block text-xs text-white/40">username</label>
+                    <input
+                      v-model="editForm.username"
+                      class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      placeholder="username"
+                    >
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-white/40">phone</label>
+                    <input
+                      v-model="editForm.phone"
+                      type="tel"
+                      class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      placeholder="phone"
+                    >
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-white/40">bio</label>
+                    <textarea
+                      v-model="editForm.bio"
+                      class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      placeholder="bio"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+
+                <div v-if="errorMsg" class="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ errorMsg }}</div>
+                <div v-if="successMsg" class="mt-3 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-300">{{ successMsg }}</div>
+
+                <div class="mt-4 flex gap-2">
+                  <button
+                    :disabled="loading"
+                    class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500 disabled:opacity-50"
+                    @click="saveProfile"
+                  >
+                    save
+                  </button>
+                  <button
+                    class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 lowercase hover:text-white"
+                    @click="isEditing = false"
+                  >
+                    cancel
+                  </button>
+                </div>
+              </template>
+            </div>
+
+            <!-- password card -->
+            <form class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
+              <p class="mb-3 text-sm font-bold text-white lowercase">
+                {{ user.has_password ? 'change password' : 'set password' }}
+              </p>
+              <div class="space-y-3">
+                <div v-if="user.has_password">
+                  <label class="mb-1 block text-xs text-white/40">current password</label>
+                  <input
+                    v-model="passwordForm.current_password"
+                    type="password"
+                    class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                    placeholder="current password"
+                  >
                 </div>
                 <div>
-                  <p class="text-xs text-white/40">phone</p>
-                  <p class="text-white">{{ user.phone || '—' }}</p>
+                  <label class="mb-1 block text-xs text-white/40">new password</label>
+                  <input
+                    v-model="passwordForm.new_password"
+                    type="password"
+                    class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                    placeholder="new password"
+                  >
                 </div>
-                <div class="sm:col-span-2">
-                  <p class="text-xs text-white/40">bio</p>
-                  <p class="text-white">{{ user.bio || '—' }}</p>
+                <div>
+                  <label class="mb-1 block text-xs text-white/40">confirm new password</label>
+                  <input
+                    v-model="passwordForm.confirm_password"
+                    type="password"
+                    class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                    placeholder="confirm new password"
+                  >
                 </div>
               </div>
-            </div>
-          </template>
 
-          <template v-if="isEditing">
-            <p class="mb-3 text-sm font-bold text-white lowercase">edit profile</p>
-            <div class="space-y-3">
-              <div>
-                <label class="mb-1 block text-xs text-white/40">username</label>
-                <input
-                  v-model="editForm.username"
-                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-                  placeholder="username"
-                />
-              </div>
-              <div>
-                <label class="mb-1 block text-xs text-white/40">phone</label>
-                <input
-                  v-model="editForm.phone"
-                  type="tel"
-                  class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-                  placeholder="phone"
-                />
-              </div>
-              <div>
-                <label class="mb-1 block text-xs text-white/40">bio</label>
-                <textarea
-                  v-model="editForm.bio"
-                  class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-                  placeholder="bio"
-                  rows="3"
-                />
-              </div>
-            </div>
+              <div v-if="passwordError" class="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ passwordError }}</div>
+              <div v-if="passwordMsg" class="mt-3 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-300">{{ passwordMsg }}</div>
 
-            <div v-if="errorMsg" class="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ errorMsg }}</div>
-            <div v-if="successMsg" class="mt-3 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-300">{{ successMsg }}</div>
-
-            <div class="mt-4 flex gap-2">
               <button
+                type="submit"
                 :disabled="loading"
-                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500 disabled:opacity-50"
-                @click="saveProfile"
+                class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
               >
-                save
+                {{ user.has_password ? 'change password' : 'set password' }}
               </button>
-              <button
-                class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 lowercase hover:text-white"
-                @click="isEditing = false"
-              >
-                cancel
-              </button>
-            </div>
-          </template>
-        </div>
-
-        <!-- password card -->
-        <form class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5" @submit.prevent="handleChangePassword">
-          <p class="mb-3 text-sm font-bold text-white lowercase">
-            {{ user.has_password ? 'change password' : 'set password' }}
-          </p>
-          <div class="space-y-3">
-            <div v-if="user.has_password">
-              <label class="mb-1 block text-xs text-white/40">current password</label>
-              <input
-                v-model="passwordForm.current_password"
-                type="password"
-                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-                placeholder="current password"
-              />
-            </div>
-            <div>
-              <label class="mb-1 block text-xs text-white/40">new password</label>
-              <input
-                v-model="passwordForm.new_password"
-                type="password"
-                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-                placeholder="new password"
-              />
-            </div>
-            <div>
-              <label class="mb-1 block text-xs text-white/40">confirm new password</label>
-              <input
-                v-model="passwordForm.confirm_password"
-                type="password"
-                class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-                placeholder="confirm new password"
-              />
-            </div>
-          </div>
-
-          <div v-if="passwordError" class="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">{{ passwordError }}</div>
-          <div v-if="passwordMsg" class="mt-3 rounded-lg bg-green-500/10 px-3 py-2 text-xs text-green-300">{{ passwordMsg }}</div>
-
-          <button
-            type="submit"
-            :disabled="loading"
-            class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
-          >
-            {{ user.has_password ? 'change password' : 'set password' }}
-          </button>
-        </form>
-
+            </form>
           </div>
 
           <div>
-            <p class="mb-3 mx-2.5 text-sm font-bold text-white lowercase">settings</p>
+            <p class="mx-2.5 mb-3 text-sm font-bold text-white lowercase">settings</p>
 
-        <!-- settings -->
-        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
-          <p class="mb-3 text-sm font-bold text-white lowercase">preferences</p>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">theme</p>
-              <div class="group relative">
-                <span class="cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-xs text-white/60 min-w-[70px] text-center inline-block">dark</span>
-                <div class="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs text-white/50 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
-                  other themes coming soon
+            <!-- settings -->
+            <div class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5">
+              <p class="mb-3 text-sm font-bold text-white lowercase">preferences</p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">theme</p>
+                  <div class="group relative">
+                    <span
+                      class="inline-block min-w-17.5 cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-center text-xs text-white/60"
+                    >
+                      dark
+                    </span>
+                    <div
+                      class="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white/50 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      other themes coming soon
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">default note color</p>
+                  <div class="flex items-center gap-1">
+                    <Transition name="fade">
+                      <div v-if="showColorPicker" class="flex items-center gap-1">
+                        <button
+                          v-for="(c, name) in noteColors"
+                          :key="name"
+                          class="h-5 w-5 cursor-pointer rounded-full border transition-transform hover:scale-110"
+                          :class="[c.bg, defaultNoteColor === name ? 'border-white' : 'border-white/20']"
+                          @click="selectNoteColor(name as NoteColor)"
+                        />
+                      </div>
+                    </Transition>
+                    <button
+                      class="min-w-17.5 cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-center text-xs text-white/60"
+                      :class="noteColors[defaultNoteColor]?.bg || 'bg-gray-800'"
+                      @click="showColorPicker = !showColorPicker"
+                    >
+                      {{ defaultNoteColor }}
+                    </button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">haptic feedback</p>
+                  <button
+                    class="min-w-17.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
+                    :class="
+                      hapticsEnabled ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'
+                    "
+                    @click="toggleHaptics"
+                  >
+                    {{ hapticsEnabled ? 'on' : 'off' }}
+                  </button>
                 </div>
               </div>
             </div>
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">default note color</p>
-              <div class="flex items-center gap-1">
-                <Transition name="fade">
-                  <div v-if="showColorPicker" class="flex items-center gap-1">
-                    <button
-                      v-for="(c, name) in noteColors"
-                      :key="name"
-                      class="h-5 w-5 cursor-pointer rounded-full border transition-transform hover:scale-110"
-                      :class="[c.bg, defaultNoteColor === name ? 'border-white' : 'border-white/20']"
-                      @click="defaultNoteColor = name as import('~/types/todo').NoteColor; showColorPicker = false"
-                    />
+
+            <div class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5">
+              <p class="mb-3 text-sm font-bold text-white lowercase">notifications</p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">browser reminders</p>
+                  <button
+                    class="min-w-17.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
+                    :class="
+                      notificationsEnabled
+                        ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                        : 'bg-gray-600 text-white/40 hover:text-white'
+                    "
+                    @click="toggleNotifications"
+                  >
+                    {{ notificationsEnabled ? 'on' : 'off' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5">
+              <p class="mb-3 text-sm font-bold text-white lowercase">account</p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">connected accounts</p>
+                  <div class="flex items-center gap-2">
+                    <Icon v-if="user.has_password" name="uil:envelope" class="h-5 w-5 text-white/60" />
+                    <Icon name="logos:google-icon" class="h-4 w-4" />
                   </div>
-                </Transition>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">active sessions</p>
+                  <button
+                    class="min-w-17.5 cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-center text-xs text-white/60 lowercase hover:text-white"
+                    @click="openSessions"
+                  >
+                    manage
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mx-2.5 mb-3 rounded-lg bg-gray-700 p-5">
+              <p class="mb-3 text-sm font-bold text-white lowercase">privacy</p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">export notes</p>
+                  <button
+                    class="min-w-17.5 cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-center text-xs text-white/60 lowercase hover:text-white"
+                    @click="exportNotes"
+                  >
+                    export
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- danger zone -->
+            <div class="mx-2.5 rounded-lg border border-red-500/20 bg-gray-700 p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-red-300">delete account</p>
+                  <p class="text-xs text-white/40">this action cannot be undone</p>
+                </div>
                 <button
-                  class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 min-w-[70px] text-center border border-white/10"
-                  :class="noteColors[defaultNoteColor]?.bg || 'bg-gray-800'"
-                  @click="showColorPicker = !showColorPicker"
+                  class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
+                  @click="showDeleteDialog = true"
                 >
-                  {{ defaultNoteColor }}
+                  delete
                 </button>
               </div>
             </div>
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">haptic feedback</p>
-              <button
-                class="cursor-pointer rounded-lg px-4 py-2 text-xs lowercase min-w-[70px] text-center"
-                :class="hapticsEnabled ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'"
-                @click="toggleHaptics"
-              >
-                {{ hapticsEnabled ? 'on' : 'off' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
-          <p class="mb-3 text-sm font-bold text-white lowercase">notifications</p>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">browser reminders</p>
-              <button
-                class="cursor-pointer rounded-lg px-4 py-2 text-xs lowercase min-w-[70px] text-center"
-                :class="notificationsEnabled ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'"
-                @click="toggleNotifications"
-              >
-                {{ notificationsEnabled ? 'on' : 'off' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
-          <p class="mb-3 text-sm font-bold text-white lowercase">account</p>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">connected accounts</p>
-              <div class="flex items-center gap-2">
-                <Icon v-if="user.has_password" name="uil:envelope" class="h-5 w-5 text-white/60" />
-                <Icon name="logos:google-icon" class="h-4 w-4" />
-              </div>
-            </div>
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">active sessions</p>
-              <button
-                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white/60 lowercase hover:text-white min-w-[70px] text-center"
-                @click="openSessions"
-              >
-                manage
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="mb-3 mx-2.5 rounded-lg bg-gray-700 p-5">
-          <p class="mb-3 text-sm font-bold text-white lowercase">privacy</p>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40">export notes</p>
-              <button
-                class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white/60 lowercase hover:text-white min-w-[70px] text-center"
-                @click="exportNotes"
-              >
-                export
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- danger zone -->
-        <div class="mx-2.5 rounded-lg border border-red-500/20 bg-gray-700 p-5">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-red-300">delete account</p>
-              <p class="text-xs text-white/40">this action cannot be undone</p>
-            </div>
-            <button
-              class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
-              @click="showDeleteDialog = true"
-            >
-              delete
-            </button>
-          </div>
-        </div>
-
           </div>
         </div>
       </template>
@@ -550,7 +570,7 @@ const handleLogout = () => {
 
     <!-- sessions dialog -->
     <ModalOverlay :show="showSessions" @click.self="showSessions = false">
-      <div class="mx-4 w-full min-w-xs max-w-md min-h-75 rounded-lg bg-gray-700 p-5">
+      <div class="mx-4 min-h-75 w-full max-w-md min-w-xs rounded-lg bg-gray-700 p-5">
         <div class="mb-4 flex items-center justify-between">
           <p class="text-sm font-bold text-white lowercase">active sessions</p>
           <button class="cursor-pointer text-xs text-white/30 hover:text-white/60" @click="showSessions = false">✕</button>
@@ -561,28 +581,20 @@ const handleLogout = () => {
         <div v-else-if="sessions.length === 0" class="py-4 text-center text-xs text-white/40">no sessions found</div>
 
         <div v-else class="space-y-3">
-          <div
-            v-for="session in sessions"
-            :key="session.id"
-            class="flex items-center gap-3 rounded-lg bg-gray-600/50 p-3"
-          >
+          <div v-for="session in sessions" :key="session.id" class="flex items-center gap-3 rounded-lg bg-gray-600/50 p-3">
             <Icon :name="deviceIcon(session.device_type)" class="shrink-0 text-lg text-white/40" />
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
                 <p class="truncate text-xs text-white">{{ session.device_name }}</p>
               </div>
               <p class="text-xs text-white/30">
-                <span class="truncate">{{ session.ip_address }}</span> ·
+                <span class="truncate">{{ session.ip_address }}</span>
+                ·
                 <span v-if="session.is_current" class="text-green-400">active now</span>
                 <span v-else>{{ now ? timeAgo(session.last_active_at) : '' }}</span>
               </p>
             </div>
-            <span
-              v-if="session.is_current"
-              class="shrink-0 rounded bg-green-500/20 px-2 py-1 text-xs text-green-300"
-            >
-              current
-            </span>
+            <span v-if="session.is_current" class="shrink-0 rounded bg-green-500/20 px-2 py-1 text-xs text-green-300">current</span>
             <button
               v-else
               class="shrink-0 cursor-pointer rounded px-2 py-1 text-xs text-red-400 hover:text-red-300"
@@ -607,7 +619,7 @@ const handleLogout = () => {
     <ModalOverlay :show="showCropper" backdrop-class="bg-black/70" @click.self="cancelCrop">
       <div class="w-full max-w-sm rounded-lg bg-gray-700 p-4">
         <div class="mb-3 max-h-[60vh] overflow-hidden">
-          <img ref="cropImgEl" :src="cropImageSrc" class="max-w-full" />
+          <img ref="cropImgEl" alt="" :src="cropImageSrc" class="max-w-full" >
         </div>
         <div class="flex justify-end gap-2">
           <button class="cursor-pointer rounded px-3 py-1 text-xs text-white/60 hover:text-white" @click="cancelCrop">cancel</button>

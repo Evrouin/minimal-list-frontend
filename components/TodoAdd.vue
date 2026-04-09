@@ -15,8 +15,8 @@ const pinned = ref(false)
 const hasBody = computed(
   () =>
     body.value
-      .replace(/<[^>]*>/g, '')
-      .replace(/&nbsp;/g, '')
+      .replaceAll(/<[^>]*>/g, '')
+      .replaceAll('\u00a0', '')
       .trim().length > 0,
 )
 const audioFile = ref<File | null>(null)
@@ -122,7 +122,7 @@ const handleTitleInput = (event: Event) => {
           @input="handleTitleInput"
           @focus="focused = true"
           @blur="focused = false"
-        />
+        >
         <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" @focus="focused = true" @blur="focused = false" />
         <AudioPlayer v-if="audioPreview" :src="audioPreview" removable @remove="clearAudio" />
         <div class="flex items-center justify-between">
@@ -130,7 +130,13 @@ const handleTitleInput = (event: Event) => {
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
             <ReminderPicker v-if="!audioRecording" v-model="reminderAt" />
-            <button v-if="!audioRecording" type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="pinned = !pinned">
+            <button
+              v-if="!audioRecording"
+              type="button"
+              class="cursor-pointer rounded px-2 py-0.5 transition-colors"
+              :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
+              @click="pinned = !pinned"
+            >
               <Icon name="mdi:pin" class="text-xs" />
             </button>
             <AudioRecorder
@@ -145,7 +151,7 @@ const handleTitleInput = (event: Event) => {
             <template v-if="!audioRecording">
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
+                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
               </label>
               <button
                 v-if="focused || title || hasBody"
@@ -186,7 +192,7 @@ const handleTitleInput = (event: Event) => {
           maxlength="100"
           class="border-b border-white/20 bg-transparent text-sm placeholder-white/60 focus:outline-none"
           @input="handleTitleInput"
-        />
+        >
         <div class="flex-1 overflow-y-auto">
           <LazyTiptapEditor v-model="body" placeholder="body" @submit="addTodo" />
         </div>
@@ -197,7 +203,12 @@ const handleTitleInput = (event: Event) => {
           <div class="flex items-center gap-1">
             <template v-if="!audioRecording">
               <ReminderPicker v-model="reminderAt" />
-              <button type="button" class="cursor-pointer rounded px-2 py-0.5 transition-colors" :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'" @click="pinned = !pinned">
+              <button
+                type="button"
+                class="cursor-pointer rounded px-2 py-0.5 transition-colors"
+                :class="pinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
+                @click="pinned = !pinned"
+              >
                 <Icon name="mdi:pin" class="text-xs" />
               </button>
             </template>
@@ -213,7 +224,7 @@ const handleTitleInput = (event: Event) => {
             <template v-if="!audioRecording">
               <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
                 <Icon name="uil:image" class="text-xs" />
-                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
+                <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
               </label>
               <button
                 type="button"

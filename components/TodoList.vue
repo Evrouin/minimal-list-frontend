@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
 import { useTodoStore } from '~/stores/todos'
 import { storeToRefs } from 'pinia'
@@ -11,26 +11,35 @@ const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoS
 
 const isScrolledDown = ref(false)
 
-watch(() => todoStore.filterType, () => {
-  exitMultiSelect()
-  const scrollY = window.scrollY
-  gridKey.value++
-  requestAnimationFrame(() => {
-    window.scrollTo(0, scrollY)
-    setTimeout(() => window.scrollTo(0, scrollY), 100)
-    setTimeout(() => window.scrollTo(0, scrollY), 500)
-  })
-})
-const onScrollUpdate = () => { isScrolledDown.value = window.scrollY > 150 }
+watch(
+  () => todoStore.filterType,
+  () => {
+    exitMultiSelect()
+    const scrollY = window.scrollY
+    gridKey.value++
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY)
+      setTimeout(() => window.scrollTo(0, scrollY), 100)
+      setTimeout(() => window.scrollTo(0, scrollY), 500)
+    })
+  },
+)
+const onScrollUpdate = () => {
+  isScrolledDown.value = window.scrollY > 150
+}
 onMounted(() => window.addEventListener('scroll', onScrollUpdate, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', onScrollUpdate))
 
 const isTodoEmptyMessage = computed(() => {
   switch (todoStore.filterType) {
-    case 'active': return 'no active notes available'
-    case 'completed': return 'no completed notes available'
-    case 'deleted': return 'no deleted notes available'
-    default: return 'no notes available'
+    case 'active':
+      return 'no active notes available'
+    case 'completed':
+      return 'no completed notes available'
+    case 'deleted':
+      return 'no deleted notes available'
+    default:
+      return 'no notes available'
   }
 })
 
@@ -41,7 +50,7 @@ const deletedSections = computed(() => {
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const msDay = 86400000
-  const buckets: { label: string, todos: Todo[] }[] = [
+  const buckets: { label: string; todos: Todo[] }[] = [
     { label: 'today', todos: [] },
     { label: 'yesterday', todos: [] },
     { label: 'this week', todos: [] },
@@ -50,21 +59,21 @@ const deletedSections = computed(() => {
     { label: 'older', todos: [] },
   ]
   for (const t of filteredTodos.value) {
-    const d = new Date(t.updated_at).getTime()
+    const d = new Date(t.updated_at ?? 0).getTime()
     const diff = startOfToday.getTime() - d
-    if (diff < 0) buckets[0].todos.push(t)
-    else if (diff < msDay) buckets[1].todos.push(t)
-    else if (diff < 6 * msDay) buckets[2].todos.push(t)
-    else if (diff < 13 * msDay) buckets[3].todos.push(t)
-    else if (diff < 29 * msDay) buckets[4].todos.push(t)
-    else buckets[5].todos.push(t)
+    if (diff < 0) buckets[0]!.todos.push(t)
+    else if (diff < msDay) buckets[1]!.todos.push(t)
+    else if (diff < 6 * msDay) buckets[2]!.todos.push(t)
+    else if (diff < 13 * msDay) buckets[3]!.todos.push(t)
+    else if (diff < 29 * msDay) buckets[4]!.todos.push(t)
+    else buckets[5]!.todos.push(t)
   }
   return buckets.filter((b) => b.todos.length > 0)
 })
 
 const cardRefs = ref(new Map<string, Element>())
-const pinnedListRef = ref<any>(null)
-const unpinnedListRef = ref<any>(null)
+const pinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
+const unpinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const isDragging = ref(false)
 const gridKey = ref(0)
 const showDeleteDialog = ref(false)
@@ -72,7 +81,9 @@ const todoToDelete = ref<Todo | null>(null)
 
 const isLg = ref(false)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
-const updateIsLg = () => { isLg.value = window.innerWidth >= 768 }
+const updateIsLg = () => {
+  isLg.value = window.innerWidth >= 768
+}
 const debouncedResize = () => {
   if (resizeTimer) clearTimeout(resizeTimer)
   resizeTimer = setTimeout(updateIsLg, 150)
@@ -81,14 +92,44 @@ const debouncedResize = () => {
 // --- Composables ---
 
 const {
-  dialogTodo, dialogTitle, dialogBody, dialogEditorRef, dialogPinned, dialogColor,
-  dialogReminderAt, dialogExpanded, dialogImageFile, dialogImagePreview,
-  dialogAudioFile, dialogAudioPreview, dialogAudioRecording, dialogOriginalAudio,
-  onDialogImageSelect, cancelDialogTodo, saveDialogTodo, dialogToggleCompletion, dialogTogglePin,
-  inlineEditorRefs, editImagePreviews, editAudioFiles, editAudioPreviews, expandedAudioRecording,
-  expandedEditId, expandedTodo, expandedTitleRef, expandedEditorRef, audioInteracting,
-  editTodo, saveTodo, cancelEdit, cancelAllEdits, onEditImageSelect,
-  expandEdit, saveExpandedEdit, cancelExpandedEdit, setEditorRef,
+  dialogTodo,
+  dialogTitle,
+  dialogBody,
+  dialogEditorRef,
+  dialogPinned,
+  dialogColor,
+  dialogReminderAt,
+  dialogExpanded,
+  dialogImageFile: _dialogImageFile,
+  dialogImagePreview,
+  dialogAudioFile,
+  dialogAudioPreview,
+  dialogAudioRecording,
+  dialogOriginalAudio: _dialogOriginalAudio,
+  onDialogImageSelect,
+  cancelDialogTodo,
+  saveDialogTodo,
+  dialogToggleCompletion,
+  dialogTogglePin,
+  inlineEditorRefs: _inlineEditorRefs,
+  editImagePreviews,
+  editAudioFiles,
+  editAudioPreviews,
+  expandedAudioRecording,
+  expandedEditId,
+  expandedTodo,
+  expandedTitleRef,
+  expandedEditorRef,
+  audioInteracting,
+  editTodo,
+  saveTodo,
+  cancelEdit,
+  cancelAllEdits,
+  onEditImageSelect,
+  expandEdit,
+  saveExpandedEdit,
+  cancelExpandedEdit,
+  setEditorRef,
   isEditing,
 } = useTodoEditing({
   isLg,
@@ -107,11 +148,22 @@ const {
 })
 
 const {
-  multiSelectMode, selectedIds, isSelected, hasCheckbox,
-  hideHoverCheckboxes, clearHoverTimers, cancelLongPress,
-  startHover, endHover, toggleSelect, exitMultiSelect,
-  startLongPress, endLongPress,
-  allSelectedPinned, allSelectedUnpinned, allSelectedDeleted,
+  multiSelectMode,
+  selectedIds,
+  isSelected,
+  hasCheckbox,
+  hideHoverCheckboxes,
+  clearHoverTimers,
+  cancelLongPress,
+  startHover,
+  endHover,
+  toggleSelect,
+  exitMultiSelect,
+  startLongPress,
+  endLongPress,
+  allSelectedPinned,
+  allSelectedUnpinned,
+  allSelectedDeleted,
 } = useTodoSelection({
   filteredTodos,
   isDragging,
@@ -131,10 +183,7 @@ const onUnpinnedReorder = (uuid: string, newIndex: number) => handleReorder('unp
 
 const { show: showToast, flushAll } = useUndoToast()
 
-const {
-  showBulkDeleteDialog, bulkDeleteIds,
-  requestBulkDelete, confirmBulkDelete, bulkRestoreSelected, bulkPinSelected,
-} = useBulkActions({
+const { showBulkDeleteDialog, bulkDeleteIds, requestBulkDelete, confirmBulkDelete, bulkRestoreSelected, bulkPinSelected } = useBulkActions({
   exitMultiSelect,
   tap,
   showToast,
@@ -160,7 +209,10 @@ const viewTodo = ref<Todo | null>(null)
 
 const handleCardClick = (todo: Todo) => {
   if (todo.editing) return
-  if (wasDragging.value) { wasDragging.value = false; return }
+  if (wasDragging.value) {
+    wasDragging.value = false
+    return
+  }
   if (multiSelectMode.value) toggleSelect(todo.uuid)
   else if (todo.deleted) viewTodo.value = todo
   else editTodo(todo)
@@ -239,7 +291,11 @@ defineExpose({ cancelAllEdits, isEditing })
 
   <div v-else class="pt-2 transition-opacity duration-200" :class="loading ? 'pointer-events-none animate-pulse' : ''">
     <!-- Multi-select bar -->
-    <div v-if="multiSelectMode" class="sticky top-0 z-20 mb-4 flex items-center justify-end gap-1.5 bg-gray-800 pr-2.5 transition-[padding]" :class="isScrolledDown ? 'py-3' : 'py-1.5'">
+    <div
+      v-if="multiSelectMode"
+      class="sticky top-0 z-20 mb-4 flex items-center justify-end gap-1.5 bg-gray-800 pr-2.5 transition-[padding]"
+      :class="isScrolledDown ? 'py-3' : 'py-1.5'"
+    >
       <button
         v-if="allSelectedUnpinned && todoStore.filterType !== 'deleted'"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
@@ -286,7 +342,11 @@ defineExpose({ cancelAllEdits, isEditing })
         <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
           <template #default="{ item: todo }">
             <TodoCard
-              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
+              :ref="
+                (el) => {
+                  if (el) cardRefs.set(todo.uuid, el as any)
+                }
+              "
               :todo="todo"
               :pinned="false"
               :selected="isSelected(todo.uuid)"
@@ -302,7 +362,7 @@ defineExpose({ cancelAllEdits, isEditing })
               @cancel="cancelEdit(todo)"
               @expand="expandEdit(todo)"
               @remove-audio="todo.audio = null"
-              @audio-interact="(v: boolean) => audioInteracting = v"
+              @audio-interact="(v: boolean) => (audioInteracting = v)"
               @toggle-select="toggleSelect(todo.uuid)"
               @start-hover="startHover(todo.uuid)"
               @end-hover="endHover(todo.uuid)"
@@ -318,12 +378,25 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Pinned section -->
     <template v-else>
-    <div v-if="pinnedTodos.length > 0" class="mb-6">
-      <p v-if="pinnedListRef?.ready && todoStore.filterType !== 'deleted'" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">pinned</p>
-      <MasonryGrid :key="'pinned-' + gridKey" ref="pinnedListRef" :items="pinnedTodos" key-field="uuid" :drag-enabled="todoStore.filterType !== 'deleted'" @reorder="onPinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
-        <template #default="{ item: todo }">
+      <div v-if="pinnedTodos.length > 0" class="mb-6">
+        <p v-if="pinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">pinned</p>
+        <MasonryGrid
+          :key="'pinned-' + gridKey"
+          ref="pinnedListRef"
+          :items="pinnedTodos"
+          key-field="uuid"
+          :drag-enabled="true"
+          @reorder="onPinnedReorder"
+          @drag-start="onDragStart"
+          @drag-end="onDragEnd"
+        >
+          <template #default="{ item: todo }">
             <TodoCard
-              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
+              :ref="
+                (el) => {
+                  if (el) cardRefs.set(todo.uuid, el as any)
+                }
+              "
               :todo="todo"
               :pinned="true"
               :selected="isSelected(todo.uuid)"
@@ -339,7 +412,7 @@ defineExpose({ cancelAllEdits, isEditing })
               @cancel="cancelEdit(todo)"
               @expand="expandEdit(todo)"
               @remove-audio="todo.audio = null"
-              @audio-interact="(v: boolean) => audioInteracting = v"
+              @audio-interact="(v: boolean) => (audioInteracting = v)"
               @toggle-select="toggleSelect(todo.uuid)"
               @start-hover="startHover(todo.uuid)"
               @end-hover="endHover(todo.uuid)"
@@ -348,17 +421,35 @@ defineExpose({ cancelAllEdits, isEditing })
               @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
               @image-select="(e: Event) => onEditImageSelect(todo, e)"
             />
-        </template>
-      </MasonryGrid>
-    </div>
+          </template>
+        </MasonryGrid>
+      </div>
 
-    <!-- Others section -->
-    <div v-if="unpinnedTodos.length > 0">
-      <p v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready && todoStore.filterType !== 'deleted'" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">others</p>
-      <MasonryGrid :key="'unpinned-' + gridKey" ref="unpinnedListRef" :items="unpinnedTodos" key-field="uuid" :drag-enabled="todoStore.filterType !== 'deleted'" @reorder="onUnpinnedReorder" @drag-start="onDragStart" @drag-end="onDragEnd">
-        <template #default="{ item: todo }">
+      <!-- Others section -->
+      <div v-if="unpinnedTodos.length > 0">
+        <p
+          v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready"
+          class="mb-3 ml-2.5 text-xs text-white/40 lowercase"
+        >
+          others
+        </p>
+        <MasonryGrid
+          :key="'unpinned-' + gridKey"
+          ref="unpinnedListRef"
+          :items="unpinnedTodos"
+          key-field="uuid"
+          :drag-enabled="true"
+          @reorder="onUnpinnedReorder"
+          @drag-start="onDragStart"
+          @drag-end="onDragEnd"
+        >
+          <template #default="{ item: todo }">
             <TodoCard
-              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as any) }"
+              :ref="
+                (el) => {
+                  if (el) cardRefs.set(todo.uuid, el as any)
+                }
+              "
               :todo="todo"
               :pinned="false"
               :selected="isSelected(todo.uuid)"
@@ -374,7 +465,7 @@ defineExpose({ cancelAllEdits, isEditing })
               @cancel="cancelEdit(todo)"
               @expand="expandEdit(todo)"
               @remove-audio="todo.audio = null"
-              @audio-interact="(v: boolean) => audioInteracting = v"
+              @audio-interact="(v: boolean) => (audioInteracting = v)"
               @toggle-select="toggleSelect(todo.uuid)"
               @start-hover="startHover(todo.uuid)"
               @end-hover="endHover(todo.uuid)"
@@ -383,15 +474,16 @@ defineExpose({ cancelAllEdits, isEditing })
               @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
               @image-select="(e: Event) => onEditImageSelect(todo, e)"
             />
-        </template>
-      </MasonryGrid>
-    </div>
+          </template>
+        </MasonryGrid>
+      </div>
     </template>
   </div>
 
   <!-- Edit dialog (lg+ screens) -->
   <ModalOverlay :show="!!dialogTodo" tabindex="0" @keydown.esc="cancelDialogTodo">
     <div
+      v-if="dialogTodo"
       class="mx-4 flex w-full flex-col gap-3 rounded-lg p-6 shadow-xl transition-all duration-200"
       :class="[noteColors[dialogColor]?.bg || 'bg-gray-800', dialogExpanded ? 'max-h-[85vh] max-w-4xl' : 'max-w-xl']"
     >
@@ -403,9 +495,9 @@ defineExpose({ cancelAllEdits, isEditing })
       <div class="flex w-full items-center justify-between">
         <input
           v-model="dialogTitle"
-          class="flex-grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
+          class="grow border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
           @keydown.enter.prevent
-        />
+        >
         <div class="flex shrink-0 items-center space-x-2">
           <button
             class="cursor-pointer rounded p-1 text-sm hover:text-gray-200"
@@ -427,7 +519,7 @@ defineExpose({ cancelAllEdits, isEditing })
           </button>
         </div>
       </div>
-      <div :class="dialogExpanded ? 'min-h-[400px] flex-1 overflow-y-auto' : ''">
+      <div :class="dialogExpanded ? 'min-h-100 flex-1 overflow-y-auto' : ''">
         <LazyTiptapEditor ref="dialogEditorRef" v-model="dialogBody" placeholder="body" @submit="saveDialogTodo" />
       </div>
       <AudioPlayer
@@ -450,9 +542,9 @@ defineExpose({ cancelAllEdits, isEditing })
             @update:recording="(v) => (dialogAudioRecording = v)"
           />
           <template v-if="!dialogAudioRecording">
-            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-              <Icon name="uil:image" class="text-xs" />
-              <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" />
+            <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+              <Icon name="uil:image" class="text-xs" aria-hidden="true" />
+              <input type="file" accept="image/*" class="hidden" @change="onDialogImageSelect" >
             </label>
             <button
               type="button"
@@ -475,20 +567,23 @@ defineExpose({ cancelAllEdits, isEditing })
 
   <!-- View-only dialog (deleted notes) -->
   <ModalOverlay :show="!!viewTodo" tabindex="0" @keydown.esc="viewTodo = null">
-    <div v-if="viewTodo" class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg p-6 shadow-xl" :class="noteColors[viewTodo.color]?.bg || 'bg-gray-800'">
-      <ImagePreview
-        v-if="viewTodo.thumbnail || viewTodo.image"
-        :src="viewTodo.thumbnail || viewTodo.image!"
-        :padding="6"
-      />
+    <div
+      v-if="viewTodo"
+      class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg p-6 shadow-xl"
+      :class="noteColors[viewTodo.color]?.bg || 'bg-gray-800'"
+    >
+      <ImagePreview v-if="viewTodo.thumbnail || viewTodo.image" :src="viewTodo.thumbnail || viewTodo.image!" :padding="6" />
       <p class="text-sm font-bold text-white lowercase">{{ viewTodo.title }}</p>
-      <div v-if="viewTodo.body" class="view-body text-xs text-wrap break-words text-white lowercase" v-html="viewTodo.body" />
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div v-if="viewTodo.body" class="view-body text-xs text-wrap wrap-break-word text-white lowercase" v-html="viewTodo.body" />
       <div v-if="viewTodo.link_previews?.length" class="flex flex-col gap-1">
         <LinkPreviewCard v-for="lp in viewTodo.link_previews" :key="lp.url" :preview="lp" />
       </div>
       <AudioPlayer v-if="viewTodo.audio" :src="viewTodo.audio" />
       <div class="flex justify-end">
-        <button class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white" @click="viewTodo = null">exit</button>
+        <button class="cursor-pointer rounded px-2 py-0.5 text-xs text-white/40 lowercase hover:text-white" @click="viewTodo = null">
+          exit
+        </button>
       </div>
     </div>
   </ModalOverlay>
@@ -514,7 +609,7 @@ defineExpose({ cancelAllEdits, isEditing })
           ref="expandedTitleRef"
           v-model="expandedTodo.title"
           class="border-b border-white/20 bg-transparent text-sm font-bold text-white lowercase focus:outline-none"
-        />
+        >
         <div class="flex-1 overflow-y-auto" @click="expandedEditorRef?.focus()">
           <LazyTiptapEditor ref="expandedEditorRef" v-model="expandedTodo.body" placeholder="body" />
         </div>
@@ -535,14 +630,14 @@ defineExpose({ cancelAllEdits, isEditing })
               @update:recording="(v) => (expandedAudioRecording = v)"
             />
             <template v-if="!expandedAudioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60">
-                <Icon name="uil:image" class="text-xs" />
+              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+                <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input
                   type="file"
                   accept="image/*"
                   class="hidden"
                   @change="(e: Event) => expandedTodo && onEditImageSelect(expandedTodo, e)"
-                />
+                >
               </label>
               <button
                 type="button"
@@ -609,14 +704,55 @@ defineExpose({ cancelAllEdits, isEditing })
 </style>
 
 <style>
-.view-body ul { list-style-type: disc; padding-left: 1.2rem; }
-.view-body ol { list-style-type: decimal; padding-left: 1.2rem; }
-.view-body li { margin: 0.15rem 0; overflow-wrap: break-word; word-break: break-word; min-width: 0; }
-.view-body p { margin: 0; }
-.view-body ul[data-type='taskList'] { list-style: none; padding-left: 0; }
-.view-body ul[data-type='taskList'] li { display: flex; align-items: center; gap: 0.4rem; overflow-wrap: break-word; word-break: break-word; min-width: 0; }
-.view-body ul[data-type='taskList'] li > div { min-width: 0; flex: 1; }
-.view-body ul[data-type='taskList'] li label { pointer-events: none; flex-shrink: 0; }
-.view-body ul[data-type='taskList'] li label input[type='checkbox'] { appearance: none; width: 0.9rem; height: 0.9rem; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 3px; background: transparent; }
-.view-body ul[data-type='taskList'] li label input[type='checkbox']:checked { background: #60a5fa; border-color: #60a5fa; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); background-size: 100%; }
+.view-body ul {
+  list-style-type: disc;
+  padding-left: 1.2rem;
+}
+.view-body ol {
+  list-style-type: decimal;
+  padding-left: 1.2rem;
+}
+.view-body li {
+  margin: 0.15rem 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.view-body p {
+  margin: 0;
+}
+.view-body ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.view-body ul[data-type='taskList'] li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.view-body ul[data-type='taskList'] li > div {
+  min-width: 0;
+  flex: 1;
+}
+.view-body ul[data-type='taskList'] li label {
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.view-body ul[data-type='taskList'] li label input[type='checkbox'] {
+  appearance: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  background: transparent;
+}
+.view-body ul[data-type='taskList'] li label input[type='checkbox']:checked {
+  background: #60a5fa;
+  border-color: #60a5fa;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-size: 100%;
+}
 </style>

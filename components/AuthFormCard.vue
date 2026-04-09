@@ -8,12 +8,16 @@ defineProps<{
 
 <template>
   <div class="flex min-h-screen w-screen flex-col bg-gray-800">
-    <div class="flex flex-1 items-center justify-center px-4 pb-16 pt-10">
+    <div class="flex flex-1 items-center justify-center px-4 pt-10 pb-16">
       <div class="flex w-full max-w-md items-center justify-center sm:max-w-3xl sm:gap-12">
         <!-- Logo (hidden on mobile) -->
         <div class="hidden flex-col items-center justify-center sm:flex sm:flex-1">
           <img src="~/assets/logo.png" alt="minimal list" class="w-full opacity-60" >
-          <p class="mt-4 text-center text-white"><span class="text-md font-bold">notes, simplified.</span><br><span class="text-xs text-white/50">write, record, remember.</span></p>
+          <p class="mt-4 text-center text-white">
+            <span class="text-md font-bold">notes, simplified.</span>
+            <br >
+            <span class="text-xs text-white/50">write, record, remember.</span>
+          </p>
         </div>
         <!-- Form -->
         <div class="w-full max-w-md">

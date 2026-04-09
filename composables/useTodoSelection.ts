@@ -34,7 +34,7 @@ export function useTodoSelection(options: UseTodoSelectionOptions) {
     if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
   }
 
-  const isTouchDevice = () => 'ontouchstart' in window
+  const isTouchDevice = () => 'ontouchstart' in globalThis
 
   const startHover = (id: string) => {
     if (isTouchDevice() || isDragging.value || multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
