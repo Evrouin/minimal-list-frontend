@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
 import type { CardRef } from '@/types/api'
 import { useTodoStore } from '~/stores/todos'
+import { useBackHandler } from '~/composables/useBackHandler'
 import { storeToRefs } from 'pinia'
 
 const { tap } = useHaptics()
@@ -177,6 +178,11 @@ const { handleReorder } = useSortableReorder({
   pinnedListRef,
   unpinnedListRef,
   isDragging,
+})
+
+watch(expandedEditId, (val) => {
+  if (val) useBackHandler().push(() => { expandedEditId.value = null })
+  else useBackHandler().pop()
 })
 
 const onPinnedReorder = (uuid: string, newIndex: number) => handleReorder('pinned', uuid, newIndex)

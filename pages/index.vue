@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useTodoStore } from '~/stores/todos'
 import { useAuthStore } from '~/stores/auth'
+import { useBackHandler } from '~/composables/useBackHandler'
 
 const authStore = useAuthStore()
 const isLoggedIn = computed(() => authStore.isAuthenticated)
@@ -66,7 +67,12 @@ const mobileAddTitleRef = ref<HTMLInputElement>()
 const mobileAddEditorRef = ref<{ focus: () => void } | null>(null)
 
 watch(showMobileAdd, (val) => {
-  if (val) nextTick(() => mobileAddTitleRef.value?.focus())
+  if (val) {
+    nextTick(() => mobileAddTitleRef.value?.focus())
+    useBackHandler().push(() => { showMobileAdd.value = false })
+  } else {
+    useBackHandler().pop()
+  }
 })
 const createTitle = ref('')
 const createBody = ref('')
