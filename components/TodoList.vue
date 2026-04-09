@@ -592,8 +592,45 @@ defineExpose({ cancelAllEdits, isEditing })
   <!-- Expanded inline edit (mobile) -->
   <Teleport to="body">
     <div v-if="expandedTodo" class="fixed inset-x-0 top-0 z-50 flex flex-col bg-gray-800 p-3" style="height: 100dvh">
-      <div class="mb-3 px-2">
+      <div class="mb-3 flex items-center justify-between px-2">
         <span class="text-lg font-bold text-white lowercase">minimal list</span>
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            class="cursor-pointer rounded p-1.5 text-sm transition-colors"
+            :class="expandedTodo.pinned ? 'text-blue-400 hover:text-blue-300' : 'text-white/30 hover:text-white/60'"
+            :title="expandedTodo.pinned ? 'Unpin' : 'Pin'"
+            @click="togglePin(expandedTodo)"
+          >
+            <Icon name="mdi:pin" />
+          </button>
+          <button
+            v-if="!expandedTodo.deleted"
+            type="button"
+            class="cursor-pointer rounded p-1.5 text-sm text-white/30 transition-colors hover:text-white/60"
+            :title="expandedTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+            @click="toggleCompletion(expandedTodo)"
+          >
+            <Icon :name="expandedTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+          </button>
+          <button
+            v-if="expandedTodo.deleted"
+            type="button"
+            class="cursor-pointer rounded p-1.5 text-sm text-white/30 transition-colors hover:text-white/60"
+            title="Restore"
+            @click="restoreTodo(expandedTodo); expandedEditId = null"
+          >
+            <Icon name="uil:redo" />
+          </button>
+          <button
+            type="button"
+            class="cursor-pointer rounded p-1.5 text-sm text-white/30 transition-colors hover:text-red-400"
+            title="Delete"
+            @click="requestDelete(expandedTodo); expandedEditId = null"
+          >
+            <Icon name="uil:trash" />
+          </button>
+        </div>
       </div>
       <div
         class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"

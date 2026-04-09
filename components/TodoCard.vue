@@ -126,8 +126,8 @@ const cardClasses = computed(() => [
       >
       <!-- eslint-enable vue/no-mutating-props -->
       <div
-        class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
-        :class="todo.editing && 'opacity-100'"
+        class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
+        :class="todo.editing && 'opacity-100 pointer-events-auto'"
         @click.stop
       >
         <template v-if="!todo.deleted">
