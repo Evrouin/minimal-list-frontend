@@ -450,8 +450,20 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
     <!-- Mobile add dialog -->
     <Teleport to="body">
       <div v-if="showMobileAdd" class="fixed inset-x-0 top-0 z-50 flex h-dvh flex-col bg-gray-800 p-3">
-        <div class="mb-3 px-2">
+        <div class="mb-3 flex items-center justify-between px-2">
           <span class="text-lg font-bold text-white lowercase">minimal list</span>
+          <div class="flex items-center gap-1">
+            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
+            <button
+              type="button"
+              class="cursor-pointer rounded p-1.5 mt-0.5 text-sm transition-colors"
+              :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
+              :title="createPinned ? 'Unpin' : 'Pin'"
+              @click="createPinned = !createPinned"
+            >
+              <Icon name="mdi:pin" class="text-base" />
+            </button>
+          </div>
         </div>
         <form
           class="flex flex-1 flex-col gap-3 rounded-lg p-5 text-xs text-white"
@@ -481,15 +493,6 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
             <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
             <ColorPicker v-else v-model="createColor" />
             <div class="flex items-center gap-1">
-              <ReminderPicker v-model="createReminderAt" />
-              <button
-                type="button"
-                class="cursor-pointer rounded px-2 py-0.5 transition-colors"
-                :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
-                @click="createPinned = !createPinned"
-              >
-                <Icon name="mdi:pin" class="text-xs" />
-              </button>
               <AudioRecorder
                 @recorded="
                   (f, u) => {
