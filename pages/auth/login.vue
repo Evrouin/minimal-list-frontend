@@ -65,7 +65,7 @@ const handleGoogleLogin = async () => {
 </script>
 
 <template>
-  <AuthFormCard title="login" link-to="/auth/register" link-label="create an account">
+  <AuthFormCard title="login" link-to="/auth/register" link-label="create an account?">
     <form @submit.prevent="handleLogin">
       <div class="space-y-5">
         <div>

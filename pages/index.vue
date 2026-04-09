@@ -278,6 +278,12 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
           get started
         </NuxtLink>
         <NuxtLink
+          to="/faq"
+          class="rounded-lg border border-white/10 px-6 py-2.5 text-xs text-white/60 lowercase transition-colors hover:border-white/20 hover:text-white"
+        >
+          learn more
+        </NuxtLink>
+        <NuxtLink
           to="/auth/login"
           class="rounded-lg border border-white/10 px-6 py-2.5 text-xs text-white/60 lowercase transition-colors hover:border-white/20 hover:text-white"
         >

@@ -1,3 +1,30 @@
+const publicPaths = new Set(['/', '/faq', '/auth/login', '/auth/register', '/auth/forgot-password', '/maintenance'])
+
+const isPublicPath = (path: string) =>
+  publicPaths.has(path) ||
+  path.startsWith('/auth/verify-email') ||
+  path.startsWith('/auth/reset-password') ||
+  path.startsWith('/auth/unlock-account')
+
+const tryFetchProfile = async (authStore: ReturnType<typeof useAuthStore>) => {
+  try {
+    await authStore.fetchProfile()
+  } catch (e) {
+    const status = (e as { statusCode?: number }).statusCode
+    if (status === 503) return navigateTo('/maintenance')
+    if (status === 401 || status === 403) authStore.logout()
+  }
+}
+
+const checkNativeRedirect = async () => {
+  try {
+    const { Capacitor } = await import('@capacitor/core')
+    if (Capacitor.isNativePlatform()) return navigateTo('/auth/login')
+  } catch {
+    // ignore: Capacitor not available in web context
+  }
+}
+
 export default defineNuxtRouteMiddleware(async (to) => {
   const config = useRuntimeConfig()
   if (config.public.maintenanceMode && to.path !== '/maintenance') {
@@ -5,34 +32,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const authStore = useAuthStore()
-  const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/maintenance']
-  const isPublic =
-    publicPaths.includes(to.path) ||
-    to.path.startsWith('/auth/verify-email') ||
-    to.path.startsWith('/auth/reset-password') ||
-    to.path.startsWith('/auth/unlock-account')
 
   if (authStore.isAuthenticated && !authStore.user) {
-    try {
-      await authStore.fetchProfile()
-    } catch (e) {
-      const status = (e as { statusCode?: number }).statusCode
-      if (status === 503) return navigateTo('/maintenance')
-      if (status === 401 || status === 403) authStore.logout()
-    }
+    const redirect = await tryFetchProfile(authStore)
+    if (redirect) return redirect
   }
 
-  if (!isPublic && !authStore.isAuthenticated) {
+  if (!isPublicPath(to.path) && !authStore.isAuthenticated) {
     return navigateTo('/auth/login')
   }
 
   if (to.path === '/' && !authStore.isAuthenticated) {
-    try {
-      const { Capacitor } = await import('@capacitor/core')
-      if (Capacitor.isNativePlatform()) return navigateTo('/auth/login')
-    } catch {
-      // ignore: Capacitor not available in web context
-    }
+    return checkNativeRedirect()
   }
 
   if (to.path === '/auth/login' && authStore.isAuthenticated) {
