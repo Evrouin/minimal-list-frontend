@@ -12,13 +12,11 @@ const api = useTodoApi()
 const archivedFolders = ref<Folder[]>([])
 
 onMounted(async () => {
-  todoStore.changeFilter('archived')
-  todoStore.fetchArchived()
+  await todoStore.fetchArchived()
   archivedFolders.value = (await api.fetchFolders(true)).data
 })
 
 onUnmounted(() => {
-  todoStore.changeFilter('all')
   todoStore.clearTodos()
 })
 

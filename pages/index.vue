@@ -31,6 +31,7 @@ watch(
 
 onMounted(async () => {
   if (authStore.isAuthenticated) {
+    todoStore.filterType = 'all'
     try {
       if (!folderStore.folders.length) await folderStore.fetchFolders()
     } catch { /* non-fatal — sidebar will show fallback */ }

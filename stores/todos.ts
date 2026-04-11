@@ -16,7 +16,20 @@ export const useTodoStore = defineStore('todo', () => {
   const refreshing = ref(false)
 
   type FilterKey = (typeof filterOptions)[number]
-  const cache = new Map<FilterKey, { todos: Todo[], cursor: string | null }>()
+  const cache = new Map<string, { todos: Todo[], cursor: string | null }>()
+
+  const cacheKey = computed(() => {
+    const folderStore = useFolderStore()
+    const folder = folderStore.activeFolder?.uuid ?? 'default'
+    return `${filterType.value}:${folder}`
+  })
+
+  // Clear cache + reset list when active folder changes
+  watch(() => useFolderStore().activeFolder?.uuid, () => {
+    cache.clear()
+    todos.value = []
+    nextCursor.value = null
+  })
 
   const hasMore = computed(() => !!nextCursor.value)
 
@@ -32,7 +45,10 @@ export const useTodoStore = defineStore('todo', () => {
   })
 
   const fetchTrash = async () => {
+    todos.value = []
     loading.value = true
+    initialLoad.value = true
+    filterType.value = 'deleted'
     try {
       const response = await api.fetchTodos('deleted_only=true')
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
@@ -46,7 +62,10 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const fetchArchived = async () => {
+    todos.value = []
     loading.value = true
+    initialLoad.value = true
+    filterType.value = 'archived'
     try {
       const response = await api.fetchTodos('archived_only=true')
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
@@ -98,7 +117,7 @@ export const useTodoStore = defineStore('todo', () => {
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
         : null
-      cache.set(filterType.value, { todos: [...todos.value], cursor: nextCursor.value })
+      cache.set(cacheKey.value, { todos: [...todos.value], cursor: nextCursor.value })
       syncReminders(todos.value)
     } finally {
       loading.value = false
@@ -108,7 +127,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   const refreshTodos = async () => {
     refreshing.value = true
-    cache.delete(filterType.value)
+    cache.delete(cacheKey.value)
     await loadTodos()
     refreshing.value = false
   }
@@ -124,7 +143,7 @@ export const useTodoStore = defineStore('todo', () => {
       nextCursor.value = response.next
         ? new URL(response.next).pathname + new URL(response.next).search
         : null
-      cache.set(filterType.value, { todos: [...todos.value], cursor: nextCursor.value })
+      cache.set(cacheKey.value, { todos: [...todos.value], cursor: nextCursor.value })
     } finally {
       loadingMore.value = false
     }
@@ -132,17 +151,15 @@ export const useTodoStore = defineStore('todo', () => {
 
   const changeFilter = async (type: (typeof filterOptions)[number]) => {
     if (filterType.value === type) return
-    const cached = cache.get(type)
+    filterType.value = type
+    const key = cacheKey.value
+    const cached = cache.get(key)
     if (cached) {
       todos.value = [...cached.todos]
       nextCursor.value = cached.cursor
-      filterType.value = type
-      console.log(`[cache hit] ${type}: ${cached.todos.length} todos, filtered: ${filteredTodos.value.length}`)
       return
     }
-    filterType.value = type
     await loadTodos()
-    console.log(`[cache miss] ${type}: ${todos.value.length} todos, filtered: ${filteredTodos.value.length}`)
   }
 
   const filteredTodos = computed(() => {
@@ -368,9 +385,9 @@ export const useTodoStore = defineStore('todo', () => {
 
   const invalidateOtherCaches = () => {
     for (const key of cache.keys()) {
-      if (key !== filterType.value) cache.delete(key)
+      if (key !== cacheKey.value) cache.delete(key)
     }
-    cache.set(filterType.value, { todos: [...todos.value], cursor: nextCursor.value })
+    cache.set(cacheKey.value, { todos: [...todos.value], cursor: nextCursor.value })
   }
 
   const pinnedTodos = computed(() =>

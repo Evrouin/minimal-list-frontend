@@ -6,13 +6,11 @@ const todoStore = useTodoStore()
 const ui = useUiStore()
 const todoListRef = ref<{ openEmptyTrash: () => void } | null>(null)
 
-onMounted(() => {
-  todoStore.changeFilter('deleted')
-  todoStore.fetchTrash()
+onMounted(async () => {
+  await todoStore.fetchTrash()
 })
 
 onUnmounted(() => {
-  todoStore.changeFilter('all')
   todoStore.clearTodos()
 })
 </script>
