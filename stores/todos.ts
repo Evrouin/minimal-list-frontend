@@ -15,7 +15,6 @@ export const useTodoStore = defineStore('todo', () => {
   const pendingReorderKey = 'todo-order-pending'
   const refreshing = ref(false)
 
-  type FilterKey = (typeof filterOptions)[number]
   const cache = new Map<string, { todos: Todo[], cursor: string | null }>()
 
   const cacheKey = computed(() => {
@@ -105,12 +104,12 @@ export const useTodoStore = defineStore('todo', () => {
 
   const archiveNote = async (id: string) => {
     const index = todos.value.findIndex((t) => t.uuid === id)
-    const removed = index !== -1 ? todos.value.splice(index, 1)[0]! : null
+    const removed = index >= 0 ? todos.value.splice(index, 1)[0]! : null
     invalidateOtherCaches()
     try {
       await api.archiveNote(id)
     } catch {
-      if (removed && index !== -1) todos.value.splice(index, 0, removed)
+      if (removed && index >= 0) todos.value.splice(index, 0, removed)
       throw new Error('archive failed')
     }
     return removed
@@ -134,7 +133,7 @@ export const useTodoStore = defineStore('todo', () => {
       const response = await api.fetchTodos(filterParams.value)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
       const pendingOrder = loadPendingOrder()
-      if (pendingOrder && pendingOrder.every((uuid) => todos.value.some((t) => t.uuid === uuid))) {
+      if (pendingOrder?.every((uuid) => todos.value.some((t) => t.uuid === uuid))) {
         applyOrderToTodos(pendingOrder)
       } else {
         savePendingOrder(null)
@@ -348,17 +347,17 @@ export const useTodoStore = defineStore('todo', () => {
   const savePendingOrder = (order: string[] | null) => {
     pendingReorder.value = order
     if (import.meta.client) {
-      if (order && order.length) {
-        window.localStorage.setItem(pendingReorderKey, JSON.stringify(order))
+      if (order?.length) {
+        globalThis.localStorage.setItem(pendingReorderKey, JSON.stringify(order))
       } else {
-        window.localStorage.removeItem(pendingReorderKey)
+        globalThis.localStorage.removeItem(pendingReorderKey)
       }
     }
   }
 
   const loadPendingOrder = (): string[] | null => {
     if (!import.meta.client) return null
-    const raw = window.localStorage.getItem(pendingReorderKey)
+    const raw = globalThis.localStorage.getItem(pendingReorderKey)
     if (!raw) return null
     try {
       return JSON.parse(raw) as string[]

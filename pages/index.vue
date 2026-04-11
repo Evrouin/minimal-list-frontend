@@ -11,12 +11,7 @@ const isLoggedIn = computed(() => authStore.isAuthenticated)
 const todoStore = useTodoStore()
 const folderStore = useFolderStore()
 const route = useRoute()
-const router = useRouter()
 const { online } = useOnline()
-const { flushAll } = useUndoToast()
-
-const { filteredTodos } = storeToRefs(todoStore)
-
 const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
 
 watch(

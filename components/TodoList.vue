@@ -11,7 +11,8 @@ const { tap } = useHaptics()
 
 const todoStore = useTodoStore()
 const folderStore = useFolderStore()
-const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
+const { filteredTodos, loading } = storeToRefs(todoStore)
+
 
 const isRemindersFolder = computed(() => folderStore.activeFolder?.name === 'reminders')
 const isTasksFolder = computed(() => folderStore.activeFolder?.name === 'tasks')

@@ -12,7 +12,7 @@ const colors: { name: NoteColor; hex: string }[] = [
   { name: 'purple', hex: '#3d1f3d' },
 ]
 
-const currentHex = computed(() => colors.find((c) => c.name === model.value)?.hex ?? colors[0].hex)
+const currentHex = computed(() => colors.find((c) => c.name === model.value)?.hex ?? colors[0]!.hex)
 
 const pick = (color: NoteColor) => {
   model.value = color
