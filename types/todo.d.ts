@@ -21,6 +21,8 @@ export interface Todo {
   deleted: boolean
   pinned: boolean
   editing: boolean
+  is_archived: boolean
+  archived_by_folder: boolean
   order_id?: number
   reminder_at?: string | null
   link_previews?: LinkPreview[]

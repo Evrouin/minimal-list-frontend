@@ -17,6 +17,7 @@ const emit = defineEmits<{
   'request-delete': []
   'restore': []
   'toggle-completion': []
+  'request-archive': []
   'save': []
   'cancel': []
   'toggle-select': []
@@ -49,6 +50,14 @@ const onImgClick = (e: Event) => {
 
 const colors = computed(() => noteColors[props.todo.color] || noteColors.default)
 
+const isOverdue = computed(() =>
+  !!props.todo.reminder_at &&
+  !props.todo.completed &&
+  new Date(props.todo.reminder_at).getTime() <= Date.now(),
+)
+
+const showComplete = computed(() => props.isTaskFolder || !!props.todo.reminder_at)
+
 const cardClasses = computed(() => [
   props.todo.editing
     ? 'p-5 border-0.5 rounded-lg shadow-md flex flex-col gap-2 w-full'
@@ -56,7 +65,8 @@ const cardClasses = computed(() => [
   colors.value.bg,
   colors.value.hover,
   'transition-colors duration-200',
-  (props.todo.completed || props.todo.deleted) && 'opacity-50',
+  (props.todo.completed || props.todo.deleted || props.todo.is_archived) && 'opacity-50',
+  isOverdue.value && !props.todo.editing && 'ring-1 ring-red-500/30',
 ])
 </script>
 
@@ -131,7 +141,7 @@ const cardClasses = computed(() => [
         :class="todo.editing && 'opacity-100 pointer-events-auto'"
         @click.stop
       >
-        <template v-if="!todo.deleted">
+        <template v-if="!todo.deleted && !todo.is_archived">
           <button
             class="cursor-pointer rounded px-1 py-0.5 text-xs hover:text-gray-200"
             :class="pinned ? 'text-blue-400 hover:text-blue-300' : 'text-gray-400'"
@@ -148,7 +158,16 @@ const cardClasses = computed(() => [
             <Icon name="uil:trash" />
           </button>
           <button
+            class="-mt-0.5 cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
+            title="Archive"
+            @click="emit('request-archive')"
+          >
+            <Icon name="uil:archive" />
+          </button>
+          <button
+            v-if="showComplete"
             class="mb-px cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
+            :class="isTaskFolder && 'opacity-100 pointer-events-auto'"
             :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
             @click="emit('toggle-completion')"
           >
@@ -158,12 +177,13 @@ const cardClasses = computed(() => [
         <template v-else>
           <button
             class="-mt-[2.5px] cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
-            title="Restore"
+            :title="todo.is_archived ? 'Unarchive' : 'Restore'"
             @click="emit('restore')"
           >
-            <Icon name="uil:redo" />
+            <Icon :name="todo.is_archived ? 'uil:archive-alt' : 'uil:redo'" />
           </button>
           <button
+            v-if="!todo.is_archived"
             class="-mt-0.5 cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
             title="Delete permanently"
             @click="emit('request-delete')"

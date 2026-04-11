@@ -40,6 +40,8 @@ const isTodoEmptyMessage = computed(() => {
       return 'no completed notes available'
     case 'deleted':
       return 'no deleted notes available'
+    case 'archived':
+      return 'no archived notes'
     default:
       return 'no notes available'
   }
@@ -48,7 +50,7 @@ const isTodoEmptyMessage = computed(() => {
 const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 6))
 
 const deletedSections = computed(() => {
-  if (todoStore.filterType !== 'deleted') return []
+  if (todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived') return []
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const msDay = 86400000
@@ -221,7 +223,7 @@ const handleCardClick = (todo: Todo) => {
     return
   }
   if (multiSelectMode.value) toggleSelect(todo.uuid)
-  else if (todo.deleted) viewTodo.value = todo
+  else if (todo.deleted || todo.is_archived) viewTodo.value = todo
   else editTodo(todo)
 }
 
@@ -265,12 +267,27 @@ const confirmDelete = () => {
 }
 
 const restoreTodo = (todo: Todo) => {
+  if (todoStore.filterType === 'archived') {
+    tap()
+    todoStore.unarchiveNote(todo.uuid)
+    return
+  }
   tap()
   const snapshot = todoStore.restoreTodo(todo.uuid)
   showToast(
     'note restored',
     () => todoStore.restoreTodoCommit(todo.uuid),
     () => todoStore.restoreTodoRollback(snapshot),
+  )
+}
+
+const archiveNote = async (todo: Todo) => {
+  tap()
+  const removed = await todoStore.archiveNote(todo.uuid)
+  showToast(
+    'note archived',
+    () => Promise.resolve(),
+    () => todoStore.unarchiveNote(todo.uuid, removed ?? undefined),
   )
 }
 
@@ -357,8 +374,8 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
       </div>
     </div>
 
-    <!-- Deleted sections (grouped by date) -->
-    <template v-if="todoStore.filterType === 'deleted'">
+    <!-- Deleted/Archived sections (grouped by date) -->
+    <template v-if="todoStore.filterType === 'deleted' || todoStore.filterType === 'archived'">
       <div v-for="section in deletedSections" :key="section.label" class="mb-6">
         <p class="mb-3 ml-2.5 text-xs text-white/40 lowercase">{{ section.label }}</p>
         <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
@@ -378,6 +395,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
               @click="handleCardClick(todo)"
               @toggle-pin="togglePin(todo)"
               @request-delete="requestDelete(todo)"
+              @request-archive="archiveNote(todo)"
               @toggle-completion="toggleCompletion(todo)"
               @restore="restoreTodo(todo)"
               @save="saveTodo(todo)"
@@ -428,6 +446,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
               @click="handleCardClick(todo)"
               @toggle-pin="togglePin(todo)"
               @request-delete="requestDelete(todo)"
+              @request-archive="archiveNote(todo)"
               @toggle-completion="toggleCompletion(todo)"
               @restore="restoreTodo(todo)"
               @save="saveTodo(todo)"
@@ -481,6 +500,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
               @click="handleCardClick(todo)"
               @toggle-pin="togglePin(todo)"
               @request-delete="requestDelete(todo)"
+              @request-archive="archiveNote(todo)"
               @toggle-completion="toggleCompletion(todo)"
               @restore="restoreTodo(todo)"
               @save="saveTodo(todo)"

@@ -8,8 +8,8 @@ export const useTodoStore = defineStore('todo', () => {
   const initialLoad = ref(true)
   const loadingMore = ref(false)
   const nextCursor = ref<string | null>(null)
-  const filterType = ref<'all' | 'active' | 'completed' | 'deleted'>('all')
-  const filterOptions = ['all', 'active', 'completed', 'deleted'] as const
+  const filterType = ref<'all' | 'active' | 'completed' | 'deleted' | 'archived'>('all')
+  const filterOptions = ['all', 'active', 'completed', 'deleted', 'archived'] as const
   const api = useTodoApi()
   const pendingReorder = ref<string[] | null>(null)
   const pendingReorderKey = 'todo-order-pending'
@@ -30,6 +30,46 @@ export const useTodoStore = defineStore('todo', () => {
       default: return folderParam
     }
   })
+
+
+  const fetchArchived = async () => {
+    loading.value = true
+    try {
+      const response = await api.fetchTodos('archived_only=true')
+      todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
+      nextCursor.value = response.next
+        ? new URL(response.next).pathname + new URL(response.next).search
+        : null
+    } finally {
+      loading.value = false
+      initialLoad.value = false
+    }
+  }
+
+  const archiveNote = async (id: string) => {
+    const index = todos.value.findIndex((t) => t.uuid === id)
+    const removed = index !== -1 ? todos.value.splice(index, 1)[0]! : null
+    invalidateOtherCaches()
+    try {
+      await api.archiveNote(id)
+    } catch {
+      if (removed && index !== -1) todos.value.splice(index, 0, removed)
+      throw new Error('archive failed')
+    }
+    return removed
+  }
+
+  const unarchiveNote = async (id: string, reinsert?: Todo) => {
+    const index = todos.value.findIndex((t) => t.uuid === id)
+    if (index !== -1) todos.value.splice(index, 1)
+    invalidateOtherCaches()
+    try {
+      await api.unarchiveNote(id)
+    } catch {
+      if (reinsert) todos.value.unshift(reinsert)
+      throw new Error('unarchive failed')
+    }
+  }
 
   const loadTodos = async () => {
     loading.value = true
@@ -94,6 +134,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   const filteredTodos = computed(() => {
     return todos.value.filter((t) => {
+      if (filterType.value === 'archived') return true
       if (t.deleted && filterType.value !== 'deleted') return false
       if (filterType.value === 'active' && t.completed) return false
       if (filterType.value === 'completed' && !t.completed) return false
@@ -332,6 +373,7 @@ export const useTodoStore = defineStore('todo', () => {
     filterType,
     filterOptions,
     loadTodos,
+    fetchArchived,
     loadMore,
     changeFilter,
     refreshTodos,
@@ -340,6 +382,8 @@ export const useTodoStore = defineStore('todo', () => {
     updateTodo,
     toggleTodoCompletion,
     togglePin,
+    archiveNote,
+    unarchiveNote,
     bulkDelete: bulkDeleteApply,
     bulkDeleteCommit,
     bulkDeleteRollback,
