@@ -22,6 +22,10 @@ export default defineNuxtPlugin(() => {
 
   App.addListener('backButton', ({ canGoBack }) => {
     const path = router.currentRoute.value.path
+    if (ui.sidebarOpen) {
+      ui.closeSidebar()
+      return
+    }
     const { handle } = useBackHandler()
     if (handle()) return
     if (path === HOME) {
