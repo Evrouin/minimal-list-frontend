@@ -22,7 +22,7 @@ const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
 watch(
   () => route.query.folder,
   (slug) => {
-    if (!authStore.isAuthenticated) return
+    if (!authStore.isAuthenticated || !folderStore.folders.length) return
     folderStore.setActiveFolderBySlug((slug as string) ?? null)
     todoStore.clearTodos()
     todoStore.loadTodos()
@@ -166,7 +166,9 @@ const clearCreateImage = () => {
 const { fetchPreviews: fetchCreatePreviews } = useLinkPreviews()
 
 const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
-  const folderUuid = folderStore.activeFolder?.uuid ?? null
+  const folderUuid = folderStore.activeFolder?.uuid
+    ?? folderStore.folders.find((f) => f.name === route.query.folder || f.uuid === route.query.folder)?.uuid
+    ?? null
   if (createImageFile.value || createAudioFile.value) {
     const fd = new FormData()
     fd.append('title', createTitle.value.toLowerCase())

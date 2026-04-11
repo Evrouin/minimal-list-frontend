@@ -3,13 +3,18 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Todo } from '@/types'
 import type { CardRef } from '@/types/api'
 import { useTodoStore } from '~/stores/todos'
+import { useFolderStore } from '~/stores/folders'
 import { useBackHandler } from '~/composables/useBackHandler'
 import { storeToRefs } from 'pinia'
 
 const { tap } = useHaptics()
 
 const todoStore = useTodoStore()
+const folderStore = useFolderStore()
 const { filteredTodos, pinnedTodos, unpinnedTodos, loading } = storeToRefs(todoStore)
+
+const isRemindersFolder = computed(() => folderStore.activeFolder?.name === 'reminders')
+const isTasksFolder = computed(() => folderStore.activeFolder?.name === 'tasks')
 
 const isScrolledDown = ref(false)
 
@@ -76,6 +81,13 @@ const deletedSections = computed(() => {
 })
 
 const cardRefs = ref(new Map<string, CardRef>())
+
+const hideCompleted = ref(false)
+const visibleTodos = computed(() =>
+  hideCompleted.value ? filteredTodos.value.filter((t) => !t.completed) : filteredTodos.value
+)
+const visiblePinned = computed(() => visibleTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
+const visibleUnpinned = computed(() => visibleTodos.value.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
 const pinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const unpinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const isDragging = ref(false)
@@ -391,6 +403,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
               :selected="isSelected(todo.uuid)"
               :show-checkbox="hasCheckbox(todo.uuid)"
               :multi-select-mode="multiSelectMode"
+              :is-task-folder="isTasksFolder"
               :edit-image-preview="editImagePreviews.get(todo.uuid)"
               @click="handleCardClick(todo)"
               @toggle-pin="togglePin(todo)"
@@ -418,12 +431,21 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
 
     <!-- Pinned section -->
     <template v-else>
-      <div v-if="pinnedTodos.length > 0" class="mb-6">
+      <div v-if="isTasksFolder" class="mb-4 flex justify-end pr-2.5">
+        <button
+          class="text-xs lowercase transition-colors"
+          :class="hideCompleted ? 'text-white/60' : 'text-white/30 hover:text-white/60'"
+          @click="hideCompleted = !hideCompleted"
+        >
+          {{ hideCompleted ? 'show completed' : 'hide completed' }}
+        </button>
+      </div>
+      <div v-if="visiblePinned.length > 0" class="mb-6">
         <p v-if="pinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">pinned</p>
         <MasonryGrid
           :key="'pinned-' + gridKey"
           ref="pinnedListRef"
-          :items="pinnedTodos"
+          :items="visiblePinned"
           key-field="uuid"
           :drag-enabled="true"
           @reorder="onPinnedReorder"
@@ -442,6 +464,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
               :selected="isSelected(todo.uuid)"
               :show-checkbox="hasCheckbox(todo.uuid)"
               :multi-select-mode="multiSelectMode"
+              :is-task-folder="isTasksFolder"
               :edit-image-preview="editImagePreviews.get(todo.uuid)"
               @click="handleCardClick(todo)"
               @toggle-pin="togglePin(todo)"
@@ -467,9 +490,9 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
       </div>
 
       <!-- Others section -->
-      <div v-if="unpinnedTodos.length > 0">
+      <div v-if="visibleUnpinned.length > 0">
         <p
-          v-if="pinnedTodos.length > 0 && unpinnedListRef?.ready"
+          v-if="visiblePinned.length > 0 && unpinnedListRef?.ready"
           class="mb-3 ml-2.5 text-xs text-white/40 lowercase"
         >
           others
@@ -477,7 +500,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <MasonryGrid
           :key="'unpinned-' + gridKey"
           ref="unpinnedListRef"
-          :items="unpinnedTodos"
+          :items="visibleUnpinned"
           key-field="uuid"
           :drag-enabled="true"
           @reorder="onUnpinnedReorder"
@@ -496,6 +519,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
               :selected="isSelected(todo.uuid)"
               :show-checkbox="hasCheckbox(todo.uuid)"
               :multi-select-mode="multiSelectMode"
+              :is-task-folder="isTasksFolder"
               :edit-image-preview="editImagePreviews.get(todo.uuid)"
               @click="handleCardClick(todo)"
               @toggle-pin="togglePin(todo)"

@@ -24,18 +24,26 @@ export const useTodoStore = defineStore('todo', () => {
     return `${filterType.value}:${folder}`
   })
 
-  // Clear cache + reset list when active folder changes
+  // Clear cache + reset list when active folder changes (skip if already empty)
   watch(() => useFolderStore().activeFolder?.uuid, () => {
     cache.clear()
-    todos.value = []
-    nextCursor.value = null
+    if (todos.value.length) {
+      todos.value = []
+      nextCursor.value = null
+    }
   })
 
   const hasMore = computed(() => !!nextCursor.value)
 
   const filterParams = computed(() => {
     const folderStore = useFolderStore()
-    const folderParam = folderStore.activeFolder ? `folder=${folderStore.activeFolder.uuid}` : ''
+    const activeFolder = folderStore.activeFolder
+    const folderParam = activeFolder ? `folder=${activeFolder.uuid}` : ''
+
+    if (activeFolder?.is_default && activeFolder.name === 'reminders') {
+      return 'has_reminder=true'
+    }
+
     switch (filterType.value) {
       case 'active': return [folderParam, 'completed=false'].filter(Boolean).join('&')
       case 'completed': return [folderParam, 'completed=true'].filter(Boolean).join('&')
@@ -224,9 +232,12 @@ export const useTodoStore = defineStore('todo', () => {
 
   const toggleTodoCompletion = async (id: string) => {
     const todo = todos.value.find((t) => t.uuid === id)
-    if (todo) {
-      await updateTodo({ ...todo, completed: !todo.completed })
-    }
+    if (!todo) return
+    const completing = !todo.completed
+    const update = completing && todo.reminder_at
+      ? { ...todo, completed: true, reminder_at: null, recurrence_rule: 'none' as const }
+      : { ...todo, completed: completing }
+    await updateTodo(update)
   }
 
   const togglePin = async (id: string) => {
