@@ -119,7 +119,6 @@ const linkClass = (active: boolean) =>
         </nav>
 
         <div class="border-t border-white/10 px-3 pt-4 space-y-0.5">
-          <NuxtLink to="/settings" :class="linkClass(route.path === '/settings')" @click="close">settings</NuxtLink>
           <NuxtLink to="/auth/profile" :class="linkClass(route.path === '/auth/profile')" @click="close">account</NuxtLink>
           <NuxtLink v-if="authStore.isAdmin" to="/admin" :class="linkClass(route.path.startsWith('/admin'))" @click="close">admin</NuxtLink>
         </div>

@@ -301,7 +301,7 @@ onUnmounted(() => {
   flushAll()
 })
 
-defineExpose({ cancelAllEdits, isEditing })
+defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrashDialog.value = true } })
 </script>
 
 <template>
@@ -359,14 +359,6 @@ defineExpose({ cancelAllEdits, isEditing })
 
     <!-- Deleted sections (grouped by date) -->
     <template v-if="todoStore.filterType === 'deleted'">
-      <div class="mb-4 flex justify-end pr-2.5">
-        <button
-          class="cursor-pointer text-xs text-white/30 lowercase hover:text-red-400"
-          @click="showEmptyTrashDialog = true"
-        >
-          empty trash
-        </button>
-      </div>
       <div v-for="section in deletedSections" :key="section.label" class="mb-6">
         <p class="mb-3 ml-2.5 text-xs text-white/40 lowercase">{{ section.label }}</p>
         <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
