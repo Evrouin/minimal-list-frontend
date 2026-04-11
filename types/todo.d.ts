@@ -1,4 +1,5 @@
 export type NoteColor = 'default' | 'red' | 'yellow' | 'green' | 'purple'
+export type RecurrenceRule = 'none' | 'daily' | 'weekly' | 'monthly'
 
 export interface LinkPreview {
   url: string
@@ -25,6 +26,8 @@ export interface Todo {
   archived_by_folder: boolean
   order_id?: number
   reminder_at?: string | null
+  recurrence_rule?: RecurrenceRule
+  snoozed_until?: string | null
   link_previews?: LinkPreview[]
   created_at?: string
   updated_at?: string

@@ -46,6 +46,9 @@ export const useTodoApi = () => {
     unarchiveNote: (id: string) =>
       request<ApiResponse<Todo>>(`${base}/${id}/unarchive/`, { method: 'POST' }),
 
+    snoozeNote: (id: string, snoozedUntil: string) =>
+      request<ApiResponse<Todo>>(`${base}/${id}/snooze/`, { method: 'POST', body: { snoozed_until: snoozedUntil } }),
+
     fetchLinkPreview: (url: string) =>
       request<import('~/types/todo').LinkPreview>(`${base}/link-preview/`, {
         method: 'POST',

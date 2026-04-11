@@ -12,6 +12,9 @@ const uuidToInt = (uuid: string) => {
 export const useReminders = () => {
   const schedule = async (todo: Todo) => {
     if (!todo.reminder_at) return
+    const fireAt = todo.snoozed_until && new Date(todo.snoozed_until).getTime() > Date.now()
+      ? new Date(todo.snoozed_until)
+      : new Date(todo.reminder_at)
 
     if (Capacitor.isNativePlatform()) {
       const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -22,7 +25,7 @@ export const useReminders = () => {
             id: uuidToInt(todo.uuid),
             title: todo.title,
             body: todo.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
-            schedule: { at: new Date(todo.reminder_at) },
+            schedule: { at: fireAt },
           },
         ],
       })
@@ -45,15 +48,20 @@ export const useReminders = () => {
       await LocalNotifications.cancel({ notifications: pending.notifications })
     }
     const now = Date.now()
-    const upcoming = todos.filter((t) => t.reminder_at && new Date(t.reminder_at).getTime() > now && !t.deleted)
+    const upcoming = todos.filter((t) => t.reminder_at && !t.deleted && !t.completed)
     if (upcoming.length) {
       await LocalNotifications.schedule({
-        notifications: upcoming.map((t) => ({
-          id: uuidToInt(t.uuid),
-          title: t.title,
-          body: t.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
-          schedule: { at: new Date(t.reminder_at!) },
-        })),
+        notifications: upcoming.map((t) => {
+          const fireAt = t.snoozed_until && new Date(t.snoozed_until).getTime() > now
+            ? new Date(t.snoozed_until)
+            : new Date(t.reminder_at!)
+          return {
+            id: uuidToInt(t.uuid),
+            title: t.title,
+            body: t.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
+            schedule: { at: fireAt },
+          }
+        }),
       })
     }
   }

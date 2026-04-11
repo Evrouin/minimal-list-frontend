@@ -212,6 +212,9 @@ const cardClasses = computed(() => [
           <span :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
             {{ new Date(todo.reminder_at).getTime() <= Date.now() ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
           </span>
+          <span v-if="todo.recurrence_rule && todo.recurrence_rule !== 'none'" class="text-white/30">
+            · <Icon name="uil:repeat" class="inline text-xs" /> {{ todo.recurrence_rule }}
+          </span>
         </template>
       </span>
       <div v-if="!todo.deleted" class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>

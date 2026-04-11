@@ -88,6 +88,32 @@ const visibleTodos = computed(() =>
 )
 const visiblePinned = computed(() => visibleTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
 const visibleUnpinned = computed(() => visibleTodos.value.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
+const reminderSections = computed(() => {
+  if (!isRemindersFolder.value) return []
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfTomorrow = new Date(startOfToday.getTime() + 86400000)
+  const startOfNextWeek = new Date(startOfToday.getTime() + 7 * 86400000)
+  const buckets: { label: string; todos: Todo[] }[] = [
+    { label: 'overdue', todos: [] },
+    { label: 'today', todos: [] },
+    { label: 'tomorrow', todos: [] },
+    { label: 'this week', todos: [] },
+    { label: 'later', todos: [] },
+  ]
+  const sorted = [...filteredTodos.value].sort((a, b) =>
+    new Date(a.reminder_at ?? 0).getTime() - new Date(b.reminder_at ?? 0).getTime()
+  )
+  for (const t of sorted) {
+    const r = new Date(t.reminder_at ?? 0).getTime()
+    if (r < now.getTime() && !t.completed) buckets[0]!.todos.push(t)
+    else if (r < startOfTomorrow.getTime()) buckets[1]!.todos.push(t)
+    else if (r < startOfTomorrow.getTime() + 86400000) buckets[2]!.todos.push(t)
+    else if (r < startOfNextWeek.getTime()) buckets[3]!.todos.push(t)
+    else buckets[4]!.todos.push(t)
+  }
+  return buckets.filter((b) => b.todos.length > 0)
+})
 const pinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const unpinnedListRef = ref<{ containerRef?: HTMLElement; initGrid?: () => void; ready?: boolean } | null>(null)
 const isDragging = ref(false)
@@ -429,7 +455,46 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
       </div>
     </template>
 
-    <!-- Pinned section -->
+    <!-- Reminders timeline -->
+    <template v-else-if="isRemindersFolder">
+      <div v-for="section in reminderSections" :key="section.label" class="mb-6">
+        <p class="mb-3 ml-2.5 text-xs text-white/40 lowercase">{{ section.label }}</p>
+        <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
+          <template #default="{ item: todo }">
+            <TodoCard
+              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as CardRef) }"
+              :todo="todo"
+              :pinned="todo.pinned"
+              :selected="isSelected(todo.uuid)"
+              :show-checkbox="hasCheckbox(todo.uuid)"
+              :multi-select-mode="multiSelectMode"
+              :is-task-folder="isTasksFolder"
+              :edit-image-preview="editImagePreviews.get(todo.uuid)"
+              @click="handleCardClick(todo)"
+              @toggle-pin="togglePin(todo)"
+              @request-delete="requestDelete(todo)"
+              @request-archive="archiveNote(todo)"
+              @toggle-completion="toggleCompletion(todo)"
+              @restore="restoreTodo(todo)"
+              @save="saveTodo(todo)"
+              @cancel="cancelEdit(todo)"
+              @expand="expandEdit(todo)"
+              @remove-audio="todo.audio = null"
+              @audio-interact="(v: boolean) => (audioInteracting = v)"
+              @toggle-select="toggleSelect(todo.uuid)"
+              @start-hover="startHover(todo.uuid)"
+              @end-hover="endHover(todo.uuid)"
+              @start-long-press="startLongPress(todo.uuid)"
+              @end-long-press="endLongPress()"
+              @set-editor-ref="(el) => setEditorRef(todo.uuid, el)"
+              @image-select="(e: Event) => onEditImageSelect(todo, e)"
+            />
+          </template>
+        </MasonryGrid>
+      </div>
+    </template>
+
+    <!-- Pinned section (normal + tasks) -->
     <template v-else>
       <div v-if="isTasksFolder" class="mb-4 flex justify-end pr-2.5">
         <button
