@@ -2,15 +2,18 @@
 import { useAuthStore } from '~/stores/auth'
 import { useUiStore } from '~/stores/ui'
 import { useFolderStore } from '~/stores/folders'
+import { useFolders } from '~/composables/useFolders'
 import { useBackHandler } from '~/composables/useBackHandler'
+import type { Folder } from '~/types/folder'
 
 const authStore = useAuthStore()
 const ui = useUiStore()
 const folderStore = useFolderStore()
+const { createFolder, renameFolder, deleteFolder, reorderFolders, archiveFolder } = useFolders()
 const route = useRoute()
+const router = useRouter()
 
 const close = () => ui.closeSidebar()
-
 const onKeydown = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
 
 watch(() => ui.sidebarOpen, (val) => {
@@ -25,23 +28,17 @@ watch(() => ui.sidebarOpen, (val) => {
 
 let swipeStartX = 0
 let swipeStartY = 0
-
 const onTouchStart = (e: TouchEvent) => {
   swipeStartX = e.touches[0]!.clientX
   swipeStartY = e.touches[0]!.clientY
 }
-
 const onTouchEnd = (e: TouchEvent) => {
   const dx = e.changedTouches[0]!.clientX - swipeStartX
   const dy = Math.abs(e.changedTouches[0]!.clientY - swipeStartY)
   if (dy > 60) return
-  if (!ui.sidebarOpen && swipeStartX <= 20 && dx > 50) {
-    ui.openSidebar()
-  } else if (ui.sidebarOpen && dx < -50) {
-    close()
-  }
+  if (!ui.sidebarOpen && swipeStartX <= 20 && dx > 50) ui.openSidebar()
+  else if (ui.sidebarOpen && dx < -50) close()
 }
-
 onMounted(() => {
   document.addEventListener('touchstart', onTouchStart, { passive: true })
   document.addEventListener('touchend', onTouchEnd, { passive: true })
@@ -52,17 +49,125 @@ onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
 })
 
-const isFolderActive = (name: string) =>
-  route.path === '/' && route.query.folder === name
-
-const isNotesActive = computed(() =>
-  route.path === '/' && !route.query.folder
-)
-
+const isFolderActive = (name: string) => route.path === '/' && route.query.folder === name
+const isNotesActive = computed(() => route.path === '/' && !route.query.folder)
 const linkClass = (active: boolean) =>
-  `block rounded-lg px-3 py-2 text-xs lowercase transition-colors ${
+  `flex items-center justify-between rounded-lg px-3 py-2 text-xs lowercase transition-colors group ${
     active ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
   }`
+
+// --- Create folder ---
+const newFolderName = ref('')
+const createError = ref('')
+const creating = ref(false)
+
+watch(newFolderName, () => { createError.value = '' })
+
+const submitCreate = async () => {
+  const name = newFolderName.value.trim()
+  if (!name || creating.value) return
+  creating.value = true
+  createError.value = ''
+  try {
+    await createFolder(name)
+    newFolderName.value = ''
+  } catch (e: unknown) {
+    const msg = (e as { message?: string })?.message?.toLowerCase() ?? ''
+    if (msg.includes('duplicate') || msg.includes('already')) createError.value = 'name already exists'
+    else if (msg.includes('limit') || msg.includes('20')) createError.value = 'folder limit reached (20)'
+    else createError.value = 'failed to create'
+  } finally {
+    creating.value = false
+  }
+}
+
+// --- Rename folder ---
+const renamingUuid = ref<string | null>(null)
+const renameValue = ref('')
+const renameError = ref('')
+
+const startRename = (folder: Folder) => {
+  renamingUuid.value = folder.uuid
+  renameValue.value = folder.name
+  renameError.value = ''
+  nextTick(() => {
+    const el = document.getElementById(`rename-${folder.uuid}`)
+    el?.focus()
+    ;(el as HTMLInputElement)?.select()
+  })
+}
+
+const submitRename = async (uuid: string) => {
+  const name = renameValue.value.trim()
+  if (!name) { renamingUuid.value = null; return }
+  renameError.value = ''
+  try {
+    await renameFolder(uuid, name)
+    renamingUuid.value = null
+  } catch (e: unknown) {
+    const msg = (e as { message?: string })?.message?.toLowerCase() ?? ''
+    renameError.value = msg.includes('duplicate') || msg.includes('already') ? 'name already exists' : 'failed to rename'
+  }
+}
+
+const cancelRename = () => { renamingUuid.value = null; renameError.value = '' }
+
+// --- Delete folder ---
+const deletingFolder = ref<Folder | null>(null)
+
+const confirmDelete = async () => {
+  if (!deletingFolder.value) return
+  const uuid = deletingFolder.value.uuid
+  const wasActive = folderStore.activeFolder?.uuid === uuid
+  deletingFolder.value = null
+  await deleteFolder(uuid)
+  if (wasActive) router.push('/')
+}
+
+// --- Archive folder ---
+const archivingFolder = ref<Folder | null>(null)
+
+const confirmArchive = async () => {
+  if (!archivingFolder.value) return
+  const uuid = archivingFolder.value.uuid
+  const wasActive = folderStore.activeFolder?.uuid === uuid
+  archivingFolder.value = null
+  await archiveFolder(uuid)
+  if (wasActive) router.push('/')
+}
+
+// --- Drag-to-reorder custom folders ---
+const dragIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
+
+const onDragStart = (e: DragEvent, index: number) => {
+  dragIndex.value = index
+  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+}
+
+const onDragOver = (e: DragEvent, index: number) => {
+  e.preventDefault()
+  dragOverIndex.value = index
+}
+
+const onDrop = async (targetIndex: number) => {
+  if (dragIndex.value === null || dragIndex.value === targetIndex) {
+    dragIndex.value = null
+    dragOverIndex.value = null
+    return
+  }
+  const folders = [...folderStore.customFolders]
+  const [moved] = folders.splice(dragIndex.value, 1)
+  folders.splice(targetIndex, 0, moved!)
+  dragIndex.value = null
+  dragOverIndex.value = null
+  const reordered = folders.map((f, i) => ({ ...f, order: i + 1 }))
+  reordered.forEach(({ uuid, order }) => {
+    const f = folderStore.folders.find((x) => x.uuid === uuid)
+    if (f) f.order = order
+  })
+  await reorderFolders(reordered.map(({ uuid, order }) => ({ uuid, order })))
+}
 </script>
 
 <template>
@@ -78,8 +183,8 @@ const linkClass = (active: boolean) =>
         </div>
 
         <nav class="flex-1 overflow-y-auto px-3">
+          <!-- Default folders -->
           <div class="space-y-0.5">
-            <!-- Default folders from API -->
             <template v-if="folderStore.defaultFolders.length">
               <NuxtLink
                 v-for="folder in folderStore.defaultFolders"
@@ -88,42 +193,126 @@ const linkClass = (active: boolean) =>
                 :class="linkClass(folder.name === 'notes' ? isNotesActive : isFolderActive(folder.name))"
                 @click="close"
               >
-                {{ folder.name }}
+                <span class="truncate">{{ folder.name }}</span>
               </NuxtLink>
             </template>
-            <!-- Fallback while folders load -->
             <template v-else>
-              <NuxtLink to="/" :class="linkClass(isNotesActive)" @click="close">notes</NuxtLink>
-              <NuxtLink to="/?folder=tasks" :class="linkClass(isFolderActive('tasks'))" @click="close">tasks</NuxtLink>
-              <NuxtLink to="/?folder=reminders" :class="linkClass(isFolderActive('reminders'))" @click="close">reminders</NuxtLink>
+              <NuxtLink to="/" :class="linkClass(isNotesActive)" @click="close"><span>notes</span></NuxtLink>
+              <NuxtLink to="/?folder=tasks" :class="linkClass(isFolderActive('tasks'))" @click="close"><span>tasks</span></NuxtLink>
+              <NuxtLink to="/?folder=reminders" :class="linkClass(isFolderActive('reminders'))" @click="close"><span>reminders</span></NuxtLink>
             </template>
+          </div>
 
-            <!-- Custom folders -->
-            <NuxtLink
-              v-for="folder in folderStore.customFolders"
+          <!-- Custom folders -->
+          <div v-if="folderStore.customFolders.length" class="mt-0.5 space-y-0.5">
+            <div
+              v-for="(folder, index) in folderStore.customFolders"
               :key="folder.uuid"
-              :to="`/?folder=${folder.uuid}`"
-              :class="linkClass(route.query.folder === folder.uuid)"
-              @click="close"
+              draggable="true"
+              class="rounded-lg transition-colors"
+              :class="[
+                dragIndex === index ? 'opacity-40' : '',
+                dragOverIndex === index && dragIndex !== index ? 'ring-1 ring-white/20' : ''
+              ]"
+              @dragstart="onDragStart($event, index)"
+              @dragover="onDragOver($event, index)"
+              @drop="onDrop(index)"
+              @dragend="dragIndex = null; dragOverIndex = null"
             >
-              {{ folder.name }}
-            </NuxtLink>
+              <!-- Rename mode -->
+              <div v-if="renamingUuid === folder.uuid" class="px-3 py-1.5">
+                <input
+                  :id="`rename-${folder.uuid}`"
+                  v-model="renameValue"
+                  class="w-full rounded bg-white/10 px-2 py-1 text-xs text-white focus:outline-none"
+                  maxlength="50"
+                  @keydown.enter="submitRename(folder.uuid)"
+                  @keydown.esc="cancelRename"
+                  @blur="submitRename(folder.uuid)"
+                >
+                <p v-if="renameError" class="mt-1 text-xs text-red-400 lowercase">{{ renameError }}</p>
+              </div>
+
+              <!-- Normal mode -->
+              <div v-else :class="linkClass(route.query.folder === folder.uuid)">
+                <NuxtLink
+                  :to="`/?folder=${folder.uuid}`"
+                  class="min-w-0 flex-1 truncate"
+                  @click="close"
+                >
+                  {{ folder.name }}
+                </NuxtLink>
+                <div class="ml-1 hidden shrink-0 items-center gap-0.5 group-hover:flex" @click.prevent>
+                  <button class="cursor-pointer rounded p-0.5 hover:text-white" title="Rename" @click="startRename(folder)">
+                    <Icon name="uil:pen" class="text-xs" />
+                  </button>
+                  <button class="cursor-pointer rounded p-0.5 hover:text-white" title="Archive" @click="archivingFolder = folder">
+                    <Icon name="uil:archive" class="text-xs" />
+                  </button>
+                  <button class="cursor-pointer rounded p-0.5 hover:text-red-400" title="Delete" @click="deletingFolder = folder">
+                    <Icon name="uil:trash" class="text-xs" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Create folder input -->
+          <div class="mt-2 px-1">
+            <form class="flex items-center gap-1" @submit.prevent="submitCreate">
+              <input
+                v-model="newFolderName"
+                placeholder="new folder"
+                maxlength="50"
+                class="min-w-0 flex-1 rounded bg-white/5 px-2 py-1.5 text-xs text-white/60 placeholder-white/20 focus:outline-none focus:text-white"
+              >
+              <button
+                type="submit"
+                class="cursor-pointer rounded px-2 py-1.5 text-xs text-white/30 hover:text-white"
+                :disabled="!newFolderName.trim() || creating"
+              >
+                <Icon name="uil:plus" />
+              </button>
+            </form>
+            <p v-if="createError" class="mt-1 px-1 text-xs text-red-400 lowercase">{{ createError }}</p>
           </div>
 
           <div class="my-3 border-t border-white/10" />
 
           <div class="space-y-0.5">
-            <NuxtLink to="/trash" :class="linkClass(route.path === '/trash')" @click="close">trash</NuxtLink>
-            <NuxtLink to="/archive" :class="linkClass(route.path === '/archive')" @click="close">archive</NuxtLink>
+            <NuxtLink to="/trash" :class="linkClass(route.path === '/trash')" @click="close"><span>trash</span></NuxtLink>
+            <NuxtLink to="/archive" :class="linkClass(route.path === '/archive')" @click="close"><span>archive</span></NuxtLink>
           </div>
         </nav>
 
         <div class="border-t border-white/10 px-3 pt-4 space-y-0.5">
-          <NuxtLink to="/auth/profile" :class="linkClass(route.path === '/auth/profile')" @click="close">account</NuxtLink>
-          <NuxtLink v-if="authStore.isAdmin" to="/admin" :class="linkClass(route.path.startsWith('/admin'))" @click="close">admin</NuxtLink>
+          <NuxtLink to="/auth/profile" :class="linkClass(route.path === '/auth/profile')" @click="close"><span>account</span></NuxtLink>
+          <NuxtLink v-if="authStore.isAdmin" to="/admin" :class="linkClass(route.path.startsWith('/admin'))" @click="close"><span>admin</span></NuxtLink>
         </div>
       </div>
     </Transition>
+
+    <!-- Delete folder confirmation -->
+    <ConfirmDialog
+      v-if="deletingFolder"
+      :model-value="!!deletingFolder"
+      title="delete folder"
+      :message="`move ${deletingFolder.note_count} note${deletingFolder.note_count !== 1 ? 's' : ''} to default folder?`"
+      confirm-text="delete"
+      @update:model-value="deletingFolder = null"
+      @confirm="confirmDelete"
+    />
+
+    <!-- Archive folder confirmation -->
+    <ConfirmDialog
+      v-if="archivingFolder"
+      :model-value="!!archivingFolder"
+      title="archive folder"
+      :message="`archive this folder and its ${archivingFolder.note_count} note${archivingFolder.note_count !== 1 ? 's' : ''}?`"
+      confirm-text="archive"
+      @update:model-value="archivingFolder = null"
+      @confirm="confirmArchive"
+    />
   </Teleport>
 </template>
 

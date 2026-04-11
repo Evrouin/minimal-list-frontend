@@ -86,6 +86,23 @@ export const useTodoStore = defineStore('todo', () => {
     }
   }
 
+  const fetchArchivedFolder = async (folderUuid: string) => {
+    todos.value = []
+    loading.value = true
+    initialLoad.value = true
+    filterType.value = 'archived'
+    try {
+      const response = await api.fetchTodos(`archived_only=true&folder=${folderUuid}`)
+      todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
+      nextCursor.value = response.next
+        ? new URL(response.next).pathname + new URL(response.next).search
+        : null
+    } finally {
+      loading.value = false
+      initialLoad.value = false
+    }
+  }
+
   const archiveNote = async (id: string) => {
     const index = todos.value.findIndex((t) => t.uuid === id)
     const removed = index !== -1 ? todos.value.splice(index, 1)[0]! : null
@@ -425,6 +442,7 @@ export const useTodoStore = defineStore('todo', () => {
     loadTodos,
     fetchTrash,
     fetchArchived,
+    fetchArchivedFolder,
     loadMore,
     changeFilter,
     refreshTodos,

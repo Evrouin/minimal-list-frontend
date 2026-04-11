@@ -144,6 +144,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = () => {
     const refresh = tokens.value?.refresh
     clearAuth()
+    useFolderStore().folders = []
     if (refresh) api.logout(refresh).catch(() => {})
   }
 

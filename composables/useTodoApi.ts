@@ -66,19 +66,19 @@ export const useTodoApi = () => {
       request<ApiResponse<Folder[]>>(`${base}/folders/${archived ? '?archived=true' : ''}`),
 
     createFolder: (name: string) =>
-      request<Folder>(`${base}/folders/`, { method: 'POST', body: { name } }),
+      request<ApiResponse<Folder>>(`${base}/folders/`, { method: 'POST', body: { name } }),
 
     updateFolder: (id: string, data: { name?: string; order?: number }) =>
-      request<Folder>(`${base}/folders/${id}/`, { method: 'PATCH', body: data }),
+      request<ApiResponse<Folder>>(`${base}/folders/${id}/`, { method: 'PATCH', body: data }),
 
     deleteFolder: (id: string) =>
       request<{ success: boolean }>(`${base}/folders/${id}/`, { method: 'DELETE' }),
 
     archiveFolder: (id: string) =>
-      request<Folder>(`${base}/folders/${id}/archive/`, { method: 'POST' }),
+      request<ApiResponse<Folder>>(`${base}/folders/${id}/archive/`, { method: 'POST' }),
 
     unarchiveFolder: (id: string) =>
-      request<Folder>(`${base}/folders/${id}/unarchive/`, { method: 'POST' }),
+      request<ApiResponse<Folder>>(`${base}/folders/${id}/unarchive/`, { method: 'POST' }),
 
     reorderFolders: (folders: { uuid: string; order: number }[]) =>
       request<{ success: boolean }>(`${base}/folders/reorder/`, { method: 'POST', body: { folders } }),

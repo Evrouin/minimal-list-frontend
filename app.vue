@@ -10,6 +10,17 @@ useHead({
     { rel: 'manifest', href: '/manifest.json' },
   ],
 })
+
+const authStore = useAuthStore()
+const folderStore = useFolderStore()
+
+watch(
+  () => authStore.isAuthenticated,
+  async (authed) => {
+    if (authed && !folderStore.folders.length) await folderStore.fetchFolders()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>

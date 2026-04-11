@@ -3,16 +3,18 @@ export const useFolders = () => {
   const folderStore = useFolderStore()
 
   const createFolder = async (name: string) => {
-    const folder = await api.createFolder(name)
+    const res = await api.createFolder(name)
+    const folder = res.data ?? res
     folderStore.folders.push(folder)
     return folder
   }
 
   const renameFolder = async (uuid: string, name: string) => {
-    const updated = await api.updateFolder(uuid, { name })
+    const res = await api.updateFolder(uuid, { name })
+    const folder = res.data ?? res
     const idx = folderStore.folders.findIndex((f) => f.uuid === uuid)
-    if (idx !== -1) folderStore.folders[idx] = updated
-    return updated
+    if (idx !== -1) folderStore.folders[idx] = folder
+    return folder
   }
 
   const deleteFolder = async (uuid: string) => {
@@ -30,14 +32,18 @@ export const useFolders = () => {
   }
 
   const archiveFolder = async (uuid: string) => {
+    const folder = folderStore.folders.find((f) => f.uuid === uuid)
     await api.archiveFolder(uuid)
     folderStore.folders = folderStore.folders.filter((f) => f.uuid !== uuid)
+    if (folder) folderStore.archivedFolders.push(folder)
     if (folderStore.activeFolder?.uuid === uuid) folderStore.activeFolder = null
   }
 
   const unarchiveFolder = async (uuid: string) => {
-    const folder = await api.unarchiveFolder(uuid)
-    folderStore.folders.push(folder)
+    const res = await api.unarchiveFolder(uuid)
+    const folder = res.data ?? res
+    folderStore.archivedFolders = folderStore.archivedFolders.filter((f) => f.uuid !== uuid)
+    if (folder?.uuid) folderStore.folders.push(folder)
     return folder
   }
 
