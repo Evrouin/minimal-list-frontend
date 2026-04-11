@@ -380,7 +380,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
       :class="isScrolledDown ? 'py-3' : 'py-1.5'"
     >
       <button
-        v-if="allSelectedUnpinned && todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived'"
+        v-if="allSelectedUnpinned && todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived' && !isRemindersFolder"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
         title="Pin selected"
         @click="bulkPinSelected(selectedIds, true)"
@@ -388,7 +388,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
       <button
-        v-if="allSelectedPinned && todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived'"
+        v-if="allSelectedPinned && todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived' && !isRemindersFolder"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
         title="Unpin selected"
         @click="bulkPinSelected(selectedIds, false)"
