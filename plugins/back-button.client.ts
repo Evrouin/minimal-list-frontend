@@ -6,6 +6,9 @@ const HOME = '/'
 
 const homeRoutes = new Set([
   '/auth/profile',
+  '/trash',
+  '/archive',
+  '/settings',
   '/auth/verify-email',
   '/auth/reset-password',
   '/auth/unlock-account',
@@ -19,6 +22,7 @@ export default defineNuxtPlugin(() => {
   if (!Capacitor.isNativePlatform()) return
 
   const router = useRouter()
+  const ui = useUiStore()
 
   App.addListener('backButton', ({ canGoBack }) => {
     const path = router.currentRoute.value.path
