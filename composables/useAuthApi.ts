@@ -96,5 +96,14 @@ export const useAuthApi = () => {
 
     unlockAccount: (token: string) =>
       request<{ message: string }>(`${base}/unlock-account/${token}/`, { method: 'POST' }),
+
+    deactivateAccount: () =>
+      request<{ message: string }>(`${base}/deactivate/`, { method: 'POST' }),
+
+    reactivateAccount: (token: string) =>
+      request<{ message: string }>(`${base}/reactivate/${token}/`, { method: 'POST' }),
+
+    recoverAccount: (token: string) =>
+      request<{ message: string }>(`${base}/recover-account/${token}/`, { method: 'POST' }),
   }
 }

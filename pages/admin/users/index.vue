@@ -139,6 +139,9 @@ const confirmDelete = async () => {
             <span :class="u.is_active ? 'text-green-300' : 'text-red-300'">
               {{ u.is_active ? 'active' : 'deactivated' }}
             </span>
+            <span v-if="u.scheduled_deletion_at" class="text-orange-400">
+              deletion {{ new Date(u.scheduled_deletion_at).toLocaleDateString() }}
+            </span>
             <span :class="u.is_verified ? 'text-green-300' : 'text-red-300'">
               {{ u.is_verified ? 'verified' : 'unverified' }}
             </span>

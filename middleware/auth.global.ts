@@ -4,7 +4,9 @@ const isPublicPath = (path: string) =>
   publicPaths.has(path) ||
   path.startsWith('/auth/verify-email') ||
   path.startsWith('/auth/reset-password') ||
-  path.startsWith('/auth/unlock-account')
+  path.startsWith('/auth/unlock-account') ||
+  path.startsWith('/auth/reactivate') ||
+  path.startsWith('/auth/recover-account')
 
 const tryFetchProfile = async (authStore: ReturnType<typeof useAuthStore>) => {
   try {

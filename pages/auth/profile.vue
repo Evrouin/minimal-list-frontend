@@ -137,6 +137,13 @@ const handleChangePassword = async () => {
 }
 
 const showDeleteDialog = ref(false)
+const showDeactivateDialog = ref(false)
+
+const handleDeactivateAccount = async () => {
+  await api.deactivateAccount()
+  authStore.logout()
+  navigateTo('/auth/login')
+}
 
 const defaultNoteColor = ref<NoteColor>(
   (localStorage.getItem('defaultNoteColor') as NoteColor) || 'default',
@@ -594,10 +601,22 @@ const handleLogout = () => {
                   clear
                 </button>
               </div>
+              <div class="mb-4 flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-red-300">deactivate account</p>
+                  <p class="text-xs text-white/40">suspend access, keep your data</p>
+                </div>
+                <button
+                  class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
+                  @click="showDeactivateDialog = true"
+                >
+                  deactivate
+                </button>
+              </div>
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-red-300">delete account</p>
-                  <p class="text-xs text-white/40">this action cannot be undone</p>
+                  <p class="text-xs text-white/40">scheduled for deletion in 30 days</p>
                 </div>
                 <button
                   class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
@@ -615,9 +634,17 @@ const handleLogout = () => {
     <ConfirmDialog
       v-model="showDeleteDialog"
       title="delete account"
-      message="this is permanent and cannot be undone. all your data will be lost."
-      confirm-text="delete forever"
+      message="your account will be scheduled for deletion in 30 days. you'll receive an email with a link to cancel. all data will be permanently deleted after 30 days."
+      confirm-text="schedule deletion"
       @confirm="handleDeleteAccount"
+    />
+
+    <ConfirmDialog
+      v-model="showDeactivateDialog"
+      title="deactivate account"
+      message="your account will be suspended. you can reactivate anytime via the link sent to your email."
+      confirm-text="deactivate"
+      @confirm="handleDeactivateAccount"
     />
 
     <!-- Clear notes warning -->
