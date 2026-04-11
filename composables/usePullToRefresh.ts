@@ -11,6 +11,8 @@ export function usePullToRefresh(triggerEl: Ref<HTMLElement | undefined>, onRefr
 
   const onTouchStart = (e: TouchEvent) => {
     if (globalThis.scrollY > 0) return
+    const uiStore = useUiStore()
+    if (uiStore.sidebarOpen) return
     const rect = triggerEl.value?.getBoundingClientRect()
     if (!rect) return
     if (e.touches[0]!.clientY > rect.bottom) return

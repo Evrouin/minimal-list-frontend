@@ -177,6 +177,12 @@ onUnmounted(() => {
   destroyGrid()
 })
 
+const uiStore = useUiStore()
+watch(() => uiStore.sidebarOpen, (open) => {
+  if (!grid || !props.dragEnabled) return
+  ;(grid as unknown as { _settings: { dragEnabled: boolean } })._settings.dragEnabled = !open
+})
+
 watch(
   () => props.items.length,
   (len, oldLen) => {
