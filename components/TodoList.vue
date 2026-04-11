@@ -236,6 +236,12 @@ const { showBulkDeleteDialog, bulkDeleteIds, requestBulkDelete, confirmBulkDelet
   showToast,
 })
 
+const bulkUnarchiveSelected = async (ids: string[]) => {
+  tap()
+  await Promise.all(ids.map((id) => todoStore.unarchiveNote(id)))
+  exitMultiSelect()
+}
+
 // --- Event handlers ---
 
 const wasDragging = ref(false)
@@ -374,7 +380,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
       :class="isScrolledDown ? 'py-3' : 'py-1.5'"
     >
       <button
-        v-if="allSelectedUnpinned && todoStore.filterType !== 'deleted'"
+        v-if="allSelectedUnpinned && todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived'"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-blue-400"
         title="Pin selected"
         @click="bulkPinSelected(selectedIds, true)"
@@ -382,7 +388,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <Icon name="mdi:pin" class="h-3 w-3" />
       </button>
       <button
-        v-if="allSelectedPinned && todoStore.filterType !== 'deleted'"
+        v-if="allSelectedPinned && todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived'"
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-blue-400 hover:bg-gray-700 hover:text-gray-400"
         title="Unpin selected"
         @click="bulkPinSelected(selectedIds, false)"
@@ -396,6 +402,14 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         @click="bulkRestoreSelected(selectedIds)"
       >
         <Icon name="uil:redo" class="h-3 w-3" />
+      </button>
+      <button
+        v-if="todoStore.filterType === 'archived'"
+        class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-white"
+        title="Unarchive selected"
+        @click="bulkUnarchiveSelected(selectedIds)"
+      >
+        <Icon name="uil:archive-alt" class="h-3 w-3" />
       </button>
       <button
         class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/20 text-gray-400 hover:bg-gray-700 hover:text-red-400"

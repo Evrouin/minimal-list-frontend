@@ -173,6 +173,7 @@ export const useTodoStore = defineStore('todo', () => {
   const filteredTodos = computed(() => {
     return todos.value.filter((t) => {
       if (filterType.value === 'archived') return true
+      if (t.is_archived) return false
       if (t.deleted && filterType.value !== 'deleted') return false
       if (filterType.value === 'active' && t.completed) return false
       if (filterType.value === 'completed' && !t.completed) return false
@@ -304,7 +305,9 @@ export const useTodoStore = defineStore('todo', () => {
     return snapshot
   }
   const restoreTodoCommit = async (id: string) => {
-    await api.updateTodo(id, { deleted: false })
+    const response = await api.updateTodo(id, { deleted: false })
+    const index = todos.value.findIndex((t) => t.uuid === id)
+    if (index !== -1) todos.value[index] = { ...response.data, editing: false }
   }
   const restoreTodoRollback = (snapshot: Todo[]) => {
     todos.value = snapshot
