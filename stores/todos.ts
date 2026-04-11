@@ -31,6 +31,19 @@ export const useTodoStore = defineStore('todo', () => {
     }
   })
 
+  const fetchTrash = async () => {
+    loading.value = true
+    try {
+      const response = await api.fetchTodos('deleted_only=true')
+      todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
+      nextCursor.value = response.next
+        ? new URL(response.next).pathname + new URL(response.next).search
+        : null
+    } finally {
+      loading.value = false
+      initialLoad.value = false
+    }
+  }
 
   const fetchArchived = async () => {
     loading.value = true
@@ -161,7 +174,7 @@ export const useTodoStore = defineStore('todo', () => {
   const updateTodo = async (updatedTodo: Todo, imageFile?: File, audioFile?: File) => {
     const index = todos.value.findIndex((t) => t.uuid === updatedTodo.uuid)
     if (index === -1) return
-    const previous = { ...todos.value[index] }
+    const previous = { ...todos.value[index]! }
     todos.value[index] = { ...updatedTodo, editing: false }
     try {
       const { title, body, completed, pinned, color, reminder_at, link_previews, audio } = updatedTodo
@@ -243,7 +256,7 @@ export const useTodoStore = defineStore('todo', () => {
     } else {
       const index = todos.value.findIndex((t) => t.uuid === id)
       if (index !== -1)
-        todos.value[index] = { ...todos.value[index], deleted: true }
+        todos.value[index] = { ...todos.value[index]!, deleted: true }
     }
     invalidateOtherCaches()
     return snapshot
@@ -258,7 +271,7 @@ export const useTodoStore = defineStore('todo', () => {
   const restoreTodoApply = (id: string) => {
     const snapshot = [...todos.value]
     const index = todos.value.findIndex((t) => t.uuid === id)
-    if (index !== -1) todos.value[index] = { ...todos.value[index], deleted: false }
+    if (index !== -1) todos.value[index] = { ...todos.value[index]!, deleted: false }
     invalidateOtherCaches()
     return snapshot
   }
@@ -333,7 +346,7 @@ export const useTodoStore = defineStore('todo', () => {
       const idx = section.findIndex((t) => t.uuid === uuid)
       if (idx >= 0) {
         const [moved] = section.splice(idx, 1)
-        section.splice(Math.max(0, Math.min(newPosition - 1, section.length)), 0, moved)
+        section.splice(Math.max(0, Math.min(newPosition - 1, section.length)), 0, moved!)
       }
 
       const combined = [...pinnedNotes, ...unpinnedNotes]
@@ -345,6 +358,12 @@ export const useTodoStore = defineStore('todo', () => {
   const reorderRollback = (snapshot: Todo[]) => {
     todos.value = snapshot
     savePendingOrder(null)
+  }
+
+  const clearTodos = () => {
+    todos.value = []
+    nextCursor.value = null
+    initialLoad.value = true
   }
 
   const invalidateOtherCaches = () => {
@@ -373,6 +392,7 @@ export const useTodoStore = defineStore('todo', () => {
     filterType,
     filterOptions,
     loadTodos,
+    fetchTrash,
     fetchArchived,
     loadMore,
     changeFilter,
@@ -402,5 +422,6 @@ export const useTodoStore = defineStore('todo', () => {
     reorderTodosBySection,
     bulkReorderCommit,
     reorderRollback,
+    clearTodos,
   }
 })
