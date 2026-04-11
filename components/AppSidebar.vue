@@ -72,7 +72,7 @@ const linkClass = (active: boolean) =>
     </Transition>
 
     <Transition name="slide-left">
-      <div v-if="ui.sidebarOpen" class="fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-gray-900 py-6">
+      <div v-if="ui.sidebarOpen" class="fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-gray-800 py-6">
         <div class="mb-6 px-5">
           <span class="text-lg font-bold text-white lowercase">minimal list</span>
         </div>
