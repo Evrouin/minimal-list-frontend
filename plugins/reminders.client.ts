@@ -2,24 +2,59 @@ import { Capacitor } from '@capacitor/core'
 import { watch } from 'vue'
 
 export default defineNuxtPlugin(() => {
-  if (Capacitor.isNativePlatform()) return
+  // Android: register action types and listen for actions on app init
+  if (Capacitor.isNativePlatform()) {
+    const { registerActionTypes, listenActions } = useReminders()
+    registerActionTypes()
+    listenActions()
+    return
+  }
 
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission()
   }
 
   const todoStore = useTodoStore()
-  const firedIds = new Set<number>()
+  const api = useTodoApi()
+  const firedIds = new Set<string>()
+
+  const snoozePrompt = ref<{ uuid: string; title: string } | null>(null)
+
+  const snoozeOptions = [
+    { label: '15 min', ms: 15 * 60 * 1000 },
+    { label: '1 hour', ms: 60 * 60 * 1000 },
+    { label: 'tomorrow', ms: null }, // same time next day
+  ]
+
+  const handleSnooze = async (uuid: string, ms: number | null) => {
+    const todo = todoStore.todos.find((t) => t.uuid === uuid)
+    if (!todo?.reminder_at) return
+    const base = new Date(todo.reminder_at)
+    const snoozedUntil = ms !== null
+      ? new Date(Date.now() + ms).toISOString()
+      : new Date(base.getTime() + 86400000).toISOString()
+    await api.snoozeNote(uuid, snoozedUntil)
+    snoozePrompt.value = null
+  }
+
+  const handleDone = async (uuid: string) => {
+    await todoStore.toggleTodoCompletion(uuid)
+    snoozePrompt.value = null
+  }
 
   const check = () => {
     if (localStorage.getItem('notificationsEnabled') === 'false') return
     const now = Date.now()
     todoStore.todos.forEach((todo) => {
+      const fireAt = todo.snoozed_until && new Date(todo.snoozed_until).getTime() > 0
+        ? new Date(todo.snoozed_until).getTime()
+        : todo.reminder_at ? new Date(todo.reminder_at).getTime() : null
       if (
-        todo.reminder_at &&
+        fireAt &&
+        !todo.completed &&
         !todo.deleted &&
         !firedIds.has(todo.uuid) &&
-        new Date(todo.reminder_at).getTime() <= now
+        fireAt <= now
       ) {
         firedIds.add(todo.uuid)
         if ('Notification' in window && Notification.permission === 'granted') {
@@ -27,12 +62,19 @@ export default defineNuxtPlugin(() => {
             body: todo.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
           })
         }
+        // Show in-app snooze prompt
+        snoozePrompt.value = { uuid: todo.uuid, title: todo.title }
       }
     })
   }
 
   watch(() => todoStore.todos, check, { deep: true })
-
   const interval = setInterval(check, 30_000)
   window.addEventListener('beforeunload', () => clearInterval(interval))
+
+  const nuxtApp = useNuxtApp()
+  nuxtApp.provide('snoozePrompt', snoozePrompt)
+  nuxtApp.provide('snoozeOptions', snoozeOptions)
+  nuxtApp.provide('handleSnooze', handleSnooze)
+  nuxtApp.provide('handleDone', handleDone)
 })

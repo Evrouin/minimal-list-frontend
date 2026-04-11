@@ -9,7 +9,47 @@ const uuidToInt = (uuid: string) => {
   return Math.abs(hash)
 }
 
+const ACTION_TYPE_ID = 'REMINDER_ACTIONS'
+
 export const useReminders = () => {
+  const api = useTodoApi()
+
+  const registerActionTypes = async () => {
+    if (!Capacitor.isNativePlatform()) return
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    await LocalNotifications.registerActionTypes({
+      types: [
+        {
+          id: ACTION_TYPE_ID,
+          actions: [
+            { id: 'snooze', title: 'Snooze 1hr' },
+            { id: 'done', title: 'Done', destructive: false },
+          ],
+        },
+      ],
+    })
+  }
+
+  const listenActions = async () => {
+    if (!Capacitor.isNativePlatform()) return
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    const todoStore = useTodoStore()
+
+    await LocalNotifications.addListener('localNotificationActionPerformed', async (event) => {
+      const notifId = event.notification.id
+      const todo = todoStore.todos.find((t) => uuidToInt(t.uuid) === notifId)
+      if (!todo) return
+
+      if (event.actionId === 'done') {
+        await todoStore.toggleTodoCompletion(todo.uuid)
+      } else if (event.actionId === 'snooze') {
+        const snoozedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+        await api.snoozeNote(todo.uuid, snoozedUntil)
+        await schedule({ ...todo, snoozed_until: snoozedUntil })
+      }
+    })
+  }
+
   const schedule = async (todo: Todo) => {
     if (!todo.reminder_at) return
     const fireAt = todo.snoozed_until && new Date(todo.snoozed_until).getTime() > Date.now()
@@ -26,6 +66,7 @@ export const useReminders = () => {
             title: todo.title,
             body: todo.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
             schedule: { at: fireAt },
+            actionTypeId: ACTION_TYPE_ID,
           },
         ],
       })
@@ -60,11 +101,12 @@ export const useReminders = () => {
             title: t.title,
             body: t.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
             schedule: { at: fireAt },
+            actionTypeId: ACTION_TYPE_ID,
           }
         }),
       })
     }
   }
 
-  return { schedule, cancel, syncAll }
+  return { schedule, cancel, syncAll, registerActionTypes, listenActions }
 }

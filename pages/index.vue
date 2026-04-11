@@ -253,6 +253,13 @@ const { toasts, undo: undoToast } = useUndoToast()
 
 const headerRef = ref<HTMLElement>()
 const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePullToRefresh(headerRef, () => todoStore.refreshTodos())
+
+const { $snoozePrompt, $snoozeOptions, $handleSnooze, $handleDone } = useNuxtApp() as unknown as {
+  $snoozePrompt: import('vue').Ref<{ uuid: string; title: string } | null>
+  $snoozeOptions: { label: string; ms: number | null }[]
+  $handleSnooze: (uuid: string, ms: number | null) => Promise<void>
+  $handleDone: (uuid: string) => Promise<void>
+}
 </script>
 
 <template>
@@ -389,6 +396,32 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
         </div>
       </TransitionGroup>
     </div>
+
+    <!-- Web snooze prompt (BR-11) -->
+    <Transition name="fade">
+      <div
+        v-if="$snoozePrompt"
+        class="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-gray-900 px-4 py-3 shadow-xl text-xs text-white min-w-64"
+      >
+        <p class="mb-2 text-white/60 lowercase truncate">{{ $snoozePrompt.title }}</p>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            v-for="opt in $snoozeOptions"
+            :key="opt.label"
+            class="cursor-pointer rounded px-2 py-1 text-white/50 lowercase hover:bg-gray-700 hover:text-white"
+            @click="$handleSnooze($snoozePrompt!.uuid, opt.ms)"
+          >
+            {{ opt.label }}
+          </button>
+          <button
+            class="cursor-pointer rounded px-2 py-1 text-blue-400 lowercase hover:text-blue-300 ml-auto"
+            @click="$handleDone($snoozePrompt!.uuid)"
+          >
+            done
+          </button>
+        </div>
+      </div>
+    </Transition>
 
     <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 sm:hidden">
       <button
