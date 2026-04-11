@@ -10,6 +10,7 @@ export interface LinkPreview {
 
 export interface Todo {
   uuid: string
+  folder: string | null
   title: string
   body: string
   image?: string

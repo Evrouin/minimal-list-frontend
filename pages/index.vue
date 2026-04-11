@@ -1,47 +1,42 @@
 <script setup lang="ts">
 import { useTodoStore } from '~/stores/todos'
 import { useAuthStore } from '~/stores/auth'
+import { useUiStore } from '~/stores/ui'
+import { useFolderStore } from '~/stores/folders'
 import { useBackHandler } from '~/composables/useBackHandler'
 
 const authStore = useAuthStore()
 const isLoggedIn = computed(() => authStore.isAuthenticated)
 
 const todoStore = useTodoStore()
+const folderStore = useFolderStore()
 const route = useRoute()
 const router = useRouter()
 const { online } = useOnline()
 const { flushAll } = useUndoToast()
 
-const { filterOptions } = todoStore
 const { filteredTodos } = storeToRefs(todoStore)
-const mobileEditing = computed(() => filteredTodos.value.some((t) => t.editing))
-const scrolledDown = ref(false)
-let lastScrollTop = 0
-let scrollLock = false
-const mobileHidden = computed(() => mobileEditing.value || scrolledDown.value)
 
-watch(scrolledDown, () => {
-  scrollLock = true
-  setTimeout(() => {
-    scrollLock = false
-  }, 300)
-})
+const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
 
-const handleFilter = async (filter: (typeof filterOptions)[number]) => {
-  await flushAll()
-  await todoStore.changeFilter(filter)
-  window.scrollTo({ top: 0 })
-  scrolledDown.value = false
-  lastScrollTop = 0
-  router.replace({ query: { filter } })
-}
+watch(
+  () => route.query.folder,
+  (slug) => {
+    if (!authStore.isAuthenticated) return
+    folderStore.setActiveFolderBySlug((slug as string) ?? null)
+    todoStore.clearTodos()
+    todoStore.loadTodos()
+  },
+)
 
-onMounted(() => {
-  const saved = route.query.filter as string
-  if (saved && filterOptions.includes(saved as (typeof filterOptions)[number])) {
-    todoStore.changeFilter(saved as (typeof filterOptions)[number])
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    try {
+      if (!folderStore.folders.length) await folderStore.fetchFolders()
+    } catch { /* non-fatal — sidebar will show fallback */ }
+    folderStore.setActiveFolderBySlug((route.query.folder as string) ?? null)
+    todoStore.loadTodos()
   }
-  if (authStore.isAuthenticated) todoStore.loadTodos()
   window.addEventListener('scroll', onScroll)
 })
 
@@ -170,6 +165,7 @@ const clearCreateImage = () => {
 const { fetchPreviews: fetchCreatePreviews } = useLinkPreviews()
 
 const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
+  const folderUuid = folderStore.activeFolder?.uuid ?? null
   if (createImageFile.value || createAudioFile.value) {
     const fd = new FormData()
     fd.append('title', createTitle.value.toLowerCase())
@@ -180,9 +176,10 @@ const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
     if (createImageFile.value) fd.append('image', createImageFile.value)
     if (createAudioFile.value) fd.append('audio', createAudioFile.value)
     if (previews.length) fd.append('link_previews', JSON.stringify(previews))
+    if (folderUuid) fd.append('folder', folderUuid)
     return fd
   }
-  return { title: createTitle.value.toLowerCase(), body: createBody.value, color: createColor.value, pinned: createPinned.value, reminder_at: createReminderAt.value, link_previews: previews }
+  return { title: createTitle.value.toLowerCase(), body: createBody.value, color: createColor.value, pinned: createPinned.value, reminder_at: createReminderAt.value, link_previews: previews, folder: folderUuid }
 }
 
 const resetCreateForm = () => {
@@ -235,16 +232,10 @@ const cancelMobileAdd = () => {
 }
 
 const showScrollTop = ref(false)
+const ui = useUiStore()
+
 const onScroll = () => {
   const top = window.scrollY
-  const scrollable = document.documentElement.scrollHeight > window.innerHeight * 1.5
-  if (!scrollLock && scrollable && Math.abs(top - lastScrollTop) > 30) {
-    scrolledDown.value = top > lastScrollTop && top > 150
-    lastScrollTop = top
-  } else if (!scrollable) {
-    scrolledDown.value = false
-    lastScrollTop = 0
-  }
   showScrollTop.value = top > 1000
   if (!todoStore.hasMore || todoStore.loadingMore) return
   if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
@@ -338,6 +329,7 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
 
   <!-- Notes app for authenticated users -->
   <div v-else class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-10">
+    <AppSidebar />
     <Transition name="slide">
       <div v-if="!online" class="fixed top-0 z-50 w-full bg-gray-900 py-2 text-center text-xs text-white/60 lowercase">
         you're offline — changes won't sync
@@ -354,7 +346,15 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
       ref="headerRef"
       class="w-full max-w-lg px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl"
     >
-      <PageHeader title="minimal list" class="pl-2.5">
+      <PageHeader :title="pageTitle">
+        <template #prepend>
+          <button
+            class="cursor-pointer text-white/60 hover:text-white"
+            @click="ui.openSidebar()"
+          >
+            <Icon name="uil:bars" class="text-xl ml-2.5 mt-2.5" />
+          </button>
+        </template>
         <div class="flex shrink-0 items-center">
           <button
             class="hidden cursor-pointer p-2 text-white/60 hover:text-white sm:block"
@@ -363,32 +363,9 @@ const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePull
           >
             <Icon name="uil:plus" class="text-xl" />
           </button>
-          <NuxtLink v-if="authStore.isAdmin" to="/admin" class="cursor-pointer p-2 text-white/60 hover:text-white">
-            <Icon name="uil:setting" class="text-xl" />
-          </NuxtLink>
-          <NuxtLink v-if="authStore.isAuthenticated" to="/auth/profile" class="cursor-pointer p-2 text-white/60 hover:text-white">
-            <Icon name="uil:user-circle" class="text-xl" />
-          </NuxtLink>
         </div>
       </PageHeader>
-      <!-- Mobile add button is now a FAB -->
     </div>
-    <Transition name="slide-up">
-      <div
-        v-if="!mobileHidden"
-        class="my-4 flex w-full max-w-lg justify-center px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl"
-      >
-        <button
-          v-for="(filter, index) in filterOptions"
-          :key="index"
-          class="mx-1 cursor-pointer rounded-lg px-3 py-2 text-xs text-white lowercase transition-all duration-200 sm:text-sm"
-          :class="todoStore.filterType === filter ? 'bg-gray-700' : 'bg-gray-800'"
-          @click="handleFilter(filter)"
-        >
-          {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
-        </button>
-      </div>
-    </Transition>
     <div class="w-full max-w-lg px-4 pb-10 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <TodoList ref="todoListRef" :key="todoListKey" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">

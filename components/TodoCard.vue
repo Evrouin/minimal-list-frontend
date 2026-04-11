@@ -8,6 +8,7 @@ const props = defineProps<{
   showCheckbox: boolean
   multiSelectMode: boolean
   editImagePreview?: string
+  isTaskFolder?: boolean
 }>()
 
 const emit = defineEmits<{

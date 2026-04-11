@@ -21,11 +21,13 @@ export const useTodoStore = defineStore('todo', () => {
   const hasMore = computed(() => !!nextCursor.value)
 
   const filterParams = computed(() => {
+    const folderStore = useFolderStore()
+    const folderParam = folderStore.activeFolder ? `folder=${folderStore.activeFolder.uuid}` : ''
     switch (filterType.value) {
-      case 'active': return 'completed=false'
-      case 'completed': return 'completed=true'
+      case 'active': return [folderParam, 'completed=false'].filter(Boolean).join('&')
+      case 'completed': return [folderParam, 'completed=true'].filter(Boolean).join('&')
       case 'deleted': return 'deleted_only=true'
-      default: return ''
+      default: return folderParam
     }
   })
 
