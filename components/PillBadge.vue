@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  color: 'green' | 'red' | 'yellow' | 'blue' | 'muted'
+  color: 'green' | 'red' | 'yellow' | 'blue' | 'muted' | 'orange'
   label: string
 }>()
 
@@ -10,6 +10,7 @@ const colors = {
   yellow: 'bg-yellow-500/20 text-yellow-300',
   blue: 'bg-blue-500/20 text-blue-300',
   muted: 'bg-white/5 text-white/30',
+  orange: 'bg-orange-500/20 text-orange-300',
 }
 </script>
 

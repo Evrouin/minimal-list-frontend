@@ -33,6 +33,7 @@ const confirm = () => {
       <p class="mb-4 text-xs text-white/70 lowercase">
         {{ props.message || 'are you sure?' }}
       </p>
+      <slot />
       <div class="flex justify-end gap-2">
         <button
           class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 lowercase hover:text-white"

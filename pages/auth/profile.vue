@@ -137,6 +137,10 @@ const handleChangePassword = async () => {
 }
 
 const showDeleteDialog = ref(false)
+const deleteAccountPassword = ref('')
+const deleteAccountError = ref('')
+
+watch(showDeleteDialog, (v) => { if (!v) { deleteAccountPassword.value = ''; deleteAccountError.value = '' } })
 const showDeactivateDialog = ref(false)
 
 const handleDeactivateAccount = async () => {
@@ -214,36 +218,30 @@ const notificationsEnabled = ref(
 )
 
 const handleDeleteAccount = async () => {
-  await authStore.deleteAccount()
-  navigateTo('/auth/login')
+  if (!deleteAccountPassword.value) { deleteAccountError.value = 'password required'; return }
+  try {
+    await authStore.deleteAccount(deleteAccountPassword.value)
+    navigateTo('/auth/login')
+  } catch {
+    deleteAccountError.value = 'incorrect password'
+  }
 }
 
 const todoApi = useTodoApi()
 const showClearNotesDialog = ref(false)
-const showClearPasswordDialog = ref(false)
 const clearPassword = ref('')
 const clearPasswordError = ref('')
 const clearingNotes = ref(false)
 
-const onClearNotesConfirm = () => {
-  showClearNotesDialog.value = false
-  if (!user.value?.has_password) {
-    // OAuth user with no password — skip password check
-    handleClearNotes('', true)
-    return
-  }
-  showClearPasswordDialog.value = true
-  clearPassword.value = ''
-  clearPasswordError.value = ''
-}
+watch(showClearNotesDialog, (v) => { if (!v) { clearPassword.value = ''; clearPasswordError.value = '' } })
 
-const handleClearNotes = async (password = clearPassword.value, skipPassword = false) => {
-  if (!skipPassword && !password) { clearPasswordError.value = 'password is required'; return }
+const onClearNotesConfirm = async () => {
+  if (user.value?.has_password && !clearPassword.value) { clearPasswordError.value = 'password is required'; return }
   clearingNotes.value = true
   clearPasswordError.value = ''
   try {
-    await todoApi.clearTodos(password)
-    showClearPasswordDialog.value = false
+    await todoApi.clearTodos(clearPassword.value)
+    showClearNotesDialog.value = false
     clearPassword.value = ''
   } catch (e: unknown) {
     clearPasswordError.value = (e as Error)?.message || 'failed. check your password.'
@@ -637,7 +635,18 @@ const handleLogout = () => {
       message="your account will be scheduled for deletion in 30 days. you'll receive an email with a link to cancel. all data will be permanently deleted after 30 days."
       confirm-text="schedule deletion"
       @confirm="handleDeleteAccount"
-    />
+    >
+      <div class="mb-4">
+        <input
+          v-model="deleteAccountPassword"
+          type="password"
+          placeholder="your password"
+          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
+          @keydown.enter="handleDeleteAccount"
+        >
+        <p v-if="deleteAccountError" class="mt-1 text-xs text-red-400">{{ deleteAccountError }}</p>
+      </div>
+    </ConfirmDialog>
 
     <ConfirmDialog
       v-model="showDeactivateDialog"
@@ -653,34 +662,20 @@ const handleLogout = () => {
       title="clear notes"
       message="this will permanently delete all your notes, recordings, and images. this cannot be undone."
       confirm-text="yes, clear all"
+      :loading="clearingNotes"
       @confirm="onClearNotesConfirm"
-    />
-
-    <!-- Clear notes password confirmation -->
-    <ModalOverlay :show="showClearPasswordDialog" @click.self="showClearPasswordDialog = false">
-      <div class="mx-4 w-full max-w-sm rounded-lg bg-gray-700 p-5">
-        <p class="mb-1 text-sm font-bold text-white lowercase">confirm your password</p>
-        <p class="mb-4 text-xs text-white/40">enter your password to permanently clear all notes.</p>
+    >
+      <div v-if="user?.has_password" class="mb-4">
         <input
           v-model="clearPassword"
           type="password"
-          placeholder="password"
-          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          @keydown.enter="handleClearNotes()"
+          placeholder="your password"
+          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
+          @keydown.enter="onClearNotesConfirm"
         >
-        <p v-if="clearPasswordError" class="mt-2 text-xs text-red-400">{{ clearPasswordError }}</p>
-        <div class="mt-4 flex justify-end gap-2">
-          <button class="cursor-pointer text-xs text-white/40 hover:text-white" @click="showClearPasswordDialog = false">cancel</button>
-          <button
-            class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30 disabled:opacity-50"
-            :disabled="clearingNotes"
-            @click="handleClearNotes()"
-          >
-            {{ clearingNotes ? 'clearing...' : 'confirm' }}
-          </button>
-        </div>
+        <p v-if="clearPasswordError" class="mt-1 text-xs text-red-400">{{ clearPasswordError }}</p>
       </div>
-    </ModalOverlay>
+    </ConfirmDialog>
 
     <!-- sessions dialog -->
     <ModalOverlay :show="showSessions" @click.self="showSessions = false">

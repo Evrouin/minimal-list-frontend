@@ -136,8 +136,8 @@ export const useAuthStore = defineStore('auth', () => {
   const confirmPasswordReset = (payload: PasswordResetConfirmPayload) =>
     api.confirmPasswordReset(payload)
 
-  const deleteAccount = async () => {
-    await api.deleteAccount()
+  const deleteAccount = async (password: string) => {
+    await api.deleteAccount(password)
     clearAuth()
   }
 

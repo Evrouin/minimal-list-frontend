@@ -12,6 +12,8 @@ const errorMsg = ref('')
 const avatarError = ref(false)
 const showDeleteDialog = ref(false)
 
+watch(showDeleteDialog, (v) => { if (!v) { deletePassword.value = ''; deletePasswordError.value = '' } })
+
 const editForm = reactive({ username: '', phone: '', bio: '' })
 
 onMounted(async () => {
@@ -40,23 +42,29 @@ const save = async () => {
 }
 
 const deleting = ref(false)
+const deletePassword = ref('')
+const deletePasswordError = ref('')
+
+const formatDate = (date: string) => new Date(date).toLocaleDateString()
+
+const confirmDelete = async () => {
+  if (!deletePassword.value) { deletePasswordError.value = 'password is required'; return }
+  deleting.value = true
+  deletePasswordError.value = ''
+  try {
+    await api.deleteUser(route.params.id as string, deletePassword.value)
+    navigateTo('/admin/users')
+  } catch {
+    deletePasswordError.value = 'incorrect password or failed to delete'
+    deleting.value = false
+  }
+}
 
 const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', value: boolean) => {
   try {
     user.value = await api.updateUser(route.params.id as string, { [field]: value })
   } catch {
     errorMsg.value = `failed to update ${field.replace('is_', '')}`
-  }
-}
-
-const confirmDelete = async () => {
-  deleting.value = true
-  try {
-    await api.deleteUser(route.params.id as string)
-    navigateTo('/admin/users')
-  } catch {
-    errorMsg.value = 'failed to delete user'
-    deleting.value = false
   }
 }
 </script>
@@ -93,6 +101,7 @@ const confirmDelete = async () => {
           <PillBadge :color="user.is_active ? 'green' : 'red'" :label="user.is_active ? 'active' : 'deactivated'" />
           <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
           <PillBadge v-if="user.is_superuser" color="yellow" label="admin" />
+          <PillBadge v-if="user.scheduled_deletion_at" color="orange" :label="`pending deletion · ${formatDate(user.scheduled_deletion_at)}`" />
         </div>
       </div>
 
@@ -211,6 +220,17 @@ const confirmDelete = async () => {
       confirm-text="delete forever"
       :loading="deleting"
       @confirm="confirmDelete"
-    />
+    >
+      <div class="mb-4">
+        <input
+          v-model="deletePassword"
+          type="password"
+          placeholder="your password"
+          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
+          @keydown.enter="confirmDelete"
+        >
+        <p v-if="deletePasswordError" class="mt-1 text-xs text-red-400">{{ deletePasswordError }}</p>
+      </div>
+    </ConfirmDialog>
   </div>
 </template>

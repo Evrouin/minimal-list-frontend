@@ -80,8 +80,8 @@ export const useAuthApi = () => {
         body: payload,
       }),
 
-    deleteAccount: () =>
-      request(`${base}/delete-account/`, { method: 'DELETE' }),
+    deleteAccount: (password: string) =>
+      request(`${base}/delete-account/`, { method: 'DELETE', body: { password } }),
 
     listSessions: (refresh?: string) => {
       const params = refresh ? `?refresh=${encodeURIComponent(refresh)}` : ''
