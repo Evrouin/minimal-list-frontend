@@ -50,11 +50,11 @@ const onImgClick = (e: Event) => {
 
 const colors = computed(() => noteColors[props.todo.color] || noteColors.default)
 
-const isOverdue = computed(() =>
-  !!props.todo.reminder_at &&
-  !props.todo.completed &&
-  new Date(props.todo.reminder_at).getTime() <= Date.now(),
-)
+const isOverdue = computed(() => {
+  if (!props.todo.reminder_at || props.todo.completed) return false
+  if (props.todo.snoozed_until && new Date(props.todo.snoozed_until).getTime() > now.value) return false
+  return new Date(props.todo.reminder_at).getTime() <= now.value
+})
 
 const showComplete = computed(() => props.isTaskFolder || !!props.todo.reminder_at)
 
@@ -207,10 +207,10 @@ const cardClasses = computed(() => [
           <Icon
             name="uil:bell"
             class="inline text-xs"
-            :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'"
+            :class="new Date(todo.reminder_at).getTime() <= now ? 'text-red-400' : 'text-yellow-400'"
           />
-          <span :class="new Date(todo.reminder_at).getTime() <= Date.now() ? 'text-red-400' : 'text-yellow-400'">
-            {{ new Date(todo.reminder_at).getTime() <= Date.now() ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
+          <span :class="new Date(todo.reminder_at).getTime() <= now ? 'text-red-400' : 'text-yellow-400'">
+            {{ new Date(todo.reminder_at).getTime() <= now ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
           </span>
           <span v-if="todo.recurrence_rule && todo.recurrence_rule !== 'none'" class="text-white/30">
             · <Icon name="uil:repeat" class="inline text-xs" /> {{ todo.recurrence_rule }}

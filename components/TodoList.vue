@@ -107,7 +107,8 @@ const reminderSections = computed(() => {
   )
   for (const t of sorted) {
     const r = new Date(t.reminder_at ?? 0).getTime()
-    if (r < now.getTime() && !t.completed) buckets[0]!.todos.push(t)
+    const isSnoozed = !!t.snoozed_until && new Date(t.snoozed_until).getTime() > now.getTime()
+    if (r < now.getTime() && !t.completed && !isSnoozed) buckets[0]!.todos.push(t)
     else if (r < startOfTomorrow.getTime()) buckets[1]!.todos.push(t)
     else if (r < startOfTomorrow.getTime() + 86400000) buckets[2]!.todos.push(t)
     else if (r < startOfNextWeek.getTime()) buckets[3]!.todos.push(t)
@@ -363,7 +364,7 @@ onUnmounted(() => {
   flushAll()
 })
 
-defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrashDialog.value = true } })
+defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrashDialog.value = true }, openNote: (uuid: string, onClose?: () => void) => { const todo = filteredTodos.value.find((t) => t.uuid === uuid); if (todo) { viewTodo.value = todo; if (onClose) { const stop = watch(viewTodo, (v) => { if (!v) { onClose(); stop() } }) } } } })
 </script>
 
 <template>
@@ -711,15 +712,29 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
     </div>
   </ModalOverlay>
 
-  <!-- View-only dialog (deleted notes) -->
+  <!-- View-only dialog (deleted notes + reminder view) -->
   <ModalOverlay :show="!!viewTodo" tabindex="0" @keydown.esc="viewTodo = null">
     <div
       v-if="viewTodo"
       class="mx-4 flex w-full max-w-xl flex-col gap-3 rounded-lg p-6 shadow-xl"
       :class="noteColors[viewTodo.color]?.bg || 'bg-gray-800'"
     >
+      <div class="flex items-start justify-between gap-2">
+        <p class="text-sm font-bold text-white lowercase">{{ viewTodo.title }}</p>
+        <div v-if="!viewTodo.deleted && !viewTodo.is_archived" class="flex shrink-0 items-center gap-1">
+          <button
+            class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-gray-200"
+            :title="viewTodo.completed ? 'Mark as incomplete' : 'Mark as complete'"
+            @click="toggleCompletion(viewTodo); viewTodo = null"
+          >
+            <Icon :name="viewTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
+          </button>
+          <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-red-400" title="Delete" @click="requestDelete(viewTodo); viewTodo = null">
+            <Icon name="uil:trash" />
+          </button>
+        </div>
+      </div>
       <ImagePreview v-if="viewTodo.thumbnail || viewTodo.image" :src="viewTodo.thumbnail || viewTodo.image!" :padding="6" />
-      <p class="text-sm font-bold text-white lowercase">{{ viewTodo.title }}</p>
       <!-- eslint-disable-next-line vue/no-v-html -->
       <div v-if="viewTodo.body" class="view-body text-xs text-wrap wrap-break-word text-white lowercase" v-html="viewTodo.body" />
       <div v-if="viewTodo.link_previews?.length" class="flex flex-col gap-1">

@@ -87,8 +87,9 @@ const clear = () => {
   open.value = false
 }
 
+const { now: currentTime } = useTimeAgo()
 const hasReminder = computed(() => !!model.value)
-const isOverdue = computed(() => model.value && new Date(model.value).getTime() <= Date.now())
+const isOverdue = computed(() => model.value && new Date(model.value).getTime() <= currentTime.value)
 
 const showHourList = ref(false)
 const showMinuteList = ref(false)

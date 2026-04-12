@@ -14,6 +14,10 @@ const route = useRoute()
 const { online } = useOnline()
 const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
 
+const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean; openNote: (uuid: string, onClose?: () => void) => void } | null>(null)
+const todoListKey = ref(0)
+const snoozeHidden = ref(false)
+
 watch(
   () => route.query.folder,
   (slug) => {
@@ -24,6 +28,27 @@ watch(
   },
 )
 
+const pendingOpen = ref<string | null>(null)
+
+watch(
+  () => route.query.open,
+  (uuid) => {
+    if (!uuid || !authStore.isAuthenticated) return
+    pendingOpen.value = uuid as string
+    navigateTo({ query: { ...route.query, open: undefined } }, { replace: true })
+  },
+)
+
+watch(
+  [todoListRef, () => todoStore.loading, pendingOpen],
+  ([ref, loading, uuid]) => {
+    if (!ref || loading || !uuid) return
+    snoozeHidden.value = true
+    ref.openNote(uuid, () => { snoozeHidden.value = false })
+    pendingOpen.value = null
+  },
+)
+
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     todoStore.filterType = 'all'
@@ -31,7 +56,11 @@ onMounted(async () => {
       if (!folderStore.folders.length) await folderStore.fetchFolders()
     } catch { /* non-fatal — sidebar will show fallback */ }
     folderStore.setActiveFolderBySlug((route.query.folder as string) ?? null)
-    todoStore.loadTodos()
+    if (route.query.open) {
+      pendingOpen.value = route.query.open as string
+      navigateTo({ query: { ...route.query, open: undefined } }, { replace: true })
+    }
+    await todoStore.loadTodos()
   }
   window.addEventListener('scroll', onScroll)
 })
@@ -40,8 +69,6 @@ onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
 })
 
-const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean } | null>(null)
-const todoListKey = ref(0)
 const todoAddRef = ref<{
   title: string
   body: string
@@ -249,10 +276,11 @@ const { toasts, undo: undoToast } = useUndoToast()
 const headerRef = ref<HTMLElement>()
 const { pulling, pullDistance, refreshing: pullRefreshing, threshold } = usePullToRefresh(headerRef, () => todoStore.refreshTodos())
 
-const { $snoozePrompt, $snoozeOptions, $handleSnooze, $handleDone } = useNuxtApp() as unknown as {
+const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone } = useNuxtApp() as unknown as {
   $snoozePrompt: import('vue').Ref<{ uuid: string; title: string } | null>
   $snoozeOptions: { label: string; ms: number | null }[]
-  $handleSnooze: (uuid: string, ms: number | null) => Promise<void>
+  $snoozeIndex: import('vue').Ref<number>
+  $cycleSnooze: (uuid: string) => void
   $handleDone: (uuid: string) => Promise<void>
 }
 </script>
@@ -393,28 +421,20 @@ const { $snoozePrompt, $snoozeOptions, $handleSnooze, $handleDone } = useNuxtApp
     </div>
 
     <!-- Web snooze prompt (BR-11) -->
-    <Transition name="fade">
+    <Transition name="toast">
       <div
-        v-if="$snoozePrompt"
-        class="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-gray-900 px-4 py-3 shadow-xl text-xs text-white min-w-64"
+        v-if="$snoozePrompt && !snoozeHidden"
+        class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-gray-900 px-4 py-2.5 text-xs whitespace-nowrap text-white shadow-lg sm:text-sm"
       >
-        <p class="mb-2 text-white/60 lowercase truncate">{{ $snoozePrompt.title }}</p>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button
-            v-for="opt in $snoozeOptions"
-            :key="opt.label"
-            class="cursor-pointer rounded px-2 py-1 text-white/50 lowercase hover:bg-gray-700 hover:text-white"
-            @click="$handleSnooze($snoozePrompt!.uuid, opt.ms)"
-          >
-            {{ opt.label }}
-          </button>
-          <button
-            class="cursor-pointer rounded px-2 py-1 text-blue-400 lowercase hover:text-blue-300 ml-auto"
-            @click="$handleDone($snoozePrompt!.uuid)"
-          >
-            done
-          </button>
-        </div>
+        <button class="cursor-pointer lowercase text-white/70 hover:text-white truncate max-w-48" @click="navigateTo({ path: '/', query: { folder: 'reminders', open: $snoozePrompt!.uuid } }); snoozeHidden = true">
+          {{ $snoozePrompt.title }} · due now
+        </button>
+        <button class="cursor-pointer lowercase text-white/50 hover:text-white" @click="$cycleSnooze($snoozePrompt!.uuid)">
+          snooze {{ $snoozeOptions[$snoozeIndex]!.label }}
+        </button>
+        <button class="cursor-pointer lowercase text-blue-400 hover:text-blue-300" @click="$handleDone($snoozePrompt!.uuid)">
+          done
+        </button>
       </div>
     </Transition>
 

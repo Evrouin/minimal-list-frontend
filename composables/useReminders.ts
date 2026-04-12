@@ -34,10 +34,13 @@ export const useReminders = () => {
     if (!Capacitor.isNativePlatform()) return
     const { LocalNotifications } = await import('@capacitor/local-notifications')
     const todoStore = useTodoStore()
+    const router = useRouter()
 
     await LocalNotifications.addListener('localNotificationActionPerformed', async (event) => {
-      const notifId = event.notification.id
-      const todo = todoStore.todos.find((t) => uuidToInt(t.uuid) === notifId)
+      const uuid = event.notification.extra?.uuid as string | undefined
+      const todo = uuid
+        ? todoStore.todos.find((t) => t.uuid === uuid)
+        : todoStore.todos.find((t) => uuidToInt(t.uuid) === event.notification.id)
       if (!todo) return
 
       if (event.actionId === 'done') {
@@ -46,6 +49,9 @@ export const useReminders = () => {
         const snoozedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString()
         await api.snoozeNote(todo.uuid, snoozedUntil)
         await schedule({ ...todo, snoozed_until: snoozedUntil })
+      } else {
+        // Default tap — open the note
+        await router.push({ path: '/', query: { folder: 'reminders', open: todo.uuid } })
       }
     })
   }
@@ -67,6 +73,7 @@ export const useReminders = () => {
             body: todo.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
             schedule: { at: fireAt },
             actionTypeId: ACTION_TYPE_ID,
+            extra: { uuid: todo.uuid },
           },
         ],
       })
@@ -102,6 +109,7 @@ export const useReminders = () => {
             body: t.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
             schedule: { at: fireAt },
             actionTypeId: ACTION_TYPE_ID,
+            extra: { uuid: t.uuid },
           }
         }),
       })
