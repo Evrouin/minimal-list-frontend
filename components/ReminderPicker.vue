@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{ sm?: boolean }>()
 const model = defineModel<string | null>()
+const recurrence = defineModel<import('~/types/todo').RecurrenceRule>('recurrence', { default: 'none' })
 
 const open = ref(false)
 const now = new Date()
@@ -93,6 +94,7 @@ const isOverdue = computed(() => model.value && new Date(model.value).getTime() 
 
 const showHourList = ref(false)
 const showMinuteList = ref(false)
+const showRecurrenceList = ref(false)
 const ampm = ref(selectedHour.value >= 12 ? 'PM' : 'AM')
 const displayHour = computed(() => {
   const h = selectedHour.value % 12
@@ -285,6 +287,34 @@ const onMinuteBlur = () => {
               <option value="AM">AM</option>
               <option value="PM">PM</option>
             </select>
+          </div>
+
+          <!-- Recurrence -->
+          <div class="mt-3 flex justify-center">
+            <div class="flex w-full max-w-46 items-center justify-between">
+              <span class="text-xs text-white/40 ml-1">repeat</span>
+              <div class="relative mr-1">
+                <button
+                  type="button"
+                  class="cursor-pointer rounded bg-gray-600 px-2 py-1.5 text-sm text-white focus:outline-none min-w-24 text-left"
+                  @click="showRecurrenceList = !showRecurrenceList"
+                >
+                  {{ recurrence === 'none' ? 'off' : recurrence }}
+                </button>
+                <div v-if="showRecurrenceList" class="absolute right-0 z-10 mt-1 w-24 rounded bg-gray-600 py-1 shadow-lg">
+                  <button
+                    v-for="opt in (['none', 'daily', 'weekly', 'monthly'] as const)"
+                    :key="opt"
+                    type="button"
+                    class="w-full px-2 py-1 text-left text-sm text-white/60 hover:bg-gray-500 hover:text-white"
+                    :class="recurrence === opt && 'bg-gray-500 text-white'"
+                    @mousedown.prevent="recurrence = opt; showRecurrenceList = false"
+                  >
+                    {{ opt === 'none' ? 'off' : opt }}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Actions -->

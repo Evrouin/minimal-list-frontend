@@ -22,7 +22,7 @@ export const useReminders = () => {
         {
           id: ACTION_TYPE_ID,
           actions: [
-            { id: 'snooze', title: 'Snooze 1hr' },
+            { id: 'snooze', title: 'Snooze 15m' },
             { id: 'done', title: 'Done', destructive: false },
           ],
         },
@@ -46,7 +46,7 @@ export const useReminders = () => {
       if (event.actionId === 'done') {
         await todoStore.toggleTodoCompletion(todo.uuid)
       } else if (event.actionId === 'snooze') {
-        const snoozedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+        const snoozedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString()
         await api.snoozeNote(todo.uuid, snoozedUntil)
         await schedule({ ...todo, snoozed_until: snoozedUntil })
       } else {

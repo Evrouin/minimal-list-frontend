@@ -160,6 +160,7 @@ const createColor = ref<import('~/types/todo').NoteColor>(
   (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default',
 )
 const createReminderAt = ref<string | null>(null)
+const createRecurrenceRule = ref<import('~/types/todo').RecurrenceRule>('none')
 const createPinned = ref(false)
 const createExpanded = ref(false)
 const createAudioFile = ref<File | null>(null)
@@ -198,13 +199,14 @@ const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
     fd.append('color', createColor.value)
     if (createPinned.value) fd.append('pinned', 'true')
     if (createReminderAt.value) fd.append('reminder_at', createReminderAt.value)
+    if (createRecurrenceRule.value !== 'none') fd.append('recurrence_rule', createRecurrenceRule.value)
     if (createImageFile.value) fd.append('image', createImageFile.value)
     if (createAudioFile.value) fd.append('audio', createAudioFile.value)
     if (previews.length) fd.append('link_previews', JSON.stringify(previews))
     if (folderUuid) fd.append('folder', folderUuid)
     return fd
   }
-  return { title: createTitle.value.toLowerCase(), body: createBody.value, color: createColor.value, pinned: createPinned.value, reminder_at: createReminderAt.value, link_previews: previews, folder: folderUuid }
+  return { title: createTitle.value.toLowerCase(), body: createBody.value, color: createColor.value, pinned: createPinned.value, reminder_at: createReminderAt.value, recurrence_rule: createRecurrenceRule.value, link_previews: previews, folder: folderUuid }
 }
 
 const resetCreateForm = () => {
@@ -213,7 +215,7 @@ const resetCreateForm = () => {
   createColor.value = (localStorage.getItem('defaultNoteColor') as import('~/types/todo').NoteColor) || 'default'
   createPinned.value = false
   createReminderAt.value = null
-  clearCreateImage()
+  createRecurrenceRule.value = 'none'
   clearCreateAudio()
   createExpanded.value = false
   showCreateDialog.value = false
@@ -481,7 +483,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
         <div class="mb-3 flex items-center justify-between px-2">
           <span class="text-lg font-bold text-white lowercase">minimal list</span>
           <div class="flex items-center gap-1">
-            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" />
+            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" v-model:recurrence="createRecurrenceRule" />
             <button
               type="button"
               class="cursor-pointer rounded p-1.5 mt-0.5 text-sm transition-colors"
@@ -586,7 +588,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
           <span v-if="createErrorMsg" class="text-xs text-red-400">{{ createErrorMsg }}</span>
           <ColorPicker v-else v-model="createColor" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" sm />
+            <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" v-model:recurrence="createRecurrenceRule" sm />
             <button
               v-if="!createAudioRecording"
               type="button"

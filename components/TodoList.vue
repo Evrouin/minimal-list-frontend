@@ -143,6 +143,7 @@ const {
   dialogPinned,
   dialogColor,
   dialogReminderAt,
+  dialogRecurrenceRule,
   dialogExpanded,
   dialogImageFile: _dialogImageFile,
   dialogImagePreview,
@@ -678,7 +679,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
       <div class="flex items-center justify-between">
         <ColorPicker v-model="dialogColor" />
         <div class="flex items-center gap-1">
-          <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" sm />
+          <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" v-model:recurrence="dialogRecurrenceRule" sm />
           <AudioRecorder
             @recorded="
               (f, u) => {
@@ -815,7 +816,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <div class="flex items-center justify-between">
           <ColorPicker v-model="expandedTodo.color" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-if="!expandedAudioRecording" v-model="expandedTodo.reminder_at" />
+            <ReminderPicker v-if="!expandedAudioRecording" v-model="expandedTodo.reminder_at" v-model:recurrence="expandedTodo.recurrence_rule" />
             <AudioRecorder
               @recorded="
                 (f, u) => {

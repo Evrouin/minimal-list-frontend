@@ -26,6 +26,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
   const dialogPinned = ref(false)
   const dialogColor = ref<NoteColor>('default')
   const dialogReminderAt = ref<string | null>(null)
+  const dialogRecurrenceRule = ref<import('~/types/todo').RecurrenceRule>('none')
   const dialogExpanded = ref(false)
   const dialogImageFile = ref<File | null>(null)
   const dialogImagePreview = ref('')
@@ -54,6 +55,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     dialogPinned.value = todo.pinned
     dialogColor.value = todo.color
     dialogReminderAt.value = todo.reminder_at ?? null
+    dialogRecurrenceRule.value = todo.recurrence_rule ?? 'none'
     dialogOriginalAudio.value = todo.audio ?? null
     nextTick(() => dialogEditorRef.value?.focus())
   }
@@ -159,6 +161,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     dialogTodo.value.pinned = dialogPinned.value
     dialogTodo.value.color = dialogColor.value
     dialogTodo.value.reminder_at = dialogReminderAt.value
+    dialogTodo.value.recurrence_rule = dialogRecurrenceRule.value
     dialogTodo.value.link_previews = await fetchPreviews(dialogBody.value, dialogTodo.value.link_previews ?? [])
     dialogTodo.value.editing = false
     await todoStore.updateTodo({ ...dialogTodo.value }, dialogImageFile.value || undefined, dialogAudioFile.value || undefined)
@@ -227,7 +230,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
   return {
     // Dialog
     dialogTodo, dialogTitle, dialogBody, dialogEditorRef, dialogPinned, dialogColor,
-    dialogReminderAt, dialogExpanded, dialogImageFile, dialogImagePreview,
+    dialogReminderAt, dialogRecurrenceRule, dialogExpanded, dialogImageFile, dialogImagePreview,
     dialogAudioFile, dialogAudioPreview, dialogAudioRecording, dialogOriginalAudio,
     onDialogImageSelect, cancelDialogTodo, saveDialogTodo, dialogToggleCompletion, dialogTogglePin,
     // Inline

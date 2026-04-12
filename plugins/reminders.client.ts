@@ -10,7 +10,7 @@ export default defineNuxtPlugin(() => {
     return
   }
 
-  if ('Notification' in window && Notification.permission === 'default') {
+  if ('Notification' in globalThis && Notification.permission === 'default') {
     Notification.requestPermission()
   }
 
@@ -32,9 +32,9 @@ export default defineNuxtPlugin(() => {
     const todo = todoStore.todos.find((t) => t.uuid === uuid)
     if (!todo?.reminder_at) return
     const base = new Date(todo.reminder_at)
-    const snoozedUntil = ms !== null
-      ? new Date(Date.now() + ms).toISOString()
-      : new Date(base.getTime() + 86400000).toISOString()
+    const snoozedUntil = ms === null
+      ? new Date(base.getTime() + 86400000).toISOString()
+      : new Date(Date.now() + ms).toISOString()
     await api.snoozeNote(uuid, snoozedUntil)
     snoozePrompt.value = null
     snoozeIndex.value = 0
@@ -44,7 +44,7 @@ export default defineNuxtPlugin(() => {
     const next = (snoozeIndex.value + 1) % snoozeOptions.length
     snoozeIndex.value = next
     const opt = snoozeOptions[next]!
-    handleSnooze(uuid, opt.ms)
+    handleSnooze(uuid, opt.ms ?? null)
   }
 
   const handleDone = async (uuid: string) => {
@@ -74,9 +74,9 @@ export default defineNuxtPlugin(() => {
         fireAt <= now
       ) {
         firedIds.add(todo.uuid)
-        if ('Notification' in window && Notification.permission === 'granted') {
+        if ('Notification' in globalThis && Notification.permission === 'granted') {
           new Notification(todo.title, {
-            body: todo.body.replace(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
+            body: todo.body.replaceAll(/<[^>]*>/g, '').slice(0, 100) || 'Reminder',
           })
         }
         snoozePrompt.value = { uuid: todo.uuid, title: todo.title }
@@ -86,7 +86,7 @@ export default defineNuxtPlugin(() => {
 
   watch(() => todoStore.todos, check, { deep: true })
   const interval = setInterval(check, 30_000)
-  window.addEventListener('beforeunload', () => clearInterval(interval))
+  globalThis.addEventListener('beforeunload', () => clearInterval(interval))
 
   const nuxtApp = useNuxtApp()
   nuxtApp.provide('snoozePrompt', snoozePrompt)
