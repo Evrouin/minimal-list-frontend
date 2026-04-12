@@ -139,15 +139,43 @@ const confirmArchive = async () => {
 // --- Drag-to-reorder custom folders ---
 const dragIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
+const folderItemRefs = ref<HTMLElement[]>([])
 
-const onDragStart = (e: DragEvent, index: number) => {
-  dragIndex.value = index
-  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
-}
+const isDraggingFolder = ref(false)
 
-const onDragOver = (e: DragEvent, index: number) => {
+const onPointerDown = (e: PointerEvent, index: number) => {
+  if ((e.target as HTMLElement).closest('button, input')) return
   e.preventDefault()
-  dragOverIndex.value = index
+  let moved = false
+  const startY = e.clientY
+
+  const onMove = (me: PointerEvent) => {
+    if (!moved && Math.abs(me.clientY - startY) > 6) {
+      moved = true
+      isDraggingFolder.value = true
+      dragIndex.value = index
+    }
+    if (!moved) return
+    folderItemRefs.value.forEach((el, i) => {
+      const rect = el.getBoundingClientRect()
+      if (me.clientY >= rect.top && me.clientY <= rect.bottom) dragOverIndex.value = i
+    })
+  }
+
+  const onUp = async () => {
+    document.removeEventListener('pointermove', onMove)
+    document.removeEventListener('pointerup', onUp)
+    isDraggingFolder.value = false
+    if (!moved || dragIndex.value === null || dragOverIndex.value === null || dragIndex.value === dragOverIndex.value) {
+      dragIndex.value = null
+      dragOverIndex.value = null
+      return
+    }
+    await onDrop(dragOverIndex.value)
+  }
+
+  document.addEventListener('pointermove', onMove)
+  document.addEventListener('pointerup', onUp)
 }
 
 const onDrop = async (targetIndex: number) => {
@@ -208,17 +236,19 @@ const onDrop = async (targetIndex: number) => {
             <div
               v-for="(folder, index) in folderStore.customFolders"
               :key="folder.uuid"
-              draggable="true"
-              class="rounded-lg transition-colors"
+              :ref="(el) => { if (el) folderItemRefs[index] = el as HTMLElement }"
+              class="relative rounded-lg transition-colors select-none touch-none"
               :class="[
                 dragIndex === index ? 'opacity-40' : '',
-                dragOverIndex === index && dragIndex !== index ? 'ring-1 ring-white/20' : ''
+                isDraggingFolder ? 'cursor-grabbing' : 'cursor-grab',
               ]"
-              @dragstart="onDragStart($event, index)"
-              @dragover="onDragOver($event, index)"
-              @drop="onDrop(index)"
-              @dragend="dragIndex = null; dragOverIndex = null"
+              @pointerdown="onPointerDown($event, index)"
             >
+              <div
+                v-if="dragOverIndex === index && dragIndex !== null && dragIndex !== index"
+                class="absolute inset-x-0 h-0.5 bg-white/40 rounded"
+                :class="dragIndex > index ? '-top-px' : '-bottom-px'"
+              />
               <!-- Rename mode -->
               <div v-if="renamingUuid === folder.uuid" class="px-3 py-1.5">
                 <input
@@ -237,8 +267,9 @@ const onDrop = async (targetIndex: number) => {
               <div v-else :class="linkClass(route.query.folder === folder.uuid)">
                 <NuxtLink
                   :to="`/?folder=${folder.uuid}`"
+                  draggable="false"
                   class="min-w-0 flex-1 truncate"
-                  @click="close"
+                  @click="isDraggingFolder ? $event.preventDefault() : close()"
                 >
                   {{ folder.name }}
                 </NuxtLink>
