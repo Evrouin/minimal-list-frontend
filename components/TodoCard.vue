@@ -48,7 +48,8 @@ const onImgClick = (e: Event) => {
   showPreview.value = true
 }
 
-const colors = computed(() => noteColors[props.todo.color] || noteColors.default)
+const noteColors = useNoteColors()
+const colors = computed(() => noteColors.value[props.todo.color] || noteColors.value.default)
 
 const isOverdue = computed(() => {
   if (!props.todo.reminder_at || props.todo.completed) return false

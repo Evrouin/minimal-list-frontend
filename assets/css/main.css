@@ -5,6 +5,36 @@ html, body {
   background-color: #1f2937;
 }
 
+[data-theme="light"], [data-theme="light"] body {
+  background-color: #F1F3F4;
+}
+
+[data-theme="light"] {
+  --color-gray-50: #202124;
+  --color-gray-100: #202124;
+  --color-gray-200: #3C4043;
+  --color-gray-300: #5F6368;
+  --color-gray-400: #9AA0A6;
+  --color-gray-500: #E8EAED;
+  --color-gray-600: #F8F9FA;
+  --color-gray-700: #FFFFFF;
+  --color-gray-800: #F1F3F4;
+  --color-gray-900: #E8EAED;
+  --color-gray-950: #DADCE0;
+  --color-white: #202124;
+
+  --color-blue-300: #1A73E8;
+  --color-blue-400: #1A73E8;
+  --color-blue-500: #1A73E8;
+  --color-red-300: #D93025;
+  --color-red-400: #D93025;
+  --color-red-500: #D93025;
+  --color-green-300: #188038;
+  --color-green-400: #188038;
+  --color-yellow-400: #E37400;
+  --color-yellow-500: #E37400;
+}
+
 /* Prevent horizontal scroll on main containers */
 .flex.min-h-screen {
   overflow-x: hidden;

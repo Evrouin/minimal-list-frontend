@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia'
 const { tap } = useHaptics()
 
 const todoStore = useTodoStore()
+const noteColors = useNoteColors()
 const folderStore = useFolderStore()
 const { filteredTodos, loading } = storeToRefs(todoStore)
 

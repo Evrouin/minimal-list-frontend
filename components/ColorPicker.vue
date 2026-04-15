@@ -3,16 +3,19 @@ import type { NoteColor } from '~/types/todo'
 
 const model = defineModel<NoteColor>({ default: 'default' })
 const open = ref(false)
+const { theme } = useTheme()
 
-const colors: { name: NoteColor; hex: string }[] = [
-  { name: 'default', hex: '#374151' },
-  { name: 'red', hex: '#3b1219' },
-  { name: 'yellow', hex: '#3d3419' },
-  { name: 'green', hex: '#1c3a2a' },
-  { name: 'purple', hex: '#3d1f3d' },
-]
+const darkHex: Record<NoteColor, string> = { default: '#374151', red: '#3b1219', yellow: '#3d3419', green: '#1c3a2a', purple: '#3d1f3d' }
+const lightHex: Record<NoteColor, string> = { default: '#FFFFFF', red: '#FCE8E6', yellow: '#FEF7E0', green: '#E6F4EA', purple: '#F3E8FD' }
 
-const currentHex = computed(() => colors.find((c) => c.name === model.value)?.hex ?? colors[0]!.hex)
+const colors = computed(() =>
+  (['default', 'red', 'yellow', 'green', 'purple'] as NoteColor[]).map((name) => ({
+    name,
+    hex: theme.value === 'light' ? lightHex[name] : darkHex[name],
+  })),
+)
+
+const currentHex = computed(() => colors.value.find((c) => c.name === model.value)?.hex ?? colors.value[0]!.hex)
 
 const pick = (color: NoteColor) => {
   model.value = color

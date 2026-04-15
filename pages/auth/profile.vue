@@ -165,6 +165,9 @@ const toggleHaptics = () => {
   localStorage.setItem('hapticsEnabled', String(hapticsEnabled.value))
 }
 
+const { theme, toggle } = useTheme()
+const noteColors = useNoteColors()
+
 const showSessions = ref(false)
 const sessions = ref<import('~/types/auth').Session[]>([])
 const sessionsLoading = ref(false)
@@ -477,18 +480,12 @@ const handleLogout = () => {
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-white/40">theme</p>
-                  <div class="group relative">
-                    <span
-                      class="inline-block min-w-18.5 cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-center text-xs text-white/60"
-                    >
-                      dark
-                    </span>
-                    <div
-                      class="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white/50 opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      other themes coming soon
-                    </div>
-                  </div>
+                  <button
+                    class="inline-block min-w-18.5 cursor-pointer rounded-lg bg-gray-800 px-4 py-2 text-center text-xs text-white/60"
+                    @click="toggle()"
+                  >
+                    {{ theme }}
+                  </button>
                 </div>
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-white/40">default note color</p>

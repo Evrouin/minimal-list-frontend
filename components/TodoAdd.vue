@@ -5,6 +5,7 @@ import { useTodoStore } from '~/stores/todos'
 import type { NoteColor } from '~/types/todo'
 
 const todoStore = useTodoStore()
+const noteColors = useNoteColors()
 
 const title = ref<string>('')
 const body = ref<string>('')

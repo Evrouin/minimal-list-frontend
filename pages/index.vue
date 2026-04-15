@@ -10,6 +10,7 @@ const isLoggedIn = computed(() => authStore.isAuthenticated)
 
 const todoStore = useTodoStore()
 const folderStore = useFolderStore()
+const noteColors = useNoteColors()
 const route = useRoute()
 const { online } = useOnline()
 const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
