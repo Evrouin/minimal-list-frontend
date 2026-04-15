@@ -13,7 +13,14 @@ const folderStore = useFolderStore()
 const noteColors = useNoteColors()
 const route = useRoute()
 const { online } = useOnline()
+const { searchQuery, searchOpen, onInput, open: openSearchMode, exitSearch } = useSearch()
+const searchInputRef = ref<HTMLInputElement>()
 const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
+
+const openSearch = () => {
+  openSearchMode()
+  nextTick(() => searchInputRef.value?.focus())
+}
 
 const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean; openNote: (uuid: string, onClose?: () => void) => void } | null>(
   null,
@@ -397,13 +404,36 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
       ref="headerRef"
       class="w-full max-w-lg px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl"
     >
-      <PageHeader :title="pageTitle">
+      <PageHeader :title="searchOpen ? '' : pageTitle">
         <template #prepend>
-          <button class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
+          <button v-if="!searchOpen" class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
             <Icon name="uil:bars" class="mt-2.5 ml-2.5 text-xl" />
           </button>
+          <div v-else class="ml-2.5 mt-1.5 flex flex-1 items-center gap-2">
+            <Icon name="uil:search" class="text-lg text-white/40" />
+            <input
+              ref="searchInputRef"
+              :value="searchQuery"
+              type="text"
+              class="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
+              placeholder="search notes..."
+              @input="onInput(($event.target as HTMLInputElement).value)"
+              @keydown.escape="exitSearch"
+            >
+            <button class="cursor-pointer text-white/40 hover:text-white" @click="exitSearch">
+              <Icon name="uil:times" class="text-lg" />
+            </button>
+          </div>
         </template>
         <div class="flex shrink-0 items-center">
+          <button
+            v-if="!searchOpen"
+            class="cursor-pointer p-2 text-white/60 hover:text-white"
+            title="Search"
+            @click="openSearch"
+          >
+            <Icon name="uil:search" class="text-xl" />
+          </button>
           <button
             class="hidden cursor-pointer p-2 text-white/60 hover:text-white sm:block"
             title="New note"
@@ -454,7 +484,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
       </div>
     </Transition>
 
-    <div class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 sm:hidden">
+    <div v-if="!searchOpen" class="fixed right-6 bottom-6 z-40 flex flex-col gap-3 sm:hidden">
       <button
         class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-900 text-white/60 shadow-lg transition-colors hover:bg-gray-800 hover:text-white"
         @click="showMobileAdd = true"

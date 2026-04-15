@@ -416,6 +416,35 @@ export const useTodoStore = defineStore('todo', () => {
     initialLoad.value = true
   }
 
+  let preSearchSnapshot: { todos: Todo[]; cursor: string | null; filter: typeof filterType.value } | null = null
+
+  const searchTodos = async (query: string) => {
+    if (!preSearchSnapshot) {
+      preSearchSnapshot = { todos: [...todos.value], cursor: nextCursor.value, filter: filterType.value }
+    }
+    loading.value = true
+    try {
+      const folderStore = useFolderStore()
+      const folder = folderStore.activeFolder?.uuid
+      const params = folder ? `search=${encodeURIComponent(query)}&folder=${folder}` : `search=${encodeURIComponent(query)}`
+      const response = await api.fetchTodos(params)
+      todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
+    } finally {
+      loading.value = false
+      initialLoad.value = false
+    }
+  }
+
+  const restoreFromSearch = () => {
+    if (preSearchSnapshot) {
+      todos.value = preSearchSnapshot.todos
+      nextCursor.value = preSearchSnapshot.cursor
+      filterType.value = preSearchSnapshot.filter
+      preSearchSnapshot = null
+    }
+  }
+
   const invalidateOtherCaches = () => {
     for (const key of cache.keys()) {
       if (key !== cacheKey.value) cache.delete(key)
@@ -470,5 +499,7 @@ export const useTodoStore = defineStore('todo', () => {
     bulkReorderCommit,
     reorderRollback,
     clearTodos,
+    searchTodos,
+    restoreFromSearch,
   }
 })

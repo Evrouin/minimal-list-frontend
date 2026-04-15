@@ -38,7 +38,10 @@ const onScrollUpdate = () => {
 onMounted(() => window.addEventListener('scroll', onScrollUpdate, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', onScrollUpdate))
 
+const { isSearching } = useSearch()
+
 const isTodoEmptyMessage = computed(() => {
+  if (isSearching.value) return 'no results found'
   switch (todoStore.filterType) {
     case 'active':
       return 'no active notes available'
