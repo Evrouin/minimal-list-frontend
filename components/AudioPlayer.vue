@@ -58,7 +58,7 @@ const formatTime = (s: number) => {
 const seek = (e: MouseEvent | TouchEvent) => {
   if (!audio.value || !totalDuration.value) return
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  const clientX = 'touches' in e ? e.touches[0]?.clientX ?? (e as unknown as MouseEvent).clientX : (e as MouseEvent).clientX
+  const clientX = 'touches' in e ? (e.touches[0]?.clientX ?? (e as unknown as MouseEvent).clientX) : (e as MouseEvent).clientX
   const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
   audio.value.currentTime = pct * totalDuration.value
 }

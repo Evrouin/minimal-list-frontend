@@ -59,7 +59,7 @@ const faqs = [
     items: [
       {
         q: 'how do i sign in with google?',
-        a: "on the login or register page, tap \"continue with google\". it's quick, secure, and no password is required.",
+        a: 'on the login or register page, tap "continue with google". it\'s quick, secure, and no password is required.',
         link: { text: 'go to login', to: '/auth/login' },
       },
       {
@@ -73,7 +73,7 @@ const faqs = [
       },
       {
         q: 'how do i reset my password?',
-        a: "on the login page, tap \"forgot password\" and enter your email. we'll send you a secure reset link.",
+        a: 'on the login page, tap "forgot password" and enter your email. we\'ll send you a secure reset link.',
         link: { text: 'forgot password', to: '/auth/forgot-password' },
       },
       {
@@ -260,7 +260,9 @@ const faqs = [
               </summary>
               <p class="px-5 pb-1 text-xs leading-relaxed text-white/40">{{ item.a }}</p>
               <div v-if="item.link" class="px-5 pb-4">
-                <NuxtLink :to="item.link.to" class="text-xs text-white/40 underline underline-offset-2 hover:text-white/70">{{ item.link.text }} →</NuxtLink>
+                <NuxtLink :to="item.link.to" class="text-xs text-white/40 underline underline-offset-2 hover:text-white/70">
+                  {{ item.link.text }} →
+                </NuxtLink>
               </div>
             </details>
           </div>
@@ -299,7 +301,12 @@ const faqs = [
 }
 
 @keyframes pulse-cta {
-  0%, 100% { background-color: rgb(75 85 99); } /* gray-600 */
-  50% { background-color: rgb(107 114 128); } /* gray-500 */
+  0%,
+  100% {
+    background-color: rgb(75 85 99);
+  } /* gray-600 */
+  50% {
+    background-color: rgb(107 114 128);
+  } /* gray-500 */
 }
 </style>

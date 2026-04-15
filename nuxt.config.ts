@@ -25,9 +25,16 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
       ],
       script: [
-        { innerHTML: "(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='light'?'#F1F3F4':'#1f2937')})()", tagPosition: 'head' },
+        {
+          innerHTML:
+            "(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='light'?'#F1F3F4':'#1f2937')})()",
+          tagPosition: 'head',
+        },
         { src: 'https://www.googletagmanager.com/gtag/js?id=G-JHQMQRX3QT', async: true },
-        { innerHTML: "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-JHQMQRX3QT')" },
+        {
+          innerHTML:
+            "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-JHQMQRX3QT')",
+        },
       ],
     },
   },
@@ -86,8 +93,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      authApiBase:
-        process.env.AUTH_API_BASE || 'http://localhost:8000/api/auth',
+      authApiBase: process.env.AUTH_API_BASE || 'http://localhost:8000/api/auth',
       googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || '',
       maintenanceMode: process.env.NUXT_PUBLIC_MAINTENANCE_MODE === 'true',
       cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',

@@ -13,8 +13,7 @@ const withRetry = async <T>(fn: () => Promise<T>, retries = 2): Promise<T> => {
     try {
       return await fn()
     } catch (err) {
-      const status =
-        (err as FetchError).response?.status || 0
+      const status = (err as FetchError).response?.status || 0
       if (i === retries || !isRetryable(status)) throw err
       await new Promise((r) => setTimeout(r, 1000 * 2 ** i))
     }
@@ -36,10 +35,10 @@ export const useApiFetch = () => {
 
     refreshPromise = (async () => {
       try {
-        const res = await $fetch(
-          `${baseUrl}/api/auth/token/refresh/`,
-          { method: 'POST', body: { refresh: tokens.refresh } },
-        ) as { access: string; refresh?: string }
+        const res = (await $fetch(`${baseUrl}/api/auth/token/refresh/`, { method: 'POST', body: { refresh: tokens.refresh } })) as {
+          access: string
+          refresh?: string
+        }
         const newTokens = { ...tokens, access: res.access, ...(res.refresh && { refresh: res.refresh }) }
         localStorage.setItem('auth_tokens', JSON.stringify(newTokens))
         return res.access
@@ -72,13 +71,20 @@ export const useApiFetch = () => {
     return 'something went wrong'
   }
 
-  const handleErrorStatus = async <T>(status: number, message: string, tokens: { refresh?: string } | null, url: string, opts: RequestOptions): Promise<T> => {
+  const handleErrorStatus = async <T>(
+    status: number,
+    message: string,
+    tokens: { refresh?: string } | null,
+    url: string,
+    opts: RequestOptions,
+  ): Promise<T> => {
     if (status === 401 && tokens?.refresh && !opts._retried) {
       try {
         await refreshAccessToken()
         return await request<T>(url, { ...opts, _retried: true })
       } catch (refreshErr: unknown) {
-        if ((refreshErr as ApiError)?.statusCode === 429) throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
+        if ((refreshErr as ApiError)?.statusCode === 429)
+          throw Object.assign(new Error('too many requests. try again later.'), { statusCode: 429 })
         throw Object.assign(new Error('session expired'), { statusCode: 401 })
       }
     }
@@ -96,10 +102,7 @@ export const useApiFetch = () => {
     throw Object.assign(new Error(message), { statusCode: status })
   }
 
-  const request = async <T>(
-    url: string,
-    opts: RequestOptions = {},
-  ): Promise<T> => {
+  const request = async <T>(url: string, opts: RequestOptions = {}): Promise<T> => {
     const tokens = JSON.parse(localStorage.getItem('auth_tokens') || 'null')
     const headers: Record<string, string> = {}
     if (tokens?.access) {

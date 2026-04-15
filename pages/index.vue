@@ -15,7 +15,9 @@ const route = useRoute()
 const { online } = useOnline()
 const pageTitle = computed(() => folderStore.activeFolder?.name ?? 'notes')
 
-const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean; openNote: (uuid: string, onClose?: () => void) => void } | null>(null)
+const todoListRef = ref<{ cancelAllEdits: () => void; isEditing: boolean; openNote: (uuid: string, onClose?: () => void) => void } | null>(
+  null,
+)
 const todoListKey = ref(0)
 const snoozeHidden = ref(false)
 
@@ -40,22 +42,23 @@ watch(
   },
 )
 
-watch(
-  [todoListRef, () => todoStore.loading, pendingOpen],
-  ([ref, loading, uuid]) => {
-    if (!ref || loading || !uuid) return
-    snoozeHidden.value = true
-    ref.openNote(uuid, () => { snoozeHidden.value = false })
-    pendingOpen.value = null
-  },
-)
+watch([todoListRef, () => todoStore.loading, pendingOpen], ([ref, loading, uuid]) => {
+  if (!ref || loading || !uuid) return
+  snoozeHidden.value = true
+  ref.openNote(uuid, () => {
+    snoozeHidden.value = false
+  })
+  pendingOpen.value = null
+})
 
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     todoStore.filterType = 'all'
     try {
       if (!folderStore.folders.length) await folderStore.fetchFolders()
-    } catch { /* non-fatal — sidebar will show fallback */ }
+    } catch {
+      /* non-fatal — sidebar will show fallback */
+    }
     folderStore.setActiveFolderBySlug((route.query.folder as string) ?? null)
     if (route.query.open) {
       pendingOpen.value = route.query.open as string
@@ -88,7 +91,9 @@ const mobileAddEditorRef = ref<{ focus: () => void } | null>(null)
 watch(showMobileAdd, (val) => {
   if (val) {
     nextTick(() => mobileAddTitleRef.value?.focus())
-    useBackHandler().push(() => { showMobileAdd.value = false })
+    useBackHandler().push(() => {
+      showMobileAdd.value = false
+    })
   } else {
     useBackHandler().pop()
   }
@@ -190,9 +195,10 @@ const clearCreateImage = () => {
 const { fetchPreviews: fetchCreatePreviews } = useLinkPreviews()
 
 const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
-  const folderUuid = folderStore.activeFolder?.uuid
-    ?? folderStore.folders.find((f) => f.name === route.query.folder || f.uuid === route.query.folder)?.uuid
-    ?? null
+  const folderUuid =
+    folderStore.activeFolder?.uuid ??
+    folderStore.folders.find((f) => f.name === route.query.folder || f.uuid === route.query.folder)?.uuid ??
+    null
   if (createImageFile.value || createAudioFile.value) {
     const fd = new FormData()
     fd.append('title', createTitle.value.toLowerCase())
@@ -207,7 +213,16 @@ const buildCreatePayload = (previews: import('~/types/todo').LinkPreview[]) => {
     if (folderUuid) fd.append('folder', folderUuid)
     return fd
   }
-  return { title: createTitle.value.toLowerCase(), body: createBody.value, color: createColor.value, pinned: createPinned.value, reminder_at: createReminderAt.value, recurrence_rule: createRecurrenceRule.value, link_previews: previews, folder: folderUuid }
+  return {
+    title: createTitle.value.toLowerCase(),
+    body: createBody.value,
+    color: createColor.value,
+    pinned: createPinned.value,
+    reminder_at: createReminderAt.value,
+    recurrence_rule: createRecurrenceRule.value,
+    link_previews: previews,
+    folder: folderUuid,
+  }
 }
 
 const resetCreateForm = () => {
@@ -384,11 +399,8 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
     >
       <PageHeader :title="pageTitle">
         <template #prepend>
-          <button
-            class="cursor-pointer text-white/60 hover:text-white"
-            @click="ui.openSidebar()"
-          >
-            <Icon name="uil:bars" class="text-xl ml-2.5 mt-2.5" />
+          <button class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
+            <Icon name="uil:bars" class="mt-2.5 ml-2.5 text-xl" />
           </button>
         </template>
         <div class="flex shrink-0 items-center">
@@ -429,15 +441,16 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
         v-if="$snoozePrompt && !snoozeHidden"
         class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-gray-900 px-4 py-2.5 text-xs whitespace-nowrap text-white shadow-lg sm:text-sm"
       >
-        <button class="cursor-pointer lowercase text-white/70 hover:text-white truncate max-w-48" @click="navigateTo({ path: '/', query: { folder: 'reminders', open: $snoozePrompt!.uuid } }); snoozeHidden = true">
+        <button
+          class="max-w-48 cursor-pointer truncate text-white/70 lowercase hover:text-white"
+          @click="navigateTo({ path: '/', query: { folder: 'reminders', open: $snoozePrompt!.uuid } }); snoozeHidden = true"
+        >
           {{ $snoozePrompt.title }} · due now
         </button>
-        <button class="cursor-pointer lowercase text-white/50 hover:text-white" @click="$cycleSnooze($snoozePrompt!.uuid)">
+        <button class="cursor-pointer text-white/50 lowercase hover:text-white" @click="$cycleSnooze($snoozePrompt!.uuid)">
           snooze {{ $snoozeOptions[$snoozeIndex]!.label }}
         </button>
-        <button class="cursor-pointer lowercase text-blue-400 hover:text-blue-300" @click="$handleDone($snoozePrompt!.uuid)">
-          done
-        </button>
+        <button class="cursor-pointer text-blue-400 lowercase hover:text-blue-300" @click="$handleDone($snoozePrompt!.uuid)">done</button>
       </div>
     </Transition>
 
@@ -487,7 +500,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
             <ReminderPicker v-if="!createAudioRecording" v-model="createReminderAt" v-model:recurrence="createRecurrenceRule" />
             <button
               type="button"
-              class="cursor-pointer rounded p-1.5 mt-0.5 text-sm transition-colors"
+              class="mt-0.5 cursor-pointer rounded p-1.5 text-sm transition-colors"
               :class="createPinned ? 'text-blue-400' : 'text-white/30 hover:text-white/60'"
               :title="createPinned ? 'Unpin' : 'Pin'"
               @click="createPinned = !createPinned"
@@ -509,12 +522,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
             placeholder="title"
             maxlength="100"
             class="border-b border-white/20 bg-transparent text-sm placeholder-white/60 focus:outline-none"
-            @input="
-              (e) => {
-                ;(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.toLowerCase()
-                createTitle = (e.target as HTMLInputElement).value
-              }
-            "
+            @input="(e) => { ;(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.toLowerCase(); createTitle = (e.target as HTMLInputElement).value }"
           >
           <div class="flex-1 overflow-y-auto" @click="mobileAddEditorRef?.focus()">
             <LazyTiptapEditor ref="mobileAddEditorRef" v-model="createBody" placeholder="body" />
@@ -525,12 +533,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
             <ColorPicker v-else v-model="createColor" />
             <div class="flex items-center gap-1">
               <AudioRecorder
-                @recorded="
-                  (f, u) => {
-                    createAudioFile = f
-                    createAudioPreview = u
-                  }
-                "
+                @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }"
                 @update:recording="(v) => (createAudioRecording = v)"
               />
               <template v-if="!createAudioRecording">
@@ -600,16 +603,14 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
               <Icon name="mdi:pin" class="text-xs" />
             </button>
             <AudioRecorder
-              @recorded="
-                (f, u) => {
-                  createAudioFile = f
-                  createAudioPreview = u
-                }
-              "
+              @recorded="(f, u) => { createAudioFile = f; createAudioPreview = u }"
               @update:recording="(v) => (createAudioRecording = v)"
             />
             <template v-if="!createAudioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+              <label
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                aria-label="Upload image"
+              >
                 <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input type="file" accept="image/*" class="hidden" @change="onCreateImageSelect" >
               </label>

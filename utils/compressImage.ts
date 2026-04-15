@@ -11,11 +11,7 @@ export const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promi
       canvas.width = img.width * scale
       canvas.height = img.height * scale
       canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
-      canvas.toBlob(
-        (blob) => resolve(new File([blob!], file.name, { type: 'image/jpeg' })),
-        'image/jpeg',
-        quality
-      )
+      canvas.toBlob((blob) => resolve(new File([blob!], file.name, { type: 'image/jpeg' })), 'image/jpeg', quality)
     }
     img.src = URL.createObjectURL(file)
   })

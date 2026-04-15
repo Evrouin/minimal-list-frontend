@@ -15,8 +15,7 @@ const homeRoutes = new Set([
   '/faq',
 ])
 
-const shouldGoHome = (path: string) =>
-  homeRoutes.has(path) || [...homeRoutes].some((r) => path.startsWith(r))
+const shouldGoHome = (path: string) => homeRoutes.has(path) || [...homeRoutes].some((r) => path.startsWith(r))
 
 export default defineNuxtPlugin(() => {
   if (!Capacitor.isNativePlatform()) return

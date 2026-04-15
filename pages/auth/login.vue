@@ -28,11 +28,9 @@ const handleLogin = async () => {
     if (msg.includes('locked')) errorMsg.value = 'account locked. check your email to unlock.'
     else if (msg.includes('scheduled for deletion')) {
       errorMsg.value = 'account scheduled for deletion. check your email to cancel.'
-    }
-    else if (msg.includes('deactivated') && msg.includes('reactivation')) {
+    } else if (msg.includes('deactivated') && msg.includes('reactivation')) {
       errorMsg.value = 'account deactivated. check your email for a reactivation link.'
-    }
-    else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated. please contact support.'
+    } else if (msg.includes('deactivated')) errorMsg.value = 'account deactivated. please contact support.'
     else if (msg.includes('verify')) {
       errorMsg.value = 'please verify your email first.'
       showResend.value = true

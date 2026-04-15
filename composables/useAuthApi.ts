@@ -13,8 +13,7 @@ export const useAuthApi = () => {
   const base = '/api/auth'
 
   return {
-    login: (payload: LoginPayload) =>
-      request<AuthTokens>(`${base}/login/`, { method: 'POST', body: payload }),
+    login: (payload: LoginPayload) => request<AuthTokens>(`${base}/login/`, { method: 'POST', body: payload }),
 
     register: (payload: RegisterPayload) =>
       request<{ message: string }>(`${base}/register/`, {
@@ -42,20 +41,16 @@ export const useAuthApi = () => {
 
     fetchProfile: () => request<User>(`${base}/profile/`),
 
-    updateProfile: (data: Partial<User> | FormData) =>
-      request<User>(`${base}/profile/`, { method: 'PATCH', body: data }),
+    updateProfile: (data: Partial<User> | FormData) => request<User>(`${base}/profile/`, { method: 'PATCH', body: data }),
 
     changePassword: (payload: ChangePasswordPayload) =>
-      request<{ message: string; tokens: { access: string; refresh: string } }>(
-        `${base}/change-password/`,
-        { method: 'PUT', body: payload }
-      ),
+      request<{ message: string; tokens: { access: string; refresh: string } }>(`${base}/change-password/`, {
+        method: 'PUT',
+        body: payload,
+      }),
 
     setPassword: (payload: { new_password: string; confirm_password: string; current_password?: string }) =>
-      request<{ message: string; tokens: AuthTokens }>(
-        `${base}/set-password/`,
-        { method: 'POST', body: payload }
-      ),
+      request<{ message: string; tokens: AuthTokens }>(`${base}/set-password/`, { method: 'POST', body: payload }),
 
     logout: (refresh: string) =>
       request<{ message: string }>(`${base}/logout/`, {
@@ -80,30 +75,23 @@ export const useAuthApi = () => {
         body: payload,
       }),
 
-    deleteAccount: (password: string) =>
-      request(`${base}/delete-account/`, { method: 'DELETE', body: { password } }),
+    deleteAccount: (password: string) => request(`${base}/delete-account/`, { method: 'DELETE', body: { password } }),
 
     listSessions: (refresh?: string) => {
       const params = refresh ? `?refresh=${encodeURIComponent(refresh)}` : ''
       return request<import('~/types/auth').Session[]>(`${base}/sessions/${params}`)
     },
 
-    revokeSession: (id: number) =>
-      request(`${base}/sessions/${id}/`, { method: 'DELETE' }),
+    revokeSession: (id: number) => request(`${base}/sessions/${id}/`, { method: 'DELETE' }),
 
-    revokeOtherSessions: (refresh: string) =>
-      request(`${base}/sessions/revoke-others/`, { method: 'DELETE', body: { refresh } }),
+    revokeOtherSessions: (refresh: string) => request(`${base}/sessions/revoke-others/`, { method: 'DELETE', body: { refresh } }),
 
-    unlockAccount: (token: string) =>
-      request<{ message: string }>(`${base}/unlock-account/${token}/`, { method: 'POST' }),
+    unlockAccount: (token: string) => request<{ message: string }>(`${base}/unlock-account/${token}/`, { method: 'POST' }),
 
-    deactivateAccount: () =>
-      request<{ message: string }>(`${base}/deactivate/`, { method: 'POST' }),
+    deactivateAccount: () => request<{ message: string }>(`${base}/deactivate/`, { method: 'POST' }),
 
-    reactivateAccount: (token: string) =>
-      request<{ message: string }>(`${base}/reactivate/${token}/`, { method: 'POST' }),
+    reactivateAccount: (token: string) => request<{ message: string }>(`${base}/reactivate/${token}/`, { method: 'POST' }),
 
-    recoverAccount: (token: string) =>
-      request<{ message: string }>(`${base}/recover-account/${token}/`, { method: 'POST' }),
+    recoverAccount: (token: string) => request<{ message: string }>(`${base}/recover-account/${token}/`, { method: 'POST' }),
   }
 }

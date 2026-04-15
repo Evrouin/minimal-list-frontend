@@ -12,7 +12,12 @@ const errorMsg = ref('')
 const avatarError = ref(false)
 const showDeleteDialog = ref(false)
 
-watch(showDeleteDialog, (v) => { if (!v) { deletePassword.value = ''; deletePasswordError.value = '' } })
+watch(showDeleteDialog, (v) => {
+  if (!v) {
+    deletePassword.value = ''
+    deletePasswordError.value = ''
+  }
+})
 
 const editForm = reactive({ username: '', phone: '', bio: '' })
 
@@ -48,7 +53,10 @@ const deletePasswordError = ref('')
 const formatDate = (date: string) => new Date(date).toLocaleDateString()
 
 const confirmDelete = async () => {
-  if (!deletePassword.value) { deletePasswordError.value = 'password is required'; return }
+  if (!deletePassword.value) {
+    deletePasswordError.value = 'password is required'
+    return
+  }
   deleting.value = true
   deletePasswordError.value = ''
   try {
@@ -101,7 +109,11 @@ const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', 
           <PillBadge :color="user.is_active ? 'green' : 'red'" :label="user.is_active ? 'active' : 'deactivated'" />
           <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
           <PillBadge v-if="user.is_superuser" color="yellow" label="admin" />
-          <PillBadge v-if="user.scheduled_deletion_at" color="orange" :label="`pending deletion · ${formatDate(user.scheduled_deletion_at)}`" />
+          <PillBadge
+            v-if="user.scheduled_deletion_at"
+            color="orange"
+            :label="`pending deletion · ${formatDate(user.scheduled_deletion_at)}`"
+          />
         </div>
       </div>
 

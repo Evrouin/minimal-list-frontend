@@ -32,9 +32,7 @@ export default defineNuxtPlugin(() => {
     const todo = todoStore.todos.find((t) => t.uuid === uuid)
     if (!todo?.reminder_at) return
     const base = new Date(todo.reminder_at)
-    const snoozedUntil = ms === null
-      ? new Date(base.getTime() + 86400000).toISOString()
-      : new Date(Date.now() + ms).toISOString()
+    const snoozedUntil = ms === null ? new Date(base.getTime() + 86400000).toISOString() : new Date(Date.now() + ms).toISOString()
     await api.snoozeNote(uuid, snoozedUntil)
     snoozePrompt.value = null
     snoozeIndex.value = 0
@@ -66,13 +64,7 @@ export default defineNuxtPlugin(() => {
         if (snoozePrompt.value?.uuid === todo.uuid) snoozePrompt.value = null
       }
 
-      if (
-        fireAt &&
-        !todo.completed &&
-        !todo.deleted &&
-        !firedIds.has(todo.uuid) &&
-        fireAt <= now
-      ) {
+      if (fireAt && !todo.completed && !todo.deleted && !firedIds.has(todo.uuid) && fireAt <= now) {
         firedIds.add(todo.uuid)
         if ('Notification' in globalThis && Notification.permission === 'granted') {
           new Notification(todo.title, {

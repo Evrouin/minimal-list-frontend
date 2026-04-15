@@ -1,14 +1,9 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
-const apiOrigin = config.public.authApiBase
-  ? new URL(String(config.public.authApiBase)).origin
-  : ''
+const apiOrigin = config.public.authApiBase ? new URL(String(config.public.authApiBase)).origin : ''
 
 useHead({
-  link: [
-    ...(apiOrigin ? [{ rel: 'preconnect', href: apiOrigin }] : []),
-    { rel: 'manifest', href: '/manifest.json' },
-  ],
+  link: [...(apiOrigin ? [{ rel: 'preconnect', href: apiOrigin }] : []), { rel: 'manifest', href: '/manifest.json' }],
 })
 
 const authStore = useAuthStore()
@@ -19,7 +14,7 @@ watch(
   async (authed) => {
     if (authed && !folderStore.folders.length) await folderStore.fetchFolders()
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 

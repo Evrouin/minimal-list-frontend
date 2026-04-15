@@ -11,8 +11,6 @@ export default defineNuxtPlugin(() => {
     .map(([k]) => k)
 
   if (missing.length) {
-    console.warn(
-      `[env] missing required config: ${missing.join(', ')}. Check your .env file.`
-    )
+    console.warn(`[env] missing required config: ${missing.join(', ')}. Check your .env file.`)
   }
 })

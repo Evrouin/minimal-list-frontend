@@ -23,8 +23,7 @@ const TiptapStub = {
   name: 'TiptapEditor',
   props: ['modelValue', 'placeholder'],
   emits: ['update:modelValue', 'submit'],
-  template:
-    '<textarea data-testid="body" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+  template: '<textarea data-testid="body" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
 }
 
 describe('TodoAdd', () => {

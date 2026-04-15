@@ -43,7 +43,7 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
   const editAudioPreviews = ref(new Map<string, string>())
   const expandedAudioRecording = ref(false)
   const expandedEditId = ref<string | null>(null)
-  const expandedTodo = computed(() => expandedEditId.value ? todoStore.todos.find((t) => t.uuid === expandedEditId.value) : null)
+  const expandedTodo = computed(() => (expandedEditId.value ? todoStore.todos.find((t) => t.uuid === expandedEditId.value) : null))
   const audioInteracting = ref(false)
 
   const isEditing = computed(() => filteredTodos.value.some((t) => t.editing))
@@ -66,7 +66,10 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     const current = filteredTodos.value.find((t) => t.editing && t.uuid !== todo.uuid)
     if (current) {
       const orig = editOriginals.value.get(current.uuid)
-      if (orig) { current.title = orig.title; current.body = orig.body }
+      if (orig) {
+        current.title = orig.title
+        current.body = orig.body
+      }
       current.editing = false
       editOriginals.value.delete(current.uuid)
     }
@@ -91,7 +94,10 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     const current = filteredTodos.value.find((t) => t.editing)
     if (current) {
       const orig = editOriginals.value.get(current.uuid)
-      if (orig) { current.title = orig.title; current.body = orig.body }
+      if (orig) {
+        current.title = orig.title
+        current.body = orig.body
+      }
       current.editing = false
       editOriginals.value.delete(current.uuid)
     }
@@ -114,7 +120,11 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
 
   const cancelEdit = (todo: Todo) => {
     const orig = editOriginals.value.get(todo.uuid)
-    if (orig) { todo.title = orig.title; todo.body = orig.body; todo.audio = orig.audio }
+    if (orig) {
+      todo.title = orig.title
+      todo.body = orig.body
+      todo.audio = orig.audio
+    }
     todo.editing = false
     expandedEditId.value = null
     editOriginals.value.delete(todo.uuid)
@@ -179,7 +189,9 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
     dialogTodo.value = null
   }
 
-  const dialogTogglePin = () => { dialogPinned.value = !dialogPinned.value }
+  const dialogTogglePin = () => {
+    dialogPinned.value = !dialogPinned.value
+  }
 
   const expandedTitleRef = ref<HTMLInputElement>()
   const expandedEditorRef = ref<{ focus: () => void } | null>(null)
@@ -211,7 +223,11 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
   watch(isLg, (lg) => {
     if (lg && expandedEditId.value) {
       const todo = expandedTodo.value
-      if (todo) { todo.editing = false; expandedEditId.value = null; openDialog(todo) }
+      if (todo) {
+        todo.editing = false
+        expandedEditId.value = null
+        openDialog(todo)
+      }
     } else if (lg && filteredTodos.value.some((t) => t.editing)) {
       const todo = filteredTodos.value.find((t) => t.editing)!
       todo.editing = false
@@ -229,15 +245,46 @@ export function useTodoEditing(options: UseTodoEditingOptions) {
 
   return {
     // Dialog
-    dialogTodo, dialogTitle, dialogBody, dialogEditorRef, dialogPinned, dialogColor,
-    dialogReminderAt, dialogRecurrenceRule, dialogExpanded, dialogImageFile, dialogImagePreview,
-    dialogAudioFile, dialogAudioPreview, dialogAudioRecording, dialogOriginalAudio,
-    onDialogImageSelect, cancelDialogTodo, saveDialogTodo, dialogToggleCompletion, dialogTogglePin,
+    dialogTodo,
+    dialogTitle,
+    dialogBody,
+    dialogEditorRef,
+    dialogPinned,
+    dialogColor,
+    dialogReminderAt,
+    dialogRecurrenceRule,
+    dialogExpanded,
+    dialogImageFile,
+    dialogImagePreview,
+    dialogAudioFile,
+    dialogAudioPreview,
+    dialogAudioRecording,
+    dialogOriginalAudio,
+    onDialogImageSelect,
+    cancelDialogTodo,
+    saveDialogTodo,
+    dialogToggleCompletion,
+    dialogTogglePin,
     // Inline
-    inlineEditorRefs, editImagePreviews, editAudioFiles, editAudioPreviews, expandedAudioRecording,
-    expandedEditId, expandedTodo, expandedTitleRef, expandedEditorRef, audioInteracting,
-    editTodo, saveTodo, cancelEdit, cancelAllEdits, onEditImageSelect,
-    expandEdit, saveExpandedEdit, cancelExpandedEdit, setEditorRef,
+    inlineEditorRefs,
+    editImagePreviews,
+    editAudioFiles,
+    editAudioPreviews,
+    expandedAudioRecording,
+    expandedEditId,
+    expandedTodo,
+    expandedTitleRef,
+    expandedEditorRef,
+    audioInteracting,
+    editTodo,
+    saveTodo,
+    cancelEdit,
+    cancelAllEdits,
+    onEditImageSelect,
+    expandEdit,
+    saveExpandedEdit,
+    cancelExpandedEdit,
+    setEditorRef,
     isEditing,
   }
 }

@@ -66,7 +66,14 @@ const buildPayload = (previews: import('~/types/todo').LinkPreview[]) => {
     if (previews.length) fd.append('link_previews', JSON.stringify(previews))
     return fd
   }
-  return { title: title.value.toLowerCase(), body: body.value, color: color.value, pinned: pinned.value, reminder_at: reminderAt.value, link_previews: previews }
+  return {
+    title: title.value.toLowerCase(),
+    body: body.value,
+    color: color.value,
+    pinned: pinned.value,
+    reminder_at: reminderAt.value,
+    link_previews: previews,
+  }
 }
 
 const resetForm = () => {
@@ -141,16 +148,14 @@ const handleTitleInput = (event: Event) => {
               <Icon name="mdi:pin" class="text-xs" />
             </button>
             <AudioRecorder
-              @recorded="
-                (f, u) => {
-                  audioFile = f
-                  audioPreview = u
-                }
-              "
+              @recorded="(f, u) => { audioFile = f; audioPreview = u }"
               @update:recording="(v) => (audioRecording = v)"
             />
             <template v-if="!audioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+              <label
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                aria-label="Upload image"
+              >
                 <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
               </label>
@@ -218,16 +223,14 @@ const handleTitleInput = (event: Event) => {
           <ColorPicker v-else v-model="color" />
           <div class="flex items-center gap-1">
             <AudioRecorder
-              @recorded="
-                (f, u) => {
-                  audioFile = f
-                  audioPreview = u
-                }
-              "
+              @recorded="(f, u) => { audioFile = f; audioPreview = u }"
               @update:recording="(v) => (audioRecording = v)"
             />
             <template v-if="!audioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+              <label
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                aria-label="Upload image"
+              >
                 <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input type="file" accept="image/*" class="hidden" @change="onImageSelect" >
               </label>

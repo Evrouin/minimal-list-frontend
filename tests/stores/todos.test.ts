@@ -170,8 +170,9 @@ describe('Todo Store', () => {
     const snapshot = store.reorderTodosBySection('pinned', ['test-uuid-1'])
     await store.bulkReorderCommit('test-uuid-1', 2, true)
     expect(mockApi.bulkReorder).toHaveBeenCalledWith('test-uuid-1', 2, true)
-    expect(store.todos.find((t) => t.uuid === 'test-uuid-2')!.order_id)
-      .toBeGreaterThan(store.todos.find((t) => t.uuid === 'test-uuid-1')!.order_id!)
+    expect(store.todos.find((t) => t.uuid === 'test-uuid-2')!.order_id).toBeGreaterThan(
+      store.todos.find((t) => t.uuid === 'test-uuid-1')!.order_id!,
+    )
     expect(snapshot[0]!.uuid).toBe('test-uuid-1')
   })
 

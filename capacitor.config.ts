@@ -1,4 +1,4 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.evrouin.minimallist',
@@ -7,6 +7,6 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
   },
-};
+}
 
-export default config;
+export default config

@@ -178,11 +178,14 @@ onUnmounted(() => {
 })
 
 const uiStore = useUiStore()
-watch(() => uiStore.sidebarOpen, (open) => {
-  if (grid && props.dragEnabled) {
-    (grid as unknown as { _settings: { dragEnabled: boolean } })._settings.dragEnabled = !open
-  }
-})
+watch(
+  () => uiStore.sidebarOpen,
+  (open) => {
+    if (grid && props.dragEnabled) {
+      ;(grid as unknown as { _settings: { dragEnabled: boolean } })._settings.dragEnabled = !open
+    }
+  },
+)
 
 watch(
   () => props.items.length,

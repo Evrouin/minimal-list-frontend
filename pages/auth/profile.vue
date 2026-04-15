@@ -140,7 +140,12 @@ const showDeleteDialog = ref(false)
 const deleteAccountPassword = ref('')
 const deleteAccountError = ref('')
 
-watch(showDeleteDialog, (v) => { if (!v) { deleteAccountPassword.value = ''; deleteAccountError.value = '' } })
+watch(showDeleteDialog, (v) => {
+  if (!v) {
+    deleteAccountPassword.value = ''
+    deleteAccountError.value = ''
+  }
+})
 const showDeactivateDialog = ref(false)
 
 const handleDeactivateAccount = async () => {
@@ -149,9 +154,7 @@ const handleDeactivateAccount = async () => {
   navigateTo('/auth/login')
 }
 
-const defaultNoteColor = ref<NoteColor>(
-  (localStorage.getItem('defaultNoteColor') as NoteColor) || 'default',
-)
+const defaultNoteColor = ref<NoteColor>((localStorage.getItem('defaultNoteColor') as NoteColor) || 'default')
 watch(defaultNoteColor, (v) => localStorage.setItem('defaultNoteColor', v))
 const showColorPicker = ref(false)
 const selectNoteColor = (name: NoteColor) => {
@@ -198,7 +201,9 @@ const revokeSession = async (id: number) => {
   try {
     await api.revokeSession(id)
     sessions.value = sessions.value.filter((s) => s.id !== id)
-  } catch { /* silently fail */ }
+  } catch {
+    /* silently fail */
+  }
 }
 
 const revokeOtherSessions = async () => {
@@ -207,7 +212,9 @@ const revokeOtherSessions = async () => {
   try {
     await api.revokeOtherSessions(tokens.refresh)
     sessions.value = sessions.value.filter((s) => s.is_current)
-  } catch { /* silently fail */ }
+  } catch {
+    /* silently fail */
+  }
 }
 
 const deviceIcon = (type: string) => {
@@ -221,7 +228,10 @@ const notificationsEnabled = ref(
 )
 
 const handleDeleteAccount = async () => {
-  if (!deleteAccountPassword.value) { deleteAccountError.value = 'password required'; return }
+  if (!deleteAccountPassword.value) {
+    deleteAccountError.value = 'password required'
+    return
+  }
   try {
     await authStore.deleteAccount(deleteAccountPassword.value)
     navigateTo('/auth/login')
@@ -236,10 +246,18 @@ const clearPassword = ref('')
 const clearPasswordError = ref('')
 const clearingNotes = ref(false)
 
-watch(showClearNotesDialog, (v) => { if (!v) { clearPassword.value = ''; clearPasswordError.value = '' } })
+watch(showClearNotesDialog, (v) => {
+  if (!v) {
+    clearPassword.value = ''
+    clearPasswordError.value = ''
+  }
+})
 
 const onClearNotesConfirm = async () => {
-  if (user.value?.has_password && !clearPassword.value) { clearPasswordError.value = 'password is required'; return }
+  if (user.value?.has_password && !clearPassword.value) {
+    clearPasswordError.value = 'password is required'
+    return
+  }
   clearingNotes.value = true
   clearPasswordError.value = ''
   try {

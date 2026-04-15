@@ -15,7 +15,7 @@ export const useTodoStore = defineStore('todo', () => {
   const pendingReorderKey = 'todo-order-pending'
   const refreshing = ref(false)
 
-  const cache = new Map<string, { todos: Todo[], cursor: string | null }>()
+  const cache = new Map<string, { todos: Todo[]; cursor: string | null }>()
 
   const cacheKey = computed(() => {
     const folderStore = useFolderStore()
@@ -24,13 +24,16 @@ export const useTodoStore = defineStore('todo', () => {
   })
 
   // Clear cache + reset list when active folder changes (skip if already empty)
-  watch(() => useFolderStore().activeFolder?.uuid, () => {
-    cache.clear()
-    if (todos.value.length) {
-      todos.value = []
-      nextCursor.value = null
-    }
-  })
+  watch(
+    () => useFolderStore().activeFolder?.uuid,
+    () => {
+      cache.clear()
+      if (todos.value.length) {
+        todos.value = []
+        nextCursor.value = null
+      }
+    },
+  )
 
   const hasMore = computed(() => !!nextCursor.value)
 
@@ -44,10 +47,14 @@ export const useTodoStore = defineStore('todo', () => {
     }
 
     switch (filterType.value) {
-      case 'active': return [folderParam, 'completed=false'].filter(Boolean).join('&')
-      case 'completed': return [folderParam, 'completed=true'].filter(Boolean).join('&')
-      case 'deleted': return 'deleted_only=true'
-      default: return folderParam
+      case 'active':
+        return [folderParam, 'completed=false'].filter(Boolean).join('&')
+      case 'completed':
+        return [folderParam, 'completed=true'].filter(Boolean).join('&')
+      case 'deleted':
+        return 'deleted_only=true'
+      default:
+        return folderParam
     }
   })
 
@@ -59,9 +66,7 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const response = await api.fetchTodos('deleted_only=true')
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
-      nextCursor.value = response.next
-        ? new URL(response.next).pathname + new URL(response.next).search
-        : null
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
     } finally {
       loading.value = false
       initialLoad.value = false
@@ -76,9 +81,7 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const response = await api.fetchTodos('archived_only=true')
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
-      nextCursor.value = response.next
-        ? new URL(response.next).pathname + new URL(response.next).search
-        : null
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
     } finally {
       loading.value = false
       initialLoad.value = false
@@ -93,9 +96,7 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const response = await api.fetchTodos(`archived_only=true&folder=${folderUuid}`)
       todos.value = response.data.map((t: Todo) => ({ ...t, editing: false }))
-      nextCursor.value = response.next
-        ? new URL(response.next).pathname + new URL(response.next).search
-        : null
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
     } finally {
       loading.value = false
       initialLoad.value = false
@@ -138,9 +139,7 @@ export const useTodoStore = defineStore('todo', () => {
       } else {
         savePendingOrder(null)
       }
-      nextCursor.value = response.next
-        ? new URL(response.next).pathname + new URL(response.next).search
-        : null
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
       cache.set(cacheKey.value, { todos: [...todos.value], cursor: nextCursor.value })
       syncReminders(todos.value)
     } finally {
@@ -161,12 +160,8 @@ export const useTodoStore = defineStore('todo', () => {
     loadingMore.value = true
     try {
       const response = await api.fetchTodos(undefined, nextCursor.value)
-      todos.value.push(
-        ...response.data.map((t: Todo) => ({ ...t, editing: false }))
-      )
-      nextCursor.value = response.next
-        ? new URL(response.next).pathname + new URL(response.next).search
-        : null
+      todos.value.push(...response.data.map((t: Todo) => ({ ...t, editing: false })))
+      nextCursor.value = response.next ? new URL(response.next).pathname + new URL(response.next).search : null
       cache.set(cacheKey.value, { todos: [...todos.value], cursor: nextCursor.value })
     } finally {
       loadingMore.value = false
@@ -221,7 +216,15 @@ export const useTodoStore = defineStore('todo', () => {
     try {
       const { title, body, completed, pinned, color, reminder_at, link_previews, audio } = updatedTodo
       const previous_reminder = previous.reminder_at
-      const jsonPayload: Record<string, unknown> = { title, body, completed, pinned, color, reminder_at: reminder_at ?? null, link_previews: link_previews ?? [] }
+      const jsonPayload: Record<string, unknown> = {
+        title,
+        body,
+        completed,
+        pinned,
+        color,
+        reminder_at: reminder_at ?? null,
+        link_previews: link_previews ?? [],
+      }
       if (reminder_at !== previous_reminder) jsonPayload.snoozed_until = null
       if (audio === null) jsonPayload.audio = null
       let payload: Record<string, unknown> | FormData = jsonPayload
@@ -253,9 +256,10 @@ export const useTodoStore = defineStore('todo', () => {
     const todo = todos.value.find((t) => t.uuid === id)
     if (!todo) return
     const completing = !todo.completed
-    const update = completing && todo.reminder_at
-      ? { ...todo, completed: true, reminder_at: null, recurrence_rule: 'none' as const }
-      : { ...todo, completed: completing }
+    const update =
+      completing && todo.reminder_at
+        ? { ...todo, completed: true, reminder_at: null, recurrence_rule: 'none' as const }
+        : { ...todo, completed: completing }
     await updateTodo(update)
   }
 
@@ -283,9 +287,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   const bulkPinApply = (ids: string[], pinned: boolean) => {
     const snapshot = [...todos.value]
-    todos.value = todos.value.map((t) =>
-      ids.includes(t.uuid) ? { ...t, pinned } : t
-    )
+    todos.value = todos.value.map((t) => (ids.includes(t.uuid) ? { ...t, pinned } : t))
     invalidateOtherCaches()
     return snapshot
   }
@@ -302,8 +304,7 @@ export const useTodoStore = defineStore('todo', () => {
       todos.value = todos.value.filter((t) => t.uuid !== id)
     } else {
       const index = todos.value.findIndex((t) => t.uuid === id)
-      if (index !== -1)
-        todos.value[index] = { ...todos.value[index]!, deleted: true }
+      if (index !== -1) todos.value[index] = { ...todos.value[index]!, deleted: true }
     }
     invalidateOtherCaches()
     return snapshot
@@ -333,9 +334,7 @@ export const useTodoStore = defineStore('todo', () => {
 
   const bulkRestoreApply = (ids: string[]) => {
     const snapshot = [...todos.value]
-    todos.value = todos.value.map((t) =>
-      ids.includes(t.uuid) ? { ...t, deleted: false } : t
-    )
+    todos.value = todos.value.map((t) => (ids.includes(t.uuid) ? { ...t, deleted: false } : t))
     invalidateOtherCaches()
     return snapshot
   }
@@ -383,25 +382,27 @@ export const useTodoStore = defineStore('todo', () => {
   }
 
   const bulkReorderCommit = async (uuid: string, newPosition: number, pinned: boolean) => {
-      const response = await api.bulkReorder(uuid, newPosition, pinned)
-      if (!response.success) throw new Error('bulk reorder failed')
+    const response = await api.bulkReorder(uuid, newPosition, pinned)
+    if (!response.success) throw new Error('bulk reorder failed')
 
-      // Mirror backend logic: reorder within section, then reassign order_ids
-      const active = todos.value.filter((t) => !t.deleted)
-      const pinnedNotes = active.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
-      const unpinnedNotes = active.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
+    // Mirror backend logic: reorder within section, then reassign order_ids
+    const active = todos.value.filter((t) => !t.deleted)
+    const pinnedNotes = active.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
+    const unpinnedNotes = active.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
 
-      const section = pinned ? pinnedNotes : unpinnedNotes
-      const idx = section.findIndex((t) => t.uuid === uuid)
-      if (idx >= 0) {
-        const [moved] = section.splice(idx, 1)
-        section.splice(Math.max(0, Math.min(newPosition - 1, section.length)), 0, moved!)
-      }
+    const section = pinned ? pinnedNotes : unpinnedNotes
+    const idx = section.findIndex((t) => t.uuid === uuid)
+    if (idx >= 0) {
+      const [moved] = section.splice(idx, 1)
+      section.splice(Math.max(0, Math.min(newPosition - 1, section.length)), 0, moved!)
+    }
 
-      const combined = [...pinnedNotes, ...unpinnedNotes]
-      combined.forEach((t, i) => { t.order_id = combined.length - i })
+    const combined = [...pinnedNotes, ...unpinnedNotes]
+    combined.forEach((t, i) => {
+      t.order_id = combined.length - i
+    })
 
-      savePendingOrder(null)
+    savePendingOrder(null)
   }
 
   const reorderRollback = (snapshot: Todo[]) => {
@@ -422,12 +423,8 @@ export const useTodoStore = defineStore('todo', () => {
     cache.set(cacheKey.value, { todos: [...todos.value], cursor: nextCursor.value })
   }
 
-  const pinnedTodos = computed(() =>
-    filteredTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
-  )
-  const unpinnedTodos = computed(() =>
-    filteredTodos.value.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0))
-  )
+  const pinnedTodos = computed(() => filteredTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
+  const unpinnedTodos = computed(() => filteredTodos.value.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
 
   return {
     todos,

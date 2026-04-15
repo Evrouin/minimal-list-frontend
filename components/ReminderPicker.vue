@@ -177,7 +177,7 @@ const onMinuteBlur = () => {
       class="cursor-pointer rounded transition-colors"
       :class="[
         props.sm ? 'px-2 py-0.5' : 'p-1.5',
-        hasReminder ? (isOverdue ? 'text-red-400' : 'text-yellow-400') : 'text-white/30 hover:text-white/60'
+        hasReminder ? (isOverdue ? 'text-red-400' : 'text-yellow-400') : 'text-white/30 hover:text-white/60',
       ]"
       @click.stop="open = !open"
     >
@@ -292,18 +292,18 @@ const onMinuteBlur = () => {
           <!-- Recurrence -->
           <div class="mt-3 flex justify-center">
             <div class="flex w-full max-w-46 items-center justify-between">
-              <span class="text-xs text-white/40 ml-1">repeat</span>
+              <span class="ml-1 text-xs text-white/40">repeat</span>
               <div class="relative mr-1">
                 <button
                   type="button"
-                  class="cursor-pointer rounded bg-gray-600 px-2 py-1.5 text-sm text-white focus:outline-none min-w-24 text-left"
+                  class="min-w-24 cursor-pointer rounded bg-gray-600 px-2 py-1.5 text-left text-sm text-white focus:outline-none"
                   @click="showRecurrenceList = !showRecurrenceList"
                 >
                   {{ recurrence === 'none' ? 'off' : recurrence }}
                 </button>
                 <div v-if="showRecurrenceList" class="absolute right-0 z-10 mt-1 w-24 rounded bg-gray-600 py-1 shadow-lg">
                   <button
-                    v-for="opt in (['none', 'daily', 'weekly', 'monthly'] as const)"
+                    v-for="opt in ['none', 'daily', 'weekly', 'monthly'] as const"
                     :key="opt"
                     type="button"
                     class="w-full px-2 py-1 text-left text-sm text-white/60 hover:bg-gray-500 hover:text-white"

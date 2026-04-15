@@ -65,8 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const register = (payload: RegisterPayload) =>
-    withLoading(() => api.register(payload))
+  const register = (payload: RegisterPayload) => withLoading(() => api.register(payload))
 
   const login = (payload: LoginPayload) =>
     withLoading(async () => {
@@ -130,11 +129,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const verifyEmail = (token: string) => api.verifyEmail(token)
 
-  const requestPasswordReset = (payload: PasswordResetRequestPayload) =>
-    api.requestPasswordReset(payload)
+  const requestPasswordReset = (payload: PasswordResetRequestPayload) => api.requestPasswordReset(payload)
 
-  const confirmPasswordReset = (payload: PasswordResetConfirmPayload) =>
-    api.confirmPasswordReset(payload)
+  const confirmPasswordReset = (payload: PasswordResetConfirmPayload) => api.confirmPasswordReset(payload)
 
   const deleteAccount = async (password: string) => {
     await api.deleteAccount(password)

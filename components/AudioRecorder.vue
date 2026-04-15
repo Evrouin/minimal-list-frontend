@@ -63,7 +63,11 @@ defineExpose({ recording, stop })
 
 const toggle = () => {
   if (loading.value) return
-  if (recording.value) { stop() } else { start() }
+  if (recording.value) {
+    stop()
+  } else {
+    start()
+  }
 }
 
 const formatTime = (s: number) => {

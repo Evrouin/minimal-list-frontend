@@ -23,7 +23,9 @@ export function useTodoSelection(options: UseTodoSelectionOptions) {
   const isSelected = (id: string) => selectedIds.value.includes(id)
   const hasCheckbox = (id: string) => visibleCheckboxIds.value.includes(id)
 
-  const hideHoverCheckboxes = () => { visibleCheckboxIds.value = [] }
+  const hideHoverCheckboxes = () => {
+    visibleCheckboxIds.value = []
+  }
 
   const clearHoverTimers = () => {
     for (const t of hoverTimers.values()) clearTimeout(t)
@@ -31,21 +33,30 @@ export function useTodoSelection(options: UseTodoSelectionOptions) {
   }
 
   const cancelLongPress = () => {
-    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+    if (longPressTimer) {
+      clearTimeout(longPressTimer)
+      longPressTimer = null
+    }
   }
 
   const isTouchDevice = () => 'ontouchstart' in globalThis
 
   const startHover = (id: string) => {
     if (isTouchDevice() || isDragging.value || multiSelectMode.value || isTodoEditing(id) || audioInteracting.value) return
-    hoverTimers.set(id, setTimeout(() => {
-      if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value && !isDragging.value) visibleCheckboxIds.value.push(id)
-    }, 800))
+    hoverTimers.set(
+      id,
+      setTimeout(() => {
+        if (!visibleCheckboxIds.value.includes(id) && !audioInteracting.value && !isDragging.value) visibleCheckboxIds.value.push(id)
+      }, 800),
+    )
   }
 
   const endHover = (id: string) => {
     const t = hoverTimers.get(id)
-    if (t) { clearTimeout(t); hoverTimers.delete(id) }
+    if (t) {
+      clearTimeout(t)
+      hoverTimers.delete(id)
+    }
     if (!multiSelectMode.value) {
       visibleCheckboxIds.value = visibleCheckboxIds.value.filter((i) => i !== id)
     }
@@ -79,7 +90,10 @@ export function useTodoSelection(options: UseTodoSelectionOptions) {
   }
 
   const endLongPress = () => {
-    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+    if (longPressTimer) {
+      clearTimeout(longPressTimer)
+      longPressTimer = null
+    }
     if (!multiSelectMode.value) visibleCheckboxIds.value = []
   }
 

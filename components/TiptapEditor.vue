@@ -144,7 +144,7 @@ defineExpose({ focus: () => editor.value?.commands.focus() })
 .tiptap-wrapper .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: rgb(255 255 255 / 0.4);
+  color: color-mix(in srgb, var(--color-white) 40%, transparent);
   pointer-events: none;
   height: 0;
 }

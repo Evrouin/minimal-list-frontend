@@ -1,11 +1,41 @@
-<div id="spa-loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;height:100vh;width:100vw;position:fixed;top:0;left:0;z-index:9999;">
-  <span style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:700;text-transform:lowercase;">minimal list</span>
-  <svg width="20" height="20" viewBox="0 0 24 24" style="animation:spin 1s linear infinite;">
-    <circle cx="12" cy="12" r="10" stroke-width="3" fill="none"/>
-    <path d="M12 2a10 10 0 0 1 10 10" stroke-width="3" fill="none" stroke-linecap="round"/>
+<div
+  id="spa-loading"
+  style="
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+  "
+>
+  <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 700; text-transform: lowercase">
+    minimal list
+  </span>
+  <svg width="20" height="20" viewBox="0 0 24 24" style="animation: spin 1s linear infinite">
+    <circle cx="12" cy="12" r="10" stroke-width="3" fill="none" />
+    <path d="M12 2a10 10 0 0 1 10 10" stroke-width="3" fill="none" stroke-linecap="round" />
   </svg>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  <style>
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
   <script>
-    (function(){var l=localStorage.getItem('theme')==='light';var d=document.getElementById('spa-loading');d.style.backgroundColor=l?'#F1F3F4':'#1f2937';d.querySelector('span').style.color=l?'#202124':'#ffffff';d.querySelector('circle').setAttribute('stroke',l?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.15)');d.querySelector('path').setAttribute('stroke',l?'rgba(0,0,0,0.3)':'rgba(255,255,255,0.4)')})()
+    ;(function () {
+      var l = localStorage.getItem('theme') === 'light'
+      var d = document.getElementById('spa-loading')
+      d.style.backgroundColor = l ? '#F1F3F4' : '#1f2937'
+      d.querySelector('span').style.color = l ? '#202124' : '#ffffff'
+      d.querySelector('circle').setAttribute('stroke', l ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)')
+      d.querySelector('path').setAttribute('stroke', l ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)')
+    })()
   </script>
 </div>

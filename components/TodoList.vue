@@ -14,7 +14,6 @@ const noteColors = useNoteColors()
 const folderStore = useFolderStore()
 const { filteredTodos, loading } = storeToRefs(todoStore)
 
-
 const isRemindersFolder = computed(() => folderStore.activeFolder?.name === 'reminders')
 const isTasksFolder = computed(() => folderStore.activeFolder?.name === 'tasks')
 
@@ -85,9 +84,7 @@ const deletedSections = computed(() => {
 const cardRefs = ref(new Map<string, CardRef>())
 
 const hideCompleted = ref(false)
-const visibleTodos = computed(() =>
-  hideCompleted.value ? filteredTodos.value.filter((t) => !t.completed) : filteredTodos.value
-)
+const visibleTodos = computed(() => (hideCompleted.value ? filteredTodos.value.filter((t) => !t.completed) : filteredTodos.value))
 const visiblePinned = computed(() => visibleTodos.value.filter((t) => t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
 const visibleUnpinned = computed(() => visibleTodos.value.filter((t) => !t.pinned).sort((a, b) => (b.order_id ?? 0) - (a.order_id ?? 0)))
 const reminderSections = computed(() => {
@@ -103,9 +100,7 @@ const reminderSections = computed(() => {
     { label: 'this week', todos: [] },
     { label: 'later', todos: [] },
   ]
-  const sorted = [...filteredTodos.value].sort((a, b) =>
-    new Date(a.reminder_at ?? 0).getTime() - new Date(b.reminder_at ?? 0).getTime()
-  )
+  const sorted = [...filteredTodos.value].sort((a, b) => new Date(a.reminder_at ?? 0).getTime() - new Date(b.reminder_at ?? 0).getTime())
   for (const t of sorted) {
     const r = new Date(t.reminder_at ?? 0).getTime()
     const isSnoozed = !!t.snoozed_until && new Date(t.snoozed_until).getTime() > now.getTime()
@@ -225,7 +220,10 @@ const { handleReorder } = useSortableReorder({
 })
 
 watch(expandedEditId, (val) => {
-  if (val) useBackHandler().push(() => { expandedEditId.value = null })
+  if (val)
+    useBackHandler().push(() => {
+      expandedEditId.value = null
+    })
   else useBackHandler().pop()
 })
 
@@ -350,7 +348,9 @@ const confirmEmptyTrash = async () => {
   try {
     await api.emptyTrash()
     todoStore.todos = todoStore.todos.filter((t) => !t.deleted)
-  } catch { /* silently fail */ } finally {
+  } catch {
+    /* silently fail */
+  } finally {
     emptyingTrash.value = false
     showEmptyTrashDialog.value = false
   }
@@ -366,7 +366,27 @@ onUnmounted(() => {
   flushAll()
 })
 
-defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrashDialog.value = true }, openNote: (uuid: string, onClose?: () => void) => { const todo = filteredTodos.value.find((t) => t.uuid === uuid); if (todo) { viewTodo.value = todo; if (onClose) { const stop = watch(viewTodo, (v) => { if (!v) { onClose(); stop() } }) } } } })
+defineExpose({
+  cancelAllEdits,
+  isEditing,
+  openEmptyTrash: () => {
+    showEmptyTrashDialog.value = true
+  },
+  openNote: (uuid: string, onClose?: () => void) => {
+    const todo = filteredTodos.value.find((t) => t.uuid === uuid)
+    if (todo) {
+      viewTodo.value = todo
+      if (onClose) {
+        const stop = watch(viewTodo, (v) => {
+          if (!v) {
+            onClose()
+            stop()
+          }
+        })
+      }
+    }
+  },
+})
 </script>
 
 <template>
@@ -481,7 +501,11 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <MasonryGrid :key="section.label + '-' + gridKey" :items="section.todos" key-field="uuid" :drag-enabled="false">
           <template #default="{ item: todo }">
             <TodoCard
-              :ref="(el) => { if (el) cardRefs.set(todo.uuid, el as CardRef) }"
+              :ref="
+                (el) => {
+                  if (el) cardRefs.set(todo.uuid, el as CardRef)
+                }
+              "
               :todo="todo"
               :pinned="todo.pinned"
               :selected="isSelected(todo.uuid)"
@@ -576,12 +600,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
 
       <!-- Others section -->
       <div v-if="visibleUnpinned.length > 0">
-        <p
-          v-if="visiblePinned.length > 0 && unpinnedListRef?.ready"
-          class="mb-3 ml-2.5 text-xs text-white/40 lowercase"
-        >
-          others
-        </p>
+        <p v-if="visiblePinned.length > 0 && unpinnedListRef?.ready" class="mb-3 ml-2.5 text-xs text-white/40 lowercase">others</p>
         <MasonryGrid
           :key="'unpinned-' + gridKey"
           ref="unpinnedListRef"
@@ -684,12 +703,7 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <div class="flex items-center gap-1">
           <ReminderPicker v-if="!dialogAudioRecording" v-model="dialogReminderAt" v-model:recurrence="dialogRecurrenceRule" sm />
           <AudioRecorder
-            @recorded="
-              (f, u) => {
-                dialogAudioFile = f
-                dialogAudioPreview = u
-              }
-            "
+            @recorded="(f, u) => { dialogAudioFile = f; dialogAudioPreview = u }"
             @update:recording="(v) => (dialogAudioRecording = v)"
           />
           <template v-if="!dialogAudioRecording">
@@ -733,7 +747,11 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
           >
             <Icon :name="viewTodo.completed ? 'uil:check-circle' : 'uil:circle'" />
           </button>
-          <button class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-red-400" title="Delete" @click="requestDelete(viewTodo); viewTodo = null">
+          <button
+            class="cursor-pointer rounded p-1 text-sm text-gray-400 hover:text-red-400"
+            title="Delete"
+            @click="requestDelete(viewTodo); viewTodo = null"
+          >
             <Icon name="uil:trash" />
           </button>
         </div>
@@ -819,20 +837,20 @@ defineExpose({ cancelAllEdits, isEditing, openEmptyTrash: () => { showEmptyTrash
         <div class="flex items-center justify-between">
           <ColorPicker v-model="expandedTodo.color" />
           <div class="flex items-center gap-1">
-            <ReminderPicker v-if="!expandedAudioRecording" v-model="expandedTodo.reminder_at" v-model:recurrence="expandedTodo.recurrence_rule" />
+            <ReminderPicker
+              v-if="!expandedAudioRecording"
+              v-model="expandedTodo.reminder_at"
+              v-model:recurrence="expandedTodo.recurrence_rule"
+            />
             <AudioRecorder
-              @recorded="
-                (f, u) => {
-                  if (expandedTodo) {
-                    editAudioFiles.set(expandedTodo.uuid, f)
-                    editAudioPreviews.set(expandedTodo.uuid, u)
-                  }
-                }
-              "
+              @recorded="(f, u) => { if (expandedTodo) { editAudioFiles.set(expandedTodo.uuid, f); editAudioPreviews.set(expandedTodo.uuid, u) } }"
               @update:recording="(v) => (expandedAudioRecording = v)"
             />
             <template v-if="!expandedAudioRecording">
-              <label class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60" aria-label="Upload image">
+              <label
+                class="cursor-pointer rounded px-2 py-0.5 text-white/30 transition-colors hover:text-white/60"
+                aria-label="Upload image"
+              >
                 <Icon name="uil:image" class="text-xs" aria-hidden="true" />
                 <input
                   type="file"

@@ -58,9 +58,8 @@ export const useReminders = () => {
 
   const schedule = async (todo: Todo) => {
     if (!todo.reminder_at) return
-    const fireAt = todo.snoozed_until && new Date(todo.snoozed_until).getTime() > Date.now()
-      ? new Date(todo.snoozed_until)
-      : new Date(todo.reminder_at)
+    const fireAt =
+      todo.snoozed_until && new Date(todo.snoozed_until).getTime() > Date.now() ? new Date(todo.snoozed_until) : new Date(todo.reminder_at)
 
     if (Capacitor.isNativePlatform()) {
       const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -100,9 +99,7 @@ export const useReminders = () => {
     if (upcoming.length) {
       await LocalNotifications.schedule({
         notifications: upcoming.map((t) => {
-          const fireAt = t.snoozed_until && new Date(t.snoozed_until).getTime() > now
-            ? new Date(t.snoozed_until)
-            : new Date(t.reminder_at!)
+          const fireAt = t.snoozed_until && new Date(t.snoozed_until).getTime() > now ? new Date(t.snoozed_until) : new Date(t.reminder_at!)
           return {
             id: uuidToInt(t.uuid),
             title: t.title,

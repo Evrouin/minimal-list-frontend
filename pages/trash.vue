@@ -18,20 +18,14 @@ onUnmounted(() => {
 <template>
   <div class="flex min-h-screen w-screen flex-col items-center bg-gray-800 pt-10">
     <AppSidebar />
-    <div class="w-full max-w-lg px-4 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl min-[1920px]:max-w-400">
+    <div class="w-full max-w-lg px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <PageHeader class="mx-2.5" title="trash">
         <template #prepend>
-          <button
-            class="cursor-pointer text-white/60 hover:text-white"
-            @click="ui.openSidebar()"
-          >
-            <Icon name="uil:bars" class="text-xl mt-2.5" />
+          <button class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
+            <Icon name="uil:bars" class="mt-2.5 text-xl" />
           </button>
         </template>
-        <button
-          class="cursor-pointer mt-2.5 text-xs text-white/30 lowercase hover:text-red-400"
-          @click="todoListRef?.openEmptyTrash()"
-        >
+        <button class="mt-2.5 cursor-pointer text-xs text-white/30 lowercase hover:text-red-400" @click="todoListRef?.openEmptyTrash()">
           empty trash
         </button>
       </PageHeader>

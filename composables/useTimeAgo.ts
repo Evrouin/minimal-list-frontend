@@ -11,9 +11,7 @@ export const useTimeAgo = () => {
 
   const timeAgo = (date: string | undefined, future = false) => {
     if (!date) return ''
-    const diff = future
-      ? new Date(date).getTime() - now.value
-      : now.value - new Date(date).getTime()
+    const diff = future ? new Date(date).getTime() - now.value : now.value - new Date(date).getTime()
     const seconds = Math.max(0, Math.floor(diff / 1000))
     if (seconds < 60) return `${seconds}s`
     const minutes = Math.floor(seconds / 60)

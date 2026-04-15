@@ -80,16 +80,8 @@ const cardClasses = computed(() => [
     @mouseenter="!todo.editing && emit('start-hover')"
     @mouseleave="!todo.editing && emit('end-hover')"
     @touchstart="!todo.editing && emit('start-long-press')"
-    @touchend="
-      (e: TouchEvent) => {
-        if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press')
-      }
-    "
-    @touchmove="
-      (e: TouchEvent) => {
-        if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press')
-      }
-    "
+    @touchend="(e: TouchEvent) => { if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press') }"
+    @touchmove="(e: TouchEvent) => { if (!(e.target as HTMLElement).closest('[data-audio-player]')) emit('end-long-press') }"
   >
     <button
       v-if="multiSelectMode || showCheckbox"
@@ -139,8 +131,8 @@ const cardClasses = computed(() => [
       >
       <!-- eslint-enable vue/no-mutating-props -->
       <div
-        class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
-        :class="todo.editing && 'opacity-100 pointer-events-auto'"
+        class="pointer-events-none flex items-center gap-1 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+        :class="todo.editing && 'pointer-events-auto opacity-100'"
         @click.stop
       >
         <template v-if="!todo.deleted && !todo.is_archived">
@@ -169,7 +161,7 @@ const cardClasses = computed(() => [
           <button
             v-if="showComplete"
             class="mb-px cursor-pointer rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-200"
-            :class="isTaskFolder && 'opacity-100 pointer-events-auto'"
+            :class="isTaskFolder && 'pointer-events-auto opacity-100'"
             :title="todo.completed ? 'Mark as incomplete' : 'Mark as complete'"
             @click="emit('toggle-completion')"
           >
@@ -215,11 +207,17 @@ const cardClasses = computed(() => [
             {{ new Date(todo.reminder_at).getTime() <= now ? 'overdue' : `in ${timeAgo(todo.reminder_at, true)}` }}
           </span>
           <span v-if="todo.recurrence_rule && todo.recurrence_rule !== 'none'" class="text-white/30">
-            · <Icon name="uil:repeat" class="inline text-xs" /> {{ todo.recurrence_rule }}
+            ·
+            <Icon name="uil:repeat" class="inline text-xs" />
+            {{ todo.recurrence_rule }}
           </span>
         </template>
       </span>
-      <div v-if="!todo.deleted && draggable !== false" class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>
+      <div
+        v-if="!todo.deleted && draggable !== false"
+        class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden"
+        @click.stop
+      >
         <Icon name="uil:draggabledots" class="text-sm" />
       </div>
     </div>

@@ -14,17 +14,22 @@ const route = useRoute()
 const router = useRouter()
 
 const close = () => ui.closeSidebar()
-const onKeydown = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') close()
+}
 
-watch(() => ui.sidebarOpen, (val) => {
-  if (val) {
-    useBackHandler().push(close)
-    document.addEventListener('keydown', onKeydown)
-  } else {
-    useBackHandler().pop()
-    document.removeEventListener('keydown', onKeydown)
-  }
-})
+watch(
+  () => ui.sidebarOpen,
+  (val) => {
+    if (val) {
+      useBackHandler().push(close)
+      document.addEventListener('keydown', onKeydown)
+    } else {
+      useBackHandler().pop()
+      document.removeEventListener('keydown', onKeydown)
+    }
+  },
+)
 
 let swipeStartX = 0
 let swipeStartY = 0
@@ -61,7 +66,9 @@ const newFolderName = ref('')
 const createError = ref('')
 const creating = ref(false)
 
-watch(newFolderName, () => { createError.value = '' })
+watch(newFolderName, () => {
+  createError.value = ''
+})
 
 const submitCreate = async () => {
   const name = newFolderName.value.trim()
@@ -99,7 +106,10 @@ const startRename = (folder: Folder) => {
 
 const submitRename = async (uuid: string) => {
   const name = renameValue.value.trim()
-  if (!name) { renamingUuid.value = null; return }
+  if (!name) {
+    renamingUuid.value = null
+    return
+  }
   renameError.value = ''
   try {
     await renameFolder(uuid, name)
@@ -110,7 +120,10 @@ const submitRename = async (uuid: string) => {
   }
 }
 
-const cancelRename = () => { renamingUuid.value = null; renameError.value = '' }
+const cancelRename = () => {
+  renamingUuid.value = null
+  renameError.value = ''
+}
 
 // --- Delete folder ---
 const deletingFolder = ref<Folder | null>(null)
@@ -227,7 +240,9 @@ const onDrop = async (targetIndex: number) => {
             <template v-else>
               <NuxtLink to="/" :class="linkClass(isNotesActive)" @click="close"><span>notes</span></NuxtLink>
               <NuxtLink to="/?folder=tasks" :class="linkClass(isFolderActive('tasks'))" @click="close"><span>tasks</span></NuxtLink>
-              <NuxtLink to="/?folder=reminders" :class="linkClass(isFolderActive('reminders'))" @click="close"><span>reminders</span></NuxtLink>
+              <NuxtLink to="/?folder=reminders" :class="linkClass(isFolderActive('reminders'))" @click="close">
+                <span>reminders</span>
+              </NuxtLink>
             </template>
           </div>
 
@@ -236,17 +251,18 @@ const onDrop = async (targetIndex: number) => {
             <div
               v-for="(folder, index) in folderStore.customFolders"
               :key="folder.uuid"
-              :ref="(el) => { if (el) folderItemRefs[index] = el as HTMLElement }"
-              class="relative rounded-lg transition-colors select-none touch-none"
-              :class="[
-                dragIndex === index ? 'opacity-40' : '',
-                isDraggingFolder ? 'cursor-grabbing' : 'cursor-grab',
-              ]"
+              :ref="
+                (el) => {
+                  if (el) folderItemRefs[index] = el as HTMLElement
+                }
+              "
+              class="relative touch-none rounded-lg transition-colors select-none"
+              :class="[dragIndex === index ? 'opacity-40' : '', isDraggingFolder ? 'cursor-grabbing' : 'cursor-grab']"
               @pointerdown="onPointerDown($event, index)"
             >
               <div
                 v-if="dragOverIndex === index && dragIndex !== null && dragIndex !== index"
-                class="absolute inset-x-0 h-0.5 bg-white/40 rounded"
+                class="absolute inset-x-0 h-0.5 rounded bg-white/40"
                 :class="dragIndex > index ? '-top-px' : '-bottom-px'"
               />
               <!-- Rename mode -->
@@ -295,7 +311,7 @@ const onDrop = async (targetIndex: number) => {
                 v-model="newFolderName"
                 placeholder="new folder"
                 maxlength="50"
-                class="min-w-0 flex-1 rounded bg-white/5 px-2 py-1.5 text-xs text-white/60 placeholder-white/20 focus:outline-none focus:text-white"
+                class="min-w-0 flex-1 rounded bg-white/5 px-2 py-1.5 text-xs text-white/60 placeholder-white/20 focus:text-white focus:outline-none"
               >
               <button
                 type="submit"
@@ -316,9 +332,11 @@ const onDrop = async (targetIndex: number) => {
           </div>
         </nav>
 
-        <div class="border-t border-white/10 px-3 pt-4 space-y-0.5">
+        <div class="space-y-0.5 border-t border-white/10 px-3 pt-4">
           <NuxtLink to="/auth/profile" :class="linkClass(route.path === '/auth/profile')" @click="close"><span>account</span></NuxtLink>
-          <NuxtLink v-if="authStore.isAdmin" to="/admin" :class="linkClass(route.path.startsWith('/admin'))" @click="close"><span>admin</span></NuxtLink>
+          <NuxtLink v-if="authStore.isAdmin" to="/admin" :class="linkClass(route.path.startsWith('/admin'))" @click="close">
+            <span>admin</span>
+          </NuxtLink>
         </div>
       </div>
     </Transition>
@@ -348,8 +366,20 @@ const onDrop = async (targetIndex: number) => {
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-.slide-left-enter-active, .slide-left-leave-active { transition: transform 0.25s ease; }
-.slide-left-enter-from, .slide-left-leave-to { transform: translateX(-100%); }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform 0.25s ease;
+}
+.slide-left-enter-from,
+.slide-left-leave-to {
+  transform: translateX(-100%);
+}
 </style>

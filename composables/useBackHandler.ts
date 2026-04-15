@@ -5,7 +5,10 @@ export const useBackHandler = () => {
   const pop = () => _backHandlers.value.pop()
   const handle = () => {
     const top = _backHandlers.value.at(-1)
-    if (top) { top(); return true }
+    if (top) {
+      top()
+      return true
+    }
     return false
   }
   return { push, pop, handle }
