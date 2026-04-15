@@ -308,10 +308,7 @@ const onMinuteBlur = () => {
                     type="button"
                     class="w-full px-2 py-1 text-left text-sm text-white/60 hover:bg-gray-500 hover:text-white"
                     :class="recurrence === opt && 'bg-gray-500 text-white'"
-                    @mousedown.prevent="
-                      recurrence = opt
-                      showRecurrenceList = false
-                    "
+                    @mousedown.prevent="recurrence = opt; showRecurrenceList = false"
                   >
                     {{ opt === 'none' ? 'off' : opt }}
                   </button>
