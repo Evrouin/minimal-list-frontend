@@ -14,7 +14,7 @@ html, body {
   --color-gray-100: #202124;
   --color-gray-200: #3C4043;
   --color-gray-300: #5F6368;
-  --color-gray-400: #9AA0A6;
+  --color-gray-400: #636870;
   --color-gray-500: #E8EAED;
   --color-gray-600: #F8F9FA;
   --color-gray-700: #FFFFFF;
@@ -31,8 +31,8 @@ html, body {
   --color-red-500: #D93025;
   --color-green-300: #188038;
   --color-green-400: #188038;
-  --color-yellow-400: #E37400;
-  --color-yellow-500: #E37400;
+  --color-yellow-400: #A85A00;
+  --color-yellow-500: #A85A00;
 }
 
 /* Prevent horizontal scroll on main containers */
