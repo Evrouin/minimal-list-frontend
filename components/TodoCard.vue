@@ -9,6 +9,7 @@ const props = defineProps<{
   multiSelectMode: boolean
   editImagePreview?: string
   isTaskFolder?: boolean
+  draggable?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -218,7 +219,7 @@ const cardClasses = computed(() => [
           </span>
         </template>
       </span>
-      <div v-if="!todo.deleted" class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>
+      <div v-if="!todo.deleted && draggable !== false" class="drag-handle cursor-grab px-1 text-white/20 active:cursor-grabbing lg:hidden" @click.stop>
         <Icon name="uil:draggabledots" class="text-sm" />
       </div>
     </div>

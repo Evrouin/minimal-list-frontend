@@ -7,7 +7,7 @@ const theme = ref<Theme>('dark')
 export const useTheme = () => {
   const apply = (t: Theme) => {
     theme.value = t
-    document.documentElement.setAttribute('data-theme', t)
+    document.documentElement.dataset.theme = t
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[t])
     localStorage.setItem('theme', t)
   }
