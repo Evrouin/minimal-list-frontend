@@ -34,8 +34,8 @@ export const useAdminApi = () => {
     }) => request<User>(`${base}/users/`, { method: 'POST', body: data }),
     updateUser: (id: string, data: Partial<User>) =>
       request<User>(`${base}/users/${id}/`, { method: 'PATCH', body: data }),
-    deleteUser: (id: string, password: string) =>
-      request(`${base}/users/${id}/`, { method: 'DELETE', body: { password } }),
+    deleteUser: (id: string, password?: string) =>
+      request(`${base}/users/${id}/`, { method: 'DELETE', body: password ? { password } : undefined }),
     getTodos: (page = 1, search?: string) => {
       const params = new URLSearchParams({ page: String(page) })
       if (search) params.set('search', search)
