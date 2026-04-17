@@ -40,6 +40,10 @@ onUnmounted(() => window.removeEventListener('scroll', onScrollUpdate))
 
 const { isSearching } = useSearch()
 
+watch(() => todoStore.gridVersion, () => {
+  gridKey.value++
+})
+
 const isTodoEmptyMessage = computed(() => {
   if (isSearching.value) return 'no results found'
   switch (todoStore.filterType) {

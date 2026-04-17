@@ -14,6 +14,7 @@ export const useTodoStore = defineStore('todo', () => {
   const pendingReorder = ref<string[] | null>(null)
   const pendingReorderKey = 'todo-order-pending'
   const refreshing = ref(false)
+  const gridVersion = ref(0)
 
   const cache = new Map<string, { todos: Todo[]; cursor: string | null }>()
 
@@ -433,6 +434,7 @@ export const useTodoStore = defineStore('todo', () => {
     } finally {
       loading.value = false
       initialLoad.value = false
+      gridVersion.value++
     }
   }
 
@@ -442,6 +444,7 @@ export const useTodoStore = defineStore('todo', () => {
       nextCursor.value = preSearchSnapshot.cursor
       filterType.value = preSearchSnapshot.filter
       preSearchSnapshot = null
+      gridVersion.value++
     }
   }
 
@@ -474,6 +477,7 @@ export const useTodoStore = defineStore('todo', () => {
     changeFilter,
     refreshTodos,
     refreshing,
+    gridVersion,
     addTodo,
     updateTodo,
     toggleTodoCompletion,
