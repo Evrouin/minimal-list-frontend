@@ -58,7 +58,7 @@ const toggleFolder = async (folder: Folder) => {
       <template v-else>
         <PageHeader class="mx-2.5" title="archive">
           <template #prepend>
-            <button class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
+            <button class="cursor-pointer text-white/60 hover:text-white focus:outline-none" @click="ui.openSidebar()">
               <Icon name="uil:bars" class="mt-2.5 text-xl" />
             </button>
           </template>

@@ -21,7 +21,7 @@ onUnmounted(() => {
     <div class="w-full max-w-lg px-4 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <PageHeader class="mx-2.5" title="trash">
         <template #prepend>
-          <button class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
+          <button class="cursor-pointer text-white/60 hover:text-white focus:outline-none" @click="ui.openSidebar()">
             <Icon name="uil:bars" class="mt-2.5 text-xl" />
           </button>
         </template>

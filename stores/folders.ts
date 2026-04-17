@@ -11,6 +11,8 @@ export const useFolderStore = defineStore('folders', () => {
   const customFolders = computed(() => folders.value.filter((f) => f && !f.is_default).sort((a, b) => a.order - b.order))
 
   const archivedFolders = ref<Folder[]>([])
+  const trashCount = ref(0)
+  const archiveCount = ref(0)
 
   const fetchArchivedFolders = async () => {
     const res = await api.fetchFolders(true)
@@ -22,7 +24,13 @@ export const useFolderStore = defineStore('folders', () => {
     try {
       const response = await api.fetchFolders()
       const data = response.data ?? response
-      folders.value = Array.isArray(data) ? data : (data.results ?? [])
+      if (data.folders) {
+        folders.value = data.folders
+        trashCount.value = data.trash_count ?? 0
+        archiveCount.value = data.archive_count ?? 0
+      } else {
+        folders.value = Array.isArray(data) ? data : (data.results ?? [])
+      }
     } catch {
       /* silently fail — sidebar shows fallback */
     } finally {
@@ -45,6 +53,8 @@ export const useFolderStore = defineStore('folders', () => {
     loading,
     defaultFolders,
     customFolders,
+    trashCount,
+    archiveCount,
     fetchFolders,
     fetchArchivedFolders,
     setActiveFolderBySlug,

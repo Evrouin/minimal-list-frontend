@@ -406,7 +406,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
     >
       <PageHeader :title="searchOpen ? '' : pageTitle">
         <template #prepend>
-          <button v-if="!searchOpen" class="cursor-pointer text-white/60 hover:text-white" @click="ui.openSidebar()">
+          <button v-if="!searchOpen" class="cursor-pointer text-white/60 hover:text-white focus:outline-none" @click="ui.openSidebar()">
             <Icon name="uil:bars" class="mt-2.5 ml-2.5 text-xl" />
           </button>
           <div v-else class="ml-2.5 mt-1.5 flex flex-1 items-center gap-2">
