@@ -109,6 +109,12 @@ export const useApiFetch = () => {
       headers.Authorization = `Bearer ${tokens.access}`
     }
 
+    const encryptionKey = config.public.encryptionKey as string
+    const isAuthEndpoint = url.startsWith('/api/auth/')
+    if (encryptionKey && isAuthEndpoint && opts.body && !(opts.body instanceof FormData)) {
+      opts = { ...opts, body: await encryptSensitiveFields(opts.body as Record<string, unknown>, encryptionKey) }
+    }
+
     const hmacKey = config.public.hmacKey as string
     if (hmacKey) {
       const body = opts.body instanceof FormData ? '' : opts.body ? JSON.stringify(opts.body) : ''
@@ -118,13 +124,19 @@ export const useApiFetch = () => {
     }
 
     try {
-      return (await withRetry(() =>
+      let result = (await withRetry(() =>
         $fetch(`${baseUrl}${url}`, {
           ...opts,
           headers: { ...headers, ...(opts.headers as Record<string, string>) },
           timeout: 15000,
         }),
       )) as T
+
+      if (encryptionKey && isAuthEndpoint && result && typeof result === 'object') {
+        result = (await decryptSensitiveFields(result as Record<string, unknown>, encryptionKey)) as T
+      }
+
+      return result
     } catch (err: unknown) {
       const error = err as FetchError
       const status = error.response?.status || 500

@@ -9,10 +9,8 @@ export interface User {
   has_password: boolean
   is_active: boolean
   is_verified: boolean
-  is_superuser: boolean
+  role: number
   scheduled_deletion_at: string | null
-  created_at: string
-  updated_at: string
 }
 
 export interface AuthTokens {

@@ -99,6 +99,7 @@ export default defineNuxtConfig({
       cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',
       cdnFallbackUrl: process.env.NUXT_PUBLIC_CDN_FALLBACK_URL || '',
       hmacKey: process.env.NUXT_PUBLIC_HMAC_KEY || '',
+      encryptionKey: process.env.NUXT_PUBLIC_ENCRYPTION_KEY || '',
     },
   },
 })

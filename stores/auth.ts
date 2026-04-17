@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!tokens.value?.access)
-  const isAdmin = computed(() => !!user.value?.is_superuser)
+  const isAdmin = computed(() => user.value?.role === 1)
 
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(TOKEN_KEY)
