@@ -169,6 +169,7 @@ const toggleHaptics = () => {
 }
 
 const { theme, toggle } = useTheme()
+const { showNoteCount, toggleNoteCount } = useSettings()
 const noteColors = useNoteColors()
 
 const showSessions = ref(false)
@@ -538,6 +539,18 @@ const handleLogout = () => {
                     @click="toggleHaptics"
                   >
                     {{ hapticsEnabled ? 'on' : 'off' }}
+                  </button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-xs text-white/40">show note count</p>
+                  <button
+                    class="min-w-18.5 cursor-pointer rounded-lg px-4 py-2 text-center text-xs lowercase"
+                    :class="
+                      showNoteCount ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30' : 'bg-gray-600 text-white/40 hover:text-white'
+                    "
+                    @click="toggleNoteCount"
+                  >
+                    {{ showNoteCount ? 'on' : 'off' }}
                   </button>
                 </div>
               </div>

@@ -12,6 +12,7 @@ const folderStore = useFolderStore()
 const { createFolder, renameFolder, deleteFolder, reorderFolders, archiveFolder } = useFolders()
 const route = useRoute()
 const router = useRouter()
+const { showNoteCount } = useSettings()
 
 const close = () => ui.closeSidebar()
 const onKeydown = (e: KeyboardEvent) => {
@@ -235,6 +236,7 @@ const onDrop = async (targetIndex: number) => {
                 @click="close"
               >
                 <span class="truncate">{{ folder.name }}</span>
+                <span v-if="showNoteCount && folder.note_count" class="ml-auto rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">{{ folder.note_count }}</span>
               </NuxtLink>
             </template>
             <template v-else>
@@ -289,6 +291,7 @@ const onDrop = async (targetIndex: number) => {
                 >
                   {{ folder.name }}
                 </NuxtLink>
+                <span v-if="showNoteCount && folder.note_count && !isDraggingFolder" class="shrink-0 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40 group-hover:hidden">{{ folder.note_count }}</span>
                 <div class="ml-1 hidden shrink-0 items-center gap-0.5 group-hover:flex" @click.prevent>
                   <button class="cursor-pointer rounded p-0.5 hover:text-white" title="Rename" @click="startRename(folder)">
                     <Icon name="uil:pen" class="text-xs" />
