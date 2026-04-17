@@ -330,8 +330,14 @@ const onDrop = async (targetIndex: number) => {
           <div class="my-3 border-t border-white/10" />
 
           <div class="space-y-0.5">
-            <NuxtLink to="/trash" :class="linkClass(route.path === '/trash')" @click="close"><span>trash</span></NuxtLink>
-            <NuxtLink to="/archive" :class="linkClass(route.path === '/archive')" @click="close"><span>archive</span></NuxtLink>
+            <NuxtLink to="/trash" :class="linkClass(route.path === '/trash')" @click="close">
+              <span>trash</span>
+              <span v-if="showNoteCount && folderStore.trashCount" class="ml-auto rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">{{ folderStore.trashCount }}</span>
+            </NuxtLink>
+            <NuxtLink to="/archive" :class="linkClass(route.path === '/archive')" @click="close">
+              <span>archive</span>
+              <span v-if="showNoteCount && folderStore.archiveCount" class="ml-auto rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">{{ folderStore.archiveCount }}</span>
+            </NuxtLink>
           </div>
         </nav>
 
