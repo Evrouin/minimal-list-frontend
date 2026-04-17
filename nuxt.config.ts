@@ -98,6 +98,7 @@ export default defineNuxtConfig({
       maintenanceMode: process.env.NUXT_PUBLIC_MAINTENANCE_MODE === 'true',
       cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',
       cdnFallbackUrl: process.env.NUXT_PUBLIC_CDN_FALLBACK_URL || '',
+      hmacKey: process.env.NUXT_PUBLIC_HMAC_KEY || '',
     },
   },
 })

@@ -109,6 +109,14 @@ export const useApiFetch = () => {
       headers.Authorization = `Bearer ${tokens.access}`
     }
 
+    const hmacKey = config.public.hmacKey as string
+    if (hmacKey) {
+      const body = opts.body instanceof FormData ? '' : opts.body ? JSON.stringify(opts.body) : ''
+      const { signature, timestamp } = await signRequest(opts.method || 'GET', url, body, hmacKey)
+      headers['X-Signature'] = signature
+      headers['X-Timestamp'] = timestamp
+    }
+
     try {
       return (await withRetry(() =>
         $fetch(`${baseUrl}${url}`, {
