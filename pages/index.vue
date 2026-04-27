@@ -447,7 +447,7 @@ const { $snoozePrompt, $snoozeOptions, $snoozeIndex, $cycleSnooze, $handleDone }
     <div class="w-full max-w-lg px-4 pb-10 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <TodoList ref="todoListRef" :key="todoListKey" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
-        <span class="text-sm text-white/40">loading...</span>
+        <Icon name="uil:spinner-alt" class="text-white/40 inline-block animate-spin" />
       </div>
     </div>
 

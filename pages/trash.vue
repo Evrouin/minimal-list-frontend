@@ -31,7 +31,7 @@ onUnmounted(() => {
       </PageHeader>
       <TodoList ref="todoListRef" />
       <div v-if="todoStore.loadingMore" class="flex justify-center py-4">
-        <span class="text-sm text-white/40">loading...</span>
+        <Icon name="uil:spinner-alt" class="text-white/40 inline-block animate-spin" />
       </div>
     </div>
   </div>

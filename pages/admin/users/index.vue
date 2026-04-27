@@ -113,7 +113,12 @@ const confirmDelete = async () => {
       <NuxtLink to="/admin" class="text-sm text-white/60 lowercase hover:text-white">back</NuxtLink>
     </PageHeader>
 
-    <div v-if="loading" class="p-4 text-sm text-white/40">loading...</div>
+    <div v-if="loading" class="flex justify-center items-center w-full py-4">
+      <Icon
+        name="uil:spinner-alt"
+        class="animate-spin text-white/40 h-5 w-5"
+      />
+    </div>
     <div v-else-if="error" class="p-4 text-sm text-red-400">{{ error }}</div>
 
     <div v-else :class="searching ? 'opacity-50' : ''" class="flex flex-1 flex-col justify-between">
@@ -153,7 +158,7 @@ const confirmDelete = async () => {
         </div>
 
         <!-- desktop: table layout -->
-        <div class="hidden min-h-130 overflow-hidden rounded-lg bg-gray-700 shadow-md md:block">
+        <div class="hidden min-h-130 overflow-hidden rounded-lg bg-gray-800 md:block">
           <table class="w-full text-left text-xs text-white">
             <thead class="border-b border-white/10 text-xs text-white/50 lowercase">
               <tr>

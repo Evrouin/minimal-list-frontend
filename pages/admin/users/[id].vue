@@ -83,7 +83,12 @@ const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', 
       <NuxtLink to="/admin/users" class="text-xs text-white/60 lowercase hover:text-white">back</NuxtLink>
     </PageHeader>
 
-    <div v-if="!user && !errorMsg" class="p-4 text-xs text-white/40">loading...</div>
+    <div v-if="!user && !errorMsg" class="flex justify-center items-center w-full py-4">
+      <Icon
+        name="uil:spinner-alt"
+        class="animate-spin text-white/40 h-5 w-5"
+      />
+    </div>
     <div v-if="errorMsg && !user" class="p-4 text-xs text-red-400">{{ errorMsg }}</div>
 
     <template v-if="user">

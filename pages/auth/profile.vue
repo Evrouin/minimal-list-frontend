@@ -330,7 +330,9 @@ const handleLogout = () => {
     </div>
 
     <div class="w-full max-w-lg px-4 pb-10 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
-      <div v-if="!user" class="p-4 text-sm text-white/40">loading...</div>
+      <div v-if="!user">
+        <Icon name="uil:spinner-alt" class="p-4 text-white/40 inline-block animate-spin" />
+      </div>
 
       <template v-if="user">
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -724,7 +726,9 @@ const handleLogout = () => {
           <button class="cursor-pointer text-xs text-white/30 hover:text-white/60" @click="showSessions = false">✕</button>
         </div>
 
-        <div v-if="sessionsLoading" class="py-4 text-center text-xs text-white/40">loading...</div>
+        <div v-if="sessionsLoading">
+          <Icon name="uil:spinner-alt" class="py-4 text-center text-white/40 inline-block animate-spin" />
+        </div>
 
         <div v-else-if="sessions.length === 0" class="py-4 text-center text-xs text-white/40">no sessions found</div>
 
