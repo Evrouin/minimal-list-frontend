@@ -60,8 +60,6 @@ const isTodoEmptyMessage = computed(() => {
   }
 })
 
-const skeletonCount = computed(() => Math.max(filteredTodos.value.length, 6))
-
 const deletedSections = computed(() => {
   if (todoStore.filterType !== 'deleted' && todoStore.filterType !== 'archived') return []
   const now = new Date()
@@ -397,8 +395,9 @@ defineExpose({
 </script>
 
 <template>
-  <TodoSkeleton v-if="loading && todoStore.initialLoad" :count="skeletonCount" />
-
+  <div v-if="loading && todoStore.initialLoad" class="flex items-center justify-center py-20">
+    <Icon name="uil:spinner-alt" class="text-white/30 inline-block animate-spin" />
+  </div>
   <div v-else-if="!loading && filteredTodos.length === 0" class="flex items-center justify-center py-20">
     <span class="text-sm text-white/30 lowercase">{{ isTodoEmptyMessage }}</span>
   </div>

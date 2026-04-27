@@ -49,7 +49,6 @@ A modern note-taking application built with Nuxt 4 and TypeScript. Features rich
 │   ├── TodoList.vue             # Note list with masonry layout and multi-select
 │   ├── TodoAdd.vue              # Note creation form with fullscreen expand support
 │   ├── TodoHeader.vue           # Notes page header with filter tabs
-│   ├── TodoSkeleton.vue         # Loading skeleton
 │   ├── MasonryGrid.vue          # Muuri-powered masonry drag-and-drop grid
 │   ├── AudioRecorder.vue        # Voice recording button with loading state
 │   ├── AudioPlayer.vue          # Audio playback with progress bar and CDN fallback
