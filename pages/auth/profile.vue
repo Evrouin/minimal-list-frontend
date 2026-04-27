@@ -173,6 +173,8 @@ const { showNoteCount, toggleNoteCount } = useSettings()
 const noteColors = useNoteColors()
 
 const showSessions = ref(false)
+const revokingId = ref<number | null>(null)
+const revokingOthersLoading = ref(false)
 const sessions = ref<import('~/types/auth').Session[]>([])
 const sessionsLoading = ref(false)
 const api = useAuthApi()
@@ -200,21 +202,30 @@ const openSessions = async () => {
 
 const revokeSession = async (id: number) => {
   try {
+    revokingId.value = id // Track specifically which session is loading
     await api.revokeSession(id)
     sessions.value = sessions.value.filter((s) => s.id !== id)
   } catch {
     /* silently fail */
+  } finally {
+    revokingId.value = null
   }
 }
 
 const revokeOtherSessions = async () => {
   const tokens = JSON.parse(localStorage.getItem('auth_tokens') || '{}')
   if (!tokens.refresh) return
+
   try {
+    revokingOthersLoading.value = true // Start loading
     await api.revokeOtherSessions(tokens.refresh)
+
+    // Filter locally to keep only the current session
     sessions.value = sessions.value.filter((s) => s.is_current)
-  } catch {
-    /* silently fail */
+  } catch (err) {
+    console.error('Failed to revoke other sessions:', err)
+  } finally {
+    revokingOthersLoading.value = false // Stop loading
   }
 }
 
@@ -624,7 +635,7 @@ const handleLogout = () => {
                   class="min-w-18.5 cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
                   @click="showClearNotesDialog = true"
                 >
-                  clear
+                  proceed
                 </button>
               </div>
               <div class="mb-4 flex items-center justify-between">
@@ -636,7 +647,7 @@ const handleLogout = () => {
                   class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
                   @click="showDeactivateDialog = true"
                 >
-                  deactivate
+                  proceed
                 </button>
               </div>
               <div class="flex items-center justify-between">
@@ -648,7 +659,7 @@ const handleLogout = () => {
                   class="cursor-pointer rounded-lg bg-red-500/20 px-4 py-2 text-xs text-red-300 lowercase hover:bg-red-500/30"
                   @click="showDeleteDialog = true"
                 >
-                  delete
+                  proceed
                 </button>
               </div>
             </div>
@@ -734,20 +745,28 @@ const handleLogout = () => {
             <span v-if="session.is_current" class="shrink-0 rounded bg-green-500/20 px-2 py-1 text-xs text-green-300">current</span>
             <button
               v-else
-              class="shrink-0 cursor-pointer rounded px-2 py-1 text-xs text-red-400 hover:text-red-300"
+              :disabled="revokingId === session.id"
+              class="shrink-0 cursor-pointer rounded px-2 py-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
               @click="revokeSession(session.id)"
             >
-              revoke
+              <Icon v-if="revokingId === session.id" name="uil:spinner-alt" class="animate-spin text-xs" />
+              <span v-else>revoke</span>
             </button>
           </div>
         </div>
 
         <button
           v-if="sessions.length > 1"
-          class="mt-4 w-full cursor-pointer rounded-lg bg-red-500/10 py-2 text-xs text-red-300 lowercase hover:bg-red-500/20"
+          :disabled="revokingOthersLoading"
+          class="mt-4 w-full cursor-pointer rounded-lg bg-red-500/10 py-2 text-xs text-red-300 lowercase hover:bg-red-500/20 disabled:opacity-50"
           @click="revokeOtherSessions"
         >
-          log out all other devices
+          <template v-if="revokingOthersLoading">
+            <Icon name="uil:spinner-alt" class="mr-1 inline-block animate-spin" />
+          </template>
+          <template v-else>
+            log out all other devices
+          </template>
         </button>
       </div>
     </ModalOverlay>
