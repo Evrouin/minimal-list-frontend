@@ -331,7 +331,7 @@ const handleLogout = () => {
 
     <div class="w-full max-w-lg px-4 pb-10 min-[1920px]:max-w-400 sm:max-w-none md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-7xl">
       <div v-if="!user">
-        <Icon name="uil:spinner-alt" class="p-4 text-white/40 inline-block animate-spin" />
+        <Icon name="uil:spinner-alt" class="inline-block animate-spin p-4 text-white/40" />
       </div>
 
       <template v-if="user">
@@ -349,7 +349,7 @@ const handleLogout = () => {
                     :src="user?.avatar || user?.avatar_url"
                     class="h-12 w-12 rounded-full object-cover"
                     @error="avatarError = true"
-                  >
+                  />
                   <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-600 text-lg font-bold text-white/70">
                     {{ (user?.username || user?.email || '?')[0]?.toUpperCase() }}
                   </div>
@@ -359,7 +359,7 @@ const handleLogout = () => {
                     <Icon name="uil:camera" class="text-sm text-white" />
                   </div>
                 </div>
-                <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" >
+                <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarSelect" />
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-lg font-medium text-white">{{ user.username || 'no username' }}</p>
                   <p class="text-sm text-white/50">{{ user.email }}</p>
@@ -405,9 +405,9 @@ const handleLogout = () => {
                     <input
                       id="edit-username"
                       v-model="editForm.username"
-                      class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
                       placeholder="username"
-                    >
+                    />
                   </div>
                   <div>
                     <label for="edit-phone" class="mb-1 block text-xs text-white/40">phone</label>
@@ -415,16 +415,16 @@ const handleLogout = () => {
                       id="edit-phone"
                       v-model="editForm.phone"
                       type="tel"
-                      class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
                       placeholder="phone"
-                    >
+                    />
                   </div>
                   <div>
                     <label for="edit-bio" class="mb-1 block text-xs text-white/40">bio</label>
                     <textarea
                       id="edit-bio"
                       v-model="editForm.bio"
-                      class="w-full resize-none rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      class="w-full resize-none rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
                       placeholder="bio"
                       rows="3"
                     />
@@ -437,13 +437,13 @@ const handleLogout = () => {
                 <div class="mt-4 flex gap-2">
                   <button
                     :disabled="loading"
-                    class="cursor-pointer rounded-lg bg-gray-600 px-4 py-2 text-xs text-white lowercase hover:bg-gray-500 disabled:opacity-50"
+                    class="cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase hover:bg-gray-500 disabled:opacity-50 md:py-2"
                     @click="saveProfile"
                   >
                     save
                   </button>
                   <button
-                    class="cursor-pointer rounded-lg px-4 py-2 text-xs text-white/60 lowercase hover:text-white"
+                    class="cursor-pointer rounded-lg px-4 py-4 text-xs text-white/60 lowercase hover:text-white md:py-2"
                     @click="isEditing = false"
                   >
                     cancel
@@ -464,9 +464,9 @@ const handleLogout = () => {
                     id="current-password"
                     v-model="passwordForm.current_password"
                     type="password"
-                    class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                    class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
                     placeholder="current password"
-                  >
+                  />
                 </div>
                 <div>
                   <label for="new-password" class="mb-1 block text-xs text-white/40">new password</label>
@@ -474,9 +474,9 @@ const handleLogout = () => {
                     id="new-password"
                     v-model="passwordForm.new_password"
                     type="password"
-                    class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                    class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
                     placeholder="new password"
-                  >
+                  />
                 </div>
                 <div>
                   <label for="confirm-password" class="mb-1 block text-xs text-white/40">confirm new password</label>
@@ -484,9 +484,9 @@ const handleLogout = () => {
                     id="confirm-password"
                     v-model="passwordForm.confirm_password"
                     type="password"
-                    class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                    class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
                     placeholder="confirm new password"
-                  >
+                  />
                 </div>
               </div>
 
@@ -496,7 +496,7 @@ const handleLogout = () => {
               <button
                 type="submit"
                 :disabled="loading"
-                class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+                class="mt-4 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50 md:py-2.5"
               >
                 {{ user.has_password ? 'change password' : 'set password' }}
               </button>
@@ -682,9 +682,9 @@ const handleLogout = () => {
           v-model="deleteAccountPassword"
           type="password"
           placeholder="your password"
-          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
+          class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/40 focus:outline-none md:py-2"
           @keydown.enter="handleDeleteAccount"
-        >
+        />
         <p v-if="deleteAccountError" class="mt-1 text-xs text-red-400">{{ deleteAccountError }}</p>
       </div>
     </ConfirmDialog>
@@ -711,9 +711,9 @@ const handleLogout = () => {
           v-model="clearPassword"
           type="password"
           placeholder="your password"
-          class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none"
+          class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/40 focus:outline-none md:py-2"
           @keydown.enter="onClearNotesConfirm"
-        >
+        />
         <p v-if="clearPasswordError" class="mt-1 text-xs text-red-400">{{ clearPasswordError }}</p>
       </div>
     </ConfirmDialog>
@@ -727,7 +727,7 @@ const handleLogout = () => {
         </div>
 
         <div v-if="sessionsLoading">
-          <Icon name="uil:spinner-alt" class="py-4 text-center text-white/40 inline-block animate-spin" />
+          <Icon name="uil:spinner-alt" class="inline-block animate-spin py-4 text-center text-white/40" />
         </div>
 
         <div v-else-if="sessions.length === 0" class="py-4 text-center text-xs text-white/40">no sessions found</div>
@@ -768,9 +768,7 @@ const handleLogout = () => {
           <template v-if="revokingOthersLoading">
             <Icon name="uil:spinner-alt" class="mr-1 inline-block animate-spin" />
           </template>
-          <template v-else>
-            log out all other devices
-          </template>
+          <template v-else>log out all other devices</template>
         </button>
       </div>
     </ModalOverlay>
@@ -779,7 +777,7 @@ const handleLogout = () => {
     <ModalOverlay :show="showCropper" backdrop-class="bg-black/70" @click.self="cancelCrop">
       <div class="w-full max-w-sm rounded-lg bg-gray-700 p-4">
         <div class="mb-3 max-h-[60vh] overflow-hidden">
-          <img ref="cropImgEl" alt="" :src="cropImageSrc" class="max-w-full" >
+          <img ref="cropImgEl" alt="" :src="cropImageSrc" class="max-w-full" />
         </div>
         <div class="flex justify-end gap-2">
           <button class="cursor-pointer rounded px-3 py-1 text-xs text-white/60 hover:text-white" @click="cancelCrop">cancel</button>

@@ -49,8 +49,8 @@ const handleSubmit = async () => {
             v-model="form.new_password"
             type="password"
             placeholder="min 8 characters"
-            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          >
+            class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
+          />
         </div>
         <div>
           <label for="reset-password2" class="mb-1 block text-xs text-white/40">confirm password</label>
@@ -59,8 +59,8 @@ const handleSubmit = async () => {
             v-model="form.new_password2"
             type="password"
             placeholder="confirm password"
-            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          >
+            class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2"
+          />
         </div>
       </div>
 
@@ -70,7 +70,7 @@ const handleSubmit = async () => {
       <button
         type="submit"
         :disabled="authStore.loading"
-        class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+        class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50 md:py-2.5"
       >
         {{ authStore.loading ? 'resetting...' : 'reset password' }}
       </button>

@@ -79,8 +79,8 @@ const handleGoogleLogin = async () => {
             v-model="form.email"
             type="email"
             placeholder="user@example.com"
-            class="w-full rounded-lg bg-gray-600 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
-          >
+            class="w-full rounded-lg bg-gray-600 px-3 py-4 text-xs text-white placeholder-white/30 focus:outline-none md:py-2.5"
+          />
         </div>
         <div>
           <label for="login-password" class="mb-1 block text-xs text-white/40">password</label>
@@ -90,15 +90,18 @@ const handleGoogleLogin = async () => {
               v-model="form.password"
               :type="showPassword ? 'text' : 'password'"
               placeholder="password"
-              class="w-full rounded-lg bg-gray-600 px-3 py-2 pr-9 text-xs text-white placeholder-white/30 focus:outline-none"
-            >
+              class="w-full rounded-lg bg-gray-600 px-3 py-4 pr-9 text-xs text-white placeholder-white/30 focus:outline-none md:py-2.5"
+            />
             <button
               type="button"
               class="absolute top-1/2 right-2 -translate-y-1/2 text-white/30 hover:text-white/60"
               tabindex="-1"
               @click="showPassword = !showPassword"
             >
-              <Icon :name="showPassword ? 'uil:eye-slash' : 'uil:eye'" class="text-sm text-white/40 hover:text-white/60" />
+              <Icon
+                :name="showPassword ? 'uil:eye-slash' : 'uil:eye'"
+                class="mt-2 text-base text-white/40 hover:text-white/60 md:text-sm"
+              />
             </button>
           </div>
         </div>
@@ -110,7 +113,7 @@ const handleGoogleLogin = async () => {
           v-if="showResend"
           type="button"
           :disabled="resendCooldown"
-          class="ml-1 cursor-pointer underline hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+          class="ml-1 cursor-pointer py-4 underline hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50 md:py-2.5"
           @click="resendVerification"
         >
           {{ resendCooldown ? 'sent' : 'resend' }}
@@ -121,7 +124,7 @@ const handleGoogleLogin = async () => {
       <button
         type="submit"
         :disabled="authStore.loading"
-        class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50"
+        class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50 md:py-2.5"
       >
         {{ authStore.loading ? 'logging in...' : 'login' }}
       </button>
@@ -134,7 +137,7 @@ const handleGoogleLogin = async () => {
 
       <button
         type="button"
-        class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-2.5 text-xs text-white lowercase transition-colors hover:bg-gray-500"
+        class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 md:py-2.5"
         @click="handleGoogleLogin"
       >
         <Icon name="logos:google-icon" />
