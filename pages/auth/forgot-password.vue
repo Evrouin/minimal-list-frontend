@@ -7,14 +7,19 @@ const email = ref('')
 const successMsg = ref('')
 const errorMsg = ref('')
 
+const loading = ref(false)
+
 const handleSubmit = async () => {
   errorMsg.value = ''
   successMsg.value = ''
+  loading.value = true
   try {
     const res = await authStore.requestPasswordReset({ email: email.value })
     successMsg.value = res.message || 'if the email exists, a reset link has been sent.'
   } catch {
     errorMsg.value = 'something went wrong. try again.'
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -38,10 +43,11 @@ const handleSubmit = async () => {
 
       <button
         type="submit"
-        :disabled="authStore.loading"
+        :disabled="loading"
         class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50 md:py-2.5"
       >
-        {{ authStore.loading ? 'sending...' : 'send reset link' }}
+        <Icon v-if="loading" name="uil:spinner-alt" class="animate-spin" />
+        <span v-else>send reset link</span>
       </button>
     </form>
   </AuthFormCard>

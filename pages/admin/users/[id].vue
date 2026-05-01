@@ -68,7 +68,7 @@ const confirmDelete = async () => {
   }
 }
 
-const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', value: boolean) => {
+const toggleField = async (field: 'is_active' | 'is_verified' | 'role', value: boolean | number) => {
   try {
     user.value = await api.updateUser(route.params.id as string, { [field]: value })
   } catch {
@@ -113,7 +113,7 @@ const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', 
         <div class="mt-4 flex flex-wrap gap-2">
           <PillBadge :color="user.is_active ? 'green' : 'red'" :label="user.is_active ? 'active' : 'deactivated'" />
           <PillBadge :color="user.is_verified ? 'green' : 'red'" :label="user.is_verified ? 'verified' : 'unverified'" />
-          <PillBadge v-if="user.is_superuser" color="yellow" label="admin" />
+          <PillBadge v-if="user.role === 1" color="yellow" label="admin" />
           <PillBadge
             v-if="user.scheduled_deletion_at"
             color="orange"
@@ -208,7 +208,7 @@ const toggleField = async (field: 'is_active' | 'is_verified' | 'is_superuser', 
           </div>
           <div class="flex items-center justify-between">
             <span class="text-xs text-white">admin</span>
-            <ToggleSwitch :model-value="user.is_superuser" color="yellow" @update:model-value="toggleField('is_superuser', $event)" />
+            <ToggleSwitch :model-value="user.role === 1" color="yellow" @update:model-value="toggleField('role', $event ? 1 : 0)" />
           </div>
         </div>
       </div>

@@ -25,7 +25,7 @@ export const useAdminApi = () => {
       return request<{ count: number; next: string | null; previous: string | null; results: User[] }>(`${base}/users/?${params}`)
     },
     getUser: (id: string) => request<User>(`${base}/users/${id}/`),
-    createUser: (data: { email: string; username: string; password: string; is_superuser?: boolean; is_verified?: boolean }) =>
+    createUser: (data: { email: string; username: string; password: string; role?: number; is_verified?: boolean }) =>
       request<User>(`${base}/users/`, { method: 'POST', body: data }),
     updateUser: (id: string, data: Partial<User>) => request<User>(`${base}/users/${id}/`, { method: 'PATCH', body: data }),
     deleteUser: (id: string, password?: string) =>

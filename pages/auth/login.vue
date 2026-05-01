@@ -126,7 +126,8 @@ const handleGoogleLogin = async () => {
         :disabled="authStore.loading"
         class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50 md:py-2.5"
       >
-        {{ authStore.loading ? 'logging in...' : 'login' }}
+        <Icon v-if="authStore.loading" name="uil:spinner-alt" class="animate-spin" />
+        <span v-else>login</span>
       </button>
 
       <div class="my-4 flex items-center gap-3">

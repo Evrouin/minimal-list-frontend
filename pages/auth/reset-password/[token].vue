@@ -12,6 +12,8 @@ const form = reactive({
 const successMsg = ref('')
 const errorMsg = ref('')
 
+const loading = ref(false)
+
 const handleSubmit = async () => {
   errorMsg.value = ''
   successMsg.value = ''
@@ -29,11 +31,15 @@ const handleSubmit = async () => {
     return
   }
 
+  loading.value = true
   try {
     const res = await authStore.confirmPasswordReset(form)
     successMsg.value = res.message || 'password reset successfully.'
+    setTimeout(() => navigateTo('/auth/login'), 1500)
   } catch {
     errorMsg.value = 'invalid or expired token.'
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -69,10 +75,11 @@ const handleSubmit = async () => {
 
       <button
         type="submit"
-        :disabled="authStore.loading"
+        :disabled="loading"
         class="mt-5 w-full cursor-pointer rounded-lg bg-gray-600 px-4 py-4 text-xs text-white lowercase transition-colors hover:bg-gray-500 disabled:opacity-50 md:py-2.5"
       >
-        {{ authStore.loading ? 'resetting...' : 'reset password' }}
+        <Icon v-if="loading" name="uil:spinner-alt" class="animate-spin" />
+        <span v-else>reset password</span>
       </button>
     </form>
   </AuthFormCard>

@@ -6,7 +6,7 @@ const form = reactive({
   email: '',
   username: '',
   password: '',
-  is_superuser: false,
+  role: 1,
   is_verified: false,
 })
 const errorMsg = ref('')
@@ -100,7 +100,7 @@ const handleCreate = async () => {
           verified
         </div>
         <div class="flex cursor-pointer items-center gap-2 text-sm text-white/70">
-          <ToggleSwitch v-model="form.is_superuser" color="yellow" aria-label="admin" />
+          <ToggleSwitch :model-value="form.role === 1" color="yellow" aria-label="admin" @update:model-value="form.role = $event ? 1 : 0" />
           admin
         </div>
       </div>

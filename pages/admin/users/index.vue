@@ -20,7 +20,7 @@ const showDeleteDialog = ref(false)
 const userToDelete = ref<User | null>(null)
 const deleting = ref(false)
 
-const sortKey = ref<'email' | 'username' | 'is_active' | 'is_verified' | 'is_superuser' | 'created_at'>('created_at')
+const sortKey = ref<'email' | 'username' | 'is_active' | 'is_verified' | 'role' | 'created_at'>('created_at')
 const sortAsc = ref(false)
 
 const fetchUsers = async () => {
@@ -150,7 +150,7 @@ const confirmDelete = async () => {
               <span :class="u.is_verified ? 'text-green-300' : 'text-red-300'">
                 {{ u.is_verified ? 'verified' : 'unverified' }}
               </span>
-              <span v-if="u.is_superuser" class="text-yellow-300">admin</span>
+              <span v-if="u.role === 1" class="text-yellow-300">admin</span>
               <span class="ml-auto text-white/40">{{ formatDate(u.created_at) }}</span>
             </div>
           </div>
@@ -178,9 +178,9 @@ const confirmDelete = async () => {
                   verified
                   <span v-if="sortKey === 'is_verified'" class="text-white">{{ sortAsc ? '↑' : '↓' }}</span>
                 </th>
-                <th class="cursor-pointer px-4 py-3 text-center select-none hover:text-white" @click="toggleSort('is_superuser')">
+                <th class="cursor-pointer px-4 py-3 text-center select-none hover:text-white" @click="toggleSort('role')">
                   admin
-                  <span v-if="sortKey === 'is_superuser'" class="text-white">{{ sortAsc ? '↑' : '↓' }}</span>
+                  <span v-if="sortKey === 'role'" class="text-white">{{ sortAsc ? '↑' : '↓' }}</span>
                 </th>
                 <th class="cursor-pointer px-4 py-3 text-center select-none hover:text-white" @click="toggleSort('created_at')">
                   joined
@@ -205,7 +205,7 @@ const confirmDelete = async () => {
                   <PillBadge :color="u.is_verified ? 'green' : 'red'" :label="u.is_verified ? 'yes' : 'no'" />
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <PillBadge :color="u.is_superuser ? 'green' : 'muted'" :label="u.is_superuser ? 'yes' : 'no'" />
+                  <PillBadge :color="u.role === 1 ? 'green' : 'muted'" :label="u.role === 1 ? 'yes' : 'no'" />
                 </td>
                 <td class="px-4 py-3 text-center text-white/50">{{ formatDate(u.created_at) }}</td>
                 <td class="px-4 py-3">

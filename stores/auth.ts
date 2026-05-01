@@ -71,7 +71,6 @@ export const useAuthStore = defineStore('auth', () => {
     withLoading(async () => {
       const res = await api.login(payload)
       saveTokens(res)
-      await fetchProfile()
       return res
     })
 
@@ -79,7 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
     withLoading(async () => {
       const res = await api.googleLogin(googleToken)
       saveTokens(res.tokens)
-      user.value = res.user
+      await fetchProfile()
       return res
     })
 
